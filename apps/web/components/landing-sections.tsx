@@ -240,7 +240,7 @@ export function Hero() {
             </button>
           </form>
 
-          <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center animate-[fade-in_0.8s_ease-out_0.4s_both]">
+          <div className="flex flex-row flex-nowrap items-center justify-center gap-4 animate-[fade-in_0.8s_ease-out_0.4s_both]">
             <a
               href="/ship"
               className="inline-flex h-11 items-center gap-2 rounded-lg bg-primary px-6 text-sm font-medium text-primary-foreground transition-all duration-300 hover:scale-[1.02] hover:shadow-lg"
