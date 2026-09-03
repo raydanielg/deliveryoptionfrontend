@@ -1,0 +1,237 @@
+"use client"
+
+import { useState, useEffect } from "react"
+import { useParams, useRouter } from "next/navigation"
+import { DashboardLayout } from "@/components/dashboard-layout"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@workspace/ui/components/card"
+import { Button } from "@workspace/ui/components/button"
+import { Badge } from "@workspace/ui/components/badge"
+import { Separator } from "@workspace/ui/components/separator"
+import { Skeleton } from "@workspace/ui/components/skeleton"
+import { api } from "@/lib/api"
+import { toast } from "sonner"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { MapIcon, Package02Icon, TruckIcon, UserIcon, CoinsIcon, ClockIcon, CalendarIcon, CheckmarkCircle02Icon, CancelCircleIcon } from "@hugeicons/core-free-icons"
+
+export default function ShipmentDetailPage() {
+  const params = useParams()
+  const router = useRouter()
+  const [shipment, setShipment] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    if (params?.id) loadShipment(params.id as string)
+  }, [params?.id])
+
+  async function loadShipment(id: string) {
+    setLoading(true)
+    try {
+      const result = await api.shipments.get(id)
+      setShipment(result.data)
+    } catch (err: any) {
+      toast.error(err.message || "Failed to load shipment")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function cancelShipment() {
+    if (!shipment) return
+    try {
+      await api.shipments.cancel(shipment.id)
+      toast.success("Shipment cancelled")
+      loadShipment(shipment.id)
+    } catch (err: any) {
+      toast.error(err.message || "Failed to cancel shipment")
+    }
+  }
+
+  if (loading) {
+    return (
+      <DashboardLayout breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Shipments", href: "/dashboard/shipments" }, { label: "Details" }]}>
+        <Skeleton className="h-8 w-64" />
+        <div className="grid gap-4 lg:grid-cols-3">
+          <Skeleton className="h-64 lg:col-span-2" />
+          <Skeleton className="h-64" />
+        </div>
+      </DashboardLayout>
+    )
+  }
+
+  if (!shipment) {
+    return (
+      <DashboardLayout breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Shipments", href: "/dashboard/shipments" }, { label: "Not Found" }]}>
+        <div className="flex flex-col items-center justify-center py-12 gap-4">
+          <p className="text-muted-foreground">Shipment not found</p>
+          <Button onClick={() => router.push("/dashboard/shipments")}>Back to Shipments</Button>
+        </div>
+      </DashboardLayout>
+    )
+  }
+
+  const events = shipment.trackingEvents || []
+  const packages = shipment.packages || []
+
+  return (
+    <DashboardLayout breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Shipments", href: "/dashboard/shipments" }, { label: shipment.trackingNumber }]}>
+      <div className="flex items-center justify-between gap-2">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">{shipment.trackingNumber}</h1>
+          <p className="text-sm text-muted-foreground">Shipment details and tracking timeline</p>
+        </div>
+        <div className="flex gap-2">
+          {!["DELIVERED", "CANCELLED"].includes(shipment.status) && (
+            <Button variant="destructive" onClick={cancelShipment}>
+              <HugeiconsIcon icon={CancelCircleIcon} strokeWidth={2} className="size-4" />
+              Cancel
+            </Button>
+          )}
+        </div>
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-3">
+        {/* Left: Tracking Timeline */}
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle>Tracking Timeline</CardTitle>
+            <CardDescription>Shipment status history and events</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {events.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-8 text-center">No tracking events yet</p>
+            ) : (
+              <div className="relative space-y-6 before:absolute before:left-4 before:top-0 before:h-full before:w-px before:bg-border">
+                {events.map((event: any, i: number) => (
+                  <div key={event.id} className="relative flex gap-4">
+                    <div className={`flex size-8 shrink-0 items-center justify-center rounded-full ${i === 0 ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
+                      <HugeiconsIcon icon={i === 0 ? TruckIcon : CheckmarkCircle02Icon} strokeWidth={2} className="size-4" />
+                    </div>
+                    <div className="flex-1 space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-sm">{event.event?.replace(/_/g, " ")}</span>
+                        <Badge variant="secondary" className="text-xs">{event.status?.replace(/_/g, " ")}</Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground">{event.description}</p>
+                      {event.location && (
+                        <p className="text-xs text-muted-foreground flex items-center gap-1">
+                          <HugeiconsIcon icon={MapIcon} strokeWidth={2} className="size-3" />
+                          {event.location}
+                        </p>
+                      )}
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(event.createdAt).toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Right: Shipment Info */}
+        <div className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Status</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">Current Status</span>
+                <Badge variant="secondary">{shipment.status?.replace(/_/g, " ")}</Badge>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">Payment</span>
+                <Badge variant={shipment.paymentStatus === "PAID" ? "default" : "secondary"}>{shipment.paymentStatus}</Badge>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">Category</span>
+                <span className="text-sm font-medium">{shipment.category?.replace(/_/g, " ")}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">Transport</span>
+                <span className="text-sm font-medium">{shipment.transportMode}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">Service</span>
+                <span className="text-sm font-medium">{shipment.serviceLevel}</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Addresses</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-1">
+                <span className="text-xs font-medium text-muted-foreground">FROM</span>
+                <p className="text-sm font-medium">{shipment.fromAddress?.fullName}</p>
+                <p className="text-sm text-muted-foreground">{shipment.fromAddress?.line1}</p>
+                <p className="text-sm text-muted-foreground">{shipment.fromAddress?.city}, {shipment.fromAddress?.country}</p>
+                <p className="text-sm text-muted-foreground">{shipment.fromAddress?.phone}</p>
+              </div>
+              <Separator />
+              <div className="space-y-1">
+                <span className="text-xs font-medium text-muted-foreground">TO</span>
+                <p className="text-sm font-medium">{shipment.toAddress?.fullName}</p>
+                <p className="text-sm text-muted-foreground">{shipment.toAddress?.line1}</p>
+                <p className="text-sm text-muted-foreground">{shipment.toAddress?.city}, {shipment.toAddress?.country}</p>
+                <p className="text-sm text-muted-foreground">{shipment.toAddress?.phone}</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Package & Pricing</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">Chargeable Weight</span>
+                <span className="text-sm font-medium">{shipment.chargeableWeightKg} kg</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">Total Amount</span>
+                <span className="text-sm font-bold text-primary">{shipment.currency} {Number(shipment.totalAmount || 0).toLocaleString()}</span>
+              </div>
+              {shipment.insuranceEnabled && (
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Insurance</span>
+                  <span className="text-sm font-medium">{shipment.currency} {Number(shipment.insurancePremium || 0).toLocaleString()}</span>
+                </div>
+              )}
+              {packages.length > 0 && (
+                <>
+                  <Separator />
+                  <span className="text-xs font-medium text-muted-foreground">PACKAGES ({packages.length})</span>
+                  {packages.map((pkg: any) => (
+                    <div key={pkg.id} className="flex items-center justify-between text-sm">
+                      <span>{pkg.type} — {pkg.weightKg} kg</span>
+                      <span className="text-muted-foreground">{pkg.barcode}</span>
+                    </div>
+                  ))}
+                </>
+              )}
+            </CardContent>
+          </Card>
+
+          {shipment.driver && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Assigned Driver</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <HugeiconsIcon icon={UserIcon} strokeWidth={2} className="size-4 text-muted-foreground" />
+                  <span className="text-sm font-medium">{shipment.driver.user?.name}</span>
+                </div>
+                <p className="text-sm text-muted-foreground">{shipment.driver.user?.phone}</p>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      </div>
+    </DashboardLayout>
+  )
+}
