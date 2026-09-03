@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
@@ -73,9 +73,23 @@ export function LandingHeader() {
 }
 
 /* ───────────────────────────── Hero ───────────────────────────── */
+const heroImages = [
+  "/assets/2149095908.jpg",
+  "/assets/2149095941.jpg",
+  "/assets/41714.jpg",
+]
+
 export function Hero() {
   const router = useRouter()
   const [trackingNumber, setTrackingNumber] = useState("")
+  const [bgIndex, setBgIndex] = useState(0)
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setBgIndex((prev) => (prev + 1) % heroImages.length)
+    }, 5000)
+    return () => clearInterval(interval)
+  }, [])
 
   const handleTrack = (e: React.FormEvent) => {
     e.preventDefault()
@@ -86,8 +100,23 @@ export function Hero() {
 
   return (
     <section className="relative overflow-hidden bg-background">
+      {/* Rotating background images */}
       <div className="absolute inset-0 z-0">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.04] via-transparent to-transparent" />
+        {heroImages.map((src, idx) => (
+          <div
+            key={src}
+            className="absolute inset-0 transition-opacity duration-[2000ms] ease-in-out"
+            style={{
+              opacity: idx === bgIndex ? 1 : 0,
+              backgroundImage: `url(${src})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+            }}
+          />
+        ))}
+        {/* Dark overlay for readability */}
+        <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/60 to-background/90" />
+        <div className="absolute inset-0 bg-gradient-to-tr from-slate-950/60 via-transparent to-primary/5" />
         <NetworkBackground />
       </div>
 
