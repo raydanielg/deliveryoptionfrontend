@@ -746,27 +746,28 @@ export function CTASection() {
       <div className="relative mx-auto max-w-3xl px-4 text-center sm:px-6 lg:px-8">
         <RevealOnScroll>
           <div className="flex flex-col items-center gap-6">
-            <span className="text-xs font-medium uppercase tracking-[0.2em] text-primary">
+            <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.15em] text-primary">
+              <span className="size-1.5 rounded-full bg-primary" />
               Get Started Today
             </span>
-            <h2 className="text-3xl font-semibold tracking-tight text-white text-balance sm:text-4xl lg:text-5xl">
+            <h2 className="text-3xl font-bold tracking-tight text-white text-balance sm:text-4xl lg:text-5xl">
               Ready to ship smarter?
             </h2>
             <p className="max-w-xl text-lg text-white/60 text-pretty">
               Join thousands of businesses and individuals who trust Xerin Express for their delivery
               needs. Create your free account in minutes.
             </p>
-            <div className="flex flex-col items-center gap-4 sm:flex-row">
+            <div className="flex flex-row flex-nowrap items-center justify-center gap-4">
               <a
                 href="/auth/sign-up"
-                className="inline-flex h-12 items-center gap-2 rounded-lg bg-primary px-8 text-sm font-medium text-primary-foreground transition-all duration-300 hover:scale-[1.02] hover:shadow-lg"
+                className="inline-flex h-12 items-center gap-2 rounded-xl bg-primary px-7 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition-all duration-300 hover:scale-[1.03] hover:shadow-xl hover:shadow-primary/30 sm:px-8"
               >
                 Create Free Account
                 <HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={2} className="size-4" />
               </a>
               <a
                 href="/track"
-                className="inline-flex h-12 items-center gap-2 rounded-lg border border-white/20 px-8 text-sm font-medium text-white transition-all duration-300 hover:bg-white/5"
+                className="inline-flex h-12 items-center gap-2 rounded-xl border border-white/15 bg-white/5 px-7 text-sm font-semibold text-white backdrop-blur-sm transition-all duration-300 hover:scale-[1.03] hover:border-white/30 hover:bg-white/10 sm:px-8"
               >
                 Track a Shipment
               </a>
