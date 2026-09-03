@@ -122,6 +122,12 @@ export function LoginForm({
               <FieldDescription className="text-center text-muted-foreground">
                 Authorized personnel only. Contact your administrator for access.
               </FieldDescription>
+              <div className="text-center text-sm text-muted-foreground">
+                Don&apos;t have an account?{" "}
+                <a href="/auth/sign-up" className="font-medium text-primary hover:underline">
+                  Sign up
+                </a>
+              </div>
             </FieldGroup>
           </form>
         </CardContent>

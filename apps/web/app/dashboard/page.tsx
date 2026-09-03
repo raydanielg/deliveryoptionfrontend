@@ -1,41 +1,26 @@
+"use client"
+
+import * as React from "react"
 import Link from "next/link"
 import { DashboardLayout } from "@/components/dashboard-layout"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@workspace/ui/components/card"
 import { Badge } from "@workspace/ui/components/badge"
 import { Button } from "@workspace/ui/components/button"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@workspace/ui/components/select"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { Package02Icon, TruckIcon, Globe02Icon, ArrowUp01Icon, ArrowDown01Icon, Route02Icon, ClockIcon, CheckmarkCircle02Icon, CancelCircleIcon, MapIcon, CoinsIcon, UserGroupIcon, BoxIcon } from "@hugeicons/core-free-icons"
-
-const stats = [
-  {
-    title: "Total Shipments",
-    value: "2,847",
-    change: "+18.2%",
-    trend: "up" as const,
-    icon: <HugeiconsIcon icon={Package02Icon} strokeWidth={2} className="size-5" />,
-  },
-  {
-    title: "In Transit",
-    value: "142",
-    change: "+12.4%",
-    trend: "up" as const,
-    icon: <HugeiconsIcon icon={TruckIcon} strokeWidth={2} className="size-5" />,
-  },
-  {
-    title: "Available Drivers",
-    value: "38",
-    change: "-2.1%",
-    trend: "down" as const,
-    icon: <HugeiconsIcon icon={UserGroupIcon} strokeWidth={2} className="size-5" />,
-  },
-  {
-    title: "Revenue (Month)",
-    value: "TZS 84.2M",
-    change: "+24.6%",
-    trend: "up" as const,
-    icon: <HugeiconsIcon icon={CoinsIcon} strokeWidth={2} className="size-5" />,
-  },
-]
+import { Package02Icon, TruckIcon, Globe02Icon, ArrowRight01Icon, UserGroupIcon, CoinsIcon, Download01Icon } from "@hugeicons/core-free-icons"
+import {
+  SummaryCard,
+  ShipmentStatusSection,
+  LiveOperationsSection,
+  OperationalAlertsSection,
+  RevenueOverviewSection,
+  RoutePerformanceSection,
+  DriverOverviewSection,
+  ServiceOverviewSection,
+  DeliveryPerformanceSection,
+  RecentActivitySection,
+} from "@/components/dashboard-sections"
 
 const recentShipments = [
   { tracking: "XRD-2026-000928", customer: "Amani Joseph", route: "Mwanza → Dar es Salaam", driver: "John M.", status: "In Transit", amount: "TZS 35,000", time: "2 min ago" },
@@ -62,151 +47,153 @@ const liveDeliveries = [
   { tracking: "XRD-2026-000920", driver: "Brian K.", route: "Mwanza → Shinyanga", progress: 20, eta: "5 hr" },
 ]
 
+const shipmentStatusData = [
+  { status: "DELIVERED", count: 2758, percentage: 96.8 },
+  { status: "IN_TRANSIT", count: 42, percentage: 1.5 },
+  { status: "PICKED_UP", count: 28, percentage: 1.0 },
+  { status: "BOOKED", count: 12, percentage: 0.4 },
+  { status: "CANCELLED", count: 7, percentage: 0.3 },
+]
+
+const operationalAlerts = [
+  { id: "1", title: "Shipment delayed at customs", description: "XRD-2026-000926 — China → Tanzania", severity: "HIGH", timeAgo: "8 min ago", link: "/dashboard/shipments" },
+  { id: "2", title: "Driver unavailable", description: "Driver Salim A. reported vehicle breakdown", severity: "MEDIUM", timeAgo: "23 min ago", link: "/dashboard/drivers" },
+  { id: "3", title: "Delivery failed", description: "XRD-2026-000919 — customer not available", severity: "MEDIUM", timeAgo: "1 hr ago", link: "/dashboard/shipments" },
+]
+
+const topRoutes = [
+  { route: "Mwanza → Dar es Salaam", shipments: 842, avgTime: "6.2 hr", successRate: 97.4 },
+  { route: "Dar es Salaam → Mwanza", shipments: 621, avgTime: "6.5 hr", successRate: 96.8 },
+  { route: "Mwanza → Geita", shipments: 318, avgTime: "2.1 hr", successRate: 98.2 },
+  { route: "Mwanza → Shinyanga", shipments: 214, avgTime: "3.8 hr", successRate: 95.1 },
+]
+
+const recentActivities = [
+  { id: "1", user: "Ezra", action: "created shipment XRD-2026-000928", timeAgo: "2 min ago" },
+  { id: "2", user: "System", action: "auto-assigned driver to XRD-2026-000925", timeAgo: "15 min ago" },
+  { id: "3", user: "Frank T.", action: "completed delivery XRD-2026-000927", timeAgo: "18 min ago" },
+  { id: "4", user: "Admin", action: "updated parcel fare rates", timeAgo: "1 hr ago" },
+  { id: "5", user: "System", action: "sent delivery notification for XRD-2026-000923", timeAgo: "5 hr ago" },
+]
+
 export default function Page() {
+  const [range, setRange] = React.useState("today")
+
   return (
     <DashboardLayout breadcrumbs={[{ label: "Dashboard" }, { label: "Overview" }]}>
-          <div className="flex items-center justify-between gap-2">
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight">Xerin Delivery Dashboard</h1>
-              <p className="text-sm text-muted-foreground">Welcome back, Ezra. Here&apos;s your logistics overview today.</p>
-            </div>
+      <div className="flex flex-col gap-6 p-4 lg:p-6">
+        {/* Header */}
+        <div className="flex items-center justify-between gap-2">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">Delivery Dashboard</h1>
+            <p className="text-sm text-muted-foreground">Welcome back, Ezra. Here&apos;s your logistics overview today.</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Select value={range} onValueChange={(v) => setRange(v ?? "today")}>
+              <SelectTrigger className="h-9 w-[120px]"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="today">Today</SelectItem>
+                <SelectItem value="7d">7 Days</SelectItem>
+                <SelectItem value="30d">30 Days</SelectItem>
+                <SelectItem value="90d">90 Days</SelectItem>
+              </SelectContent>
+            </Select>
             <Link href="/dashboard/shipments/new">
-              <Button>
-                <HugeiconsIcon icon={Package02Icon} strokeWidth={2} className="size-4" />
+              <Button size="sm">
+                <HugeiconsIcon icon={Package02Icon} className="size-4" />
                 New Shipment
               </Button>
             </Link>
+            <Button variant="outline" size="sm">
+              <HugeiconsIcon icon={Download01Icon} className="size-4" />
+              Export
+            </Button>
           </div>
+        </div>
 
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {stats.map((stat) => (
-              <Card key={stat.title}>
-                <CardContent className="flex items-center justify-between p-5">
-                  <div className="flex flex-col gap-1">
-                    <span className="text-sm text-muted-foreground">{stat.title}</span>
-                    <span className="text-2xl font-bold">{stat.value}</span>
-                    <span className={`flex items-center gap-1 text-xs font-medium ${stat.trend === "up" ? "text-primary" : "text-destructive"}`}>
-                      <HugeiconsIcon icon={stat.trend === "up" ? ArrowUp01Icon : ArrowDown01Icon} strokeWidth={2} className="size-3" />
-                      {stat.change}
-                      <span className="text-muted-foreground">vs last week</span>
-                    </span>
-                  </div>
-                  <div className="flex size-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                    {stat.icon}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+        {/* 1. Top Summary - 5 compact cards */}
+        <div className="grid grid-cols-2 gap-3 @xl/main:grid-cols-3 @3xl/main:grid-cols-5">
+          <SummaryCard label="Total Shipments" value="2,847" change="+18.2%" positive={true} icon={Package02Icon} />
+          <SummaryCard label="In Transit" value="142" change="+12.4%" positive={true} icon={TruckIcon} />
+          <SummaryCard label="Available Drivers" value="38" change="-2.1%" positive={false} icon={UserGroupIcon} />
+          <SummaryCard label="Revenue (Month)" value="TZS 84.2M" change="+24.6%" positive={true} icon={CoinsIcon} />
+          <SummaryCard label="International" value="428" subtitle="Cross-border shipments" icon={Globe02Icon} />
+        </div>
 
-          <div className="grid gap-4 lg:grid-cols-3">
-            <Card className="lg:col-span-2">
-              <CardHeader>
-                <CardTitle>Recent Shipments</CardTitle>
-                <CardDescription>Latest shipments across all routes</CardDescription>
-              </CardHeader>
-              <CardContent className="p-0">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b text-left">
-                        <th className="px-6 py-3 font-medium text-muted-foreground">Tracking #</th>
-                        <th className="px-6 py-3 font-medium text-muted-foreground">Customer</th>
-                        <th className="px-6 py-3 font-medium text-muted-foreground">Route</th>
-                        <th className="px-6 py-3 font-medium text-muted-foreground">Driver</th>
-                        <th className="px-6 py-3 font-medium text-muted-foreground">Status</th>
-                        <th className="px-6 py-3 font-medium text-muted-foreground">Amount</th>
-                        <th className="px-6 py-3 font-medium text-muted-foreground">Time</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {recentShipments.map((ship) => (
-                        <tr key={ship.tracking} className="border-b last:border-0 transition-colors hover:bg-muted/50">
-                          <td className="px-6 py-3 font-medium">{ship.tracking}</td>
-                          <td className="px-6 py-3">{ship.customer}</td>
-                          <td className="px-6 py-3 text-muted-foreground">{ship.route}</td>
-                          <td className="px-6 py-3 text-muted-foreground">{ship.driver}</td>
-                          <td className="px-6 py-3">
-                            <Badge variant={statusVariant[ship.status] ?? "default"}>{ship.status}</Badge>
-                          </td>
-                          <td className="px-6 py-3 font-medium">{ship.amount}</td>
-                          <td className="px-6 py-3 text-muted-foreground">{ship.time}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+        {/* 2. Recent Shipments + Live Operations */}
+        <div className="grid gap-4 lg:grid-cols-3">
+          <Card className="lg:col-span-2">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Recent Shipments</CardTitle>
+                  <CardDescription>Latest shipments across all routes</CardDescription>
                 </div>
-              </CardContent>
-            </Card>
+                <a href="/dashboard/shipments">
+                  <Button variant="ghost" size="sm" className="h-7">
+                    View All
+                    <HugeiconsIcon icon={ArrowRight01Icon} className="size-3" />
+                  </Button>
+                </a>
+              </div>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b text-left">
+                      <th className="px-6 py-3 font-medium text-muted-foreground">Tracking #</th>
+                      <th className="px-6 py-3 font-medium text-muted-foreground">Customer</th>
+                      <th className="px-6 py-3 font-medium text-muted-foreground">Route</th>
+                      <th className="px-6 py-3 font-medium text-muted-foreground">Driver</th>
+                      <th className="px-6 py-3 font-medium text-muted-foreground">Status</th>
+                      <th className="px-6 py-3 font-medium text-muted-foreground">Amount</th>
+                      <th className="px-6 py-3 font-medium text-muted-foreground">Time</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {recentShipments.map((ship) => (
+                      <tr key={ship.tracking} className="border-b last:border-0 transition-colors hover:bg-muted/50">
+                        <td className="px-6 py-3 font-medium">{ship.tracking}</td>
+                        <td className="px-6 py-3">{ship.customer}</td>
+                        <td className="px-6 py-3 text-muted-foreground">{ship.route}</td>
+                        <td className="px-6 py-3 text-muted-foreground">{ship.driver}</td>
+                        <td className="px-6 py-3">
+                          <Badge variant={statusVariant[ship.status] ?? "default"}>{ship.status}</Badge>
+                        </td>
+                        <td className="px-6 py-3 font-medium">{ship.amount}</td>
+                        <td className="px-6 py-3 text-muted-foreground">{ship.time}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Live Shipments</CardTitle>
-                <CardDescription>Active shipments in real-time</CardDescription>
-              </CardHeader>
-              <CardContent className="flex flex-col gap-4">
-                {liveDeliveries.map((delivery) => (
-                  <div key={delivery.tracking} className="flex flex-col gap-2 rounded-lg border p-3">
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium">{delivery.tracking}</span>
-                      <Badge variant="secondary" className="gap-1">
-                        <HugeiconsIcon icon={ClockIcon} strokeWidth={2} className="size-3" />
-                        {delivery.eta}
-                      </Badge>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <HugeiconsIcon icon={TruckIcon} strokeWidth={2} className="size-4" />
-                      {delivery.driver}
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <HugeiconsIcon icon={MapIcon} strokeWidth={2} className="size-4" />
-                      {delivery.route}
-                    </div>
-                    <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
-                      <div
-                        className="h-full rounded-full bg-primary transition-all"
-                        style={{ width: `${delivery.progress}%` }}
-                      />
-                    </div>
-                    <span className="text-xs text-muted-foreground">{delivery.progress}% complete</span>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          </div>
+          <LiveOperationsSection deliveries={liveDeliveries} />
+        </div>
 
-          <div className="grid gap-4 md:grid-cols-3">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Delivery Success Rate</CardTitle>
-                <HugeiconsIcon icon={CheckmarkCircle02Icon} strokeWidth={2} className="size-4 text-primary" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">96.8%</div>
-                <p className="text-xs text-muted-foreground">+2.1% from last month</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Avg Delivery Time</CardTitle>
-                <HugeiconsIcon icon={Route02Icon} strokeWidth={2} className="size-4 text-primary" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">4.2 hr</div>
-                <p className="text-xs text-muted-foreground">avg transit time across all modes</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Cancellation Rate</CardTitle>
-                <HugeiconsIcon icon={CancelCircleIcon} strokeWidth={2} className="size-4 text-destructive" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">3.2%</div>
-                <p className="text-xs text-muted-foreground">-1.2% from last month</p>
-              </CardContent>
-            </Card>
-          </div>
+        {/* 3. Shipment Status + Operational Alerts + Revenue */}
+        <div className="grid grid-cols-1 gap-4 @xl/main:grid-cols-3">
+          <ShipmentStatusSection data={shipmentStatusData} />
+          <OperationalAlertsSection alerts={operationalAlerts} />
+          <RevenueOverviewSection />
+        </div>
+
+        {/* 4. Delivery Performance + Route Performance + Driver Overview */}
+        <div className="grid grid-cols-1 gap-4 @xl/main:grid-cols-3">
+          <DeliveryPerformanceSection />
+          <RoutePerformanceSection routes={topRoutes} />
+          <DriverOverviewSection />
+        </div>
+
+        {/* 5. Service Breakdown + Recent Activity */}
+        <div className="grid grid-cols-1 gap-4 @xl/main:grid-cols-2">
+          <ServiceOverviewSection />
+          <RecentActivitySection activities={recentActivities} />
+        </div>
+      </div>
     </DashboardLayout>
   )
 }
