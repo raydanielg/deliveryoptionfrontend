@@ -36,6 +36,7 @@ export function LandingHeader() {
 
         <nav className="hidden items-center gap-7 lg:flex">
           {[
+            { label: "Ship a Package", href: "/ship" },
             { label: "Services", href: "#services" },
             { label: "Coverage", href: "#coverage" },
             { label: "How It Works", href: "#how-it-works" },
@@ -163,7 +164,7 @@ export function Hero() {
 
           <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center animate-[fade-in_0.8s_ease-out_0.4s_both]">
             <a
-              href="/auth/sign-up"
+              href="/ship"
               className="inline-flex h-11 items-center gap-2 rounded-lg bg-primary px-6 text-sm font-medium text-primary-foreground transition-all duration-300 hover:scale-[1.02] hover:shadow-lg"
             >
               Ship a Package
@@ -546,6 +547,7 @@ const footerSections = [
   {
     title: "Services",
     links: [
+      { label: "Ship a Package", href: "/ship" },
       { label: "Domestic Delivery", href: "#services" },
       { label: "International Shipping", href: "#services" },
       { label: "Freight Forwarding", href: "#services" },
