@@ -25,12 +25,12 @@ import { TextRotator } from "@/components/text-rotator"
 
 /* ───────────────────────────── Header ───────────────────────────── */
 const navLinks = [
-  { label: "Ship a Package", href: "/ship" },
-  { label: "Services", href: "#services" },
-  { label: "Coverage", href: "#coverage" },
-  { label: "How It Works", href: "#how-it-works" },
-  { label: "Why Us", href: "#why-us" },
-  { label: "Track", href: "/track" },
+  { label: "Ship a Package", href: "/ship", icon: Package02Icon },
+  { label: "Services", href: "#services", icon: TruckIcon },
+  { label: "Coverage", href: "#coverage", icon: Globe02Icon },
+  { label: "How It Works", href: "#how-it-works", icon: Route02Icon },
+  { label: "Why Us", href: "#why-us", icon: ShieldCheckIcon },
+  { label: "Track", href: "/track", icon: Search01Icon },
 ]
 
 export function LandingHeader() {
@@ -82,50 +82,71 @@ export function LandingHeader() {
         {/* Mobile toggle */}
         <button
           onClick={() => setMobileOpen(!mobileOpen)}
-          className="flex size-10 items-center justify-center rounded-lg border border-border lg:hidden"
+          className={`flex size-10 items-center justify-center rounded-lg border transition-all duration-300 lg:hidden ${
+            mobileOpen
+              ? "border-primary/40 bg-primary/10 text-primary"
+              : "border-border text-foreground hover:border-primary/30 hover:bg-muted/40"
+          }`}
           aria-label="Toggle menu"
         >
-          <div className="flex flex-col gap-1.5">
-            <span className={`h-0.5 w-5 bg-foreground transition-all duration-300 ${mobileOpen ? "translate-y-2 rotate-45" : ""}`} />
-            <span className={`h-0.5 w-5 bg-foreground transition-all duration-300 ${mobileOpen ? "opacity-0" : ""}`} />
-            <span className={`h-0.5 w-5 bg-foreground transition-all duration-300 ${mobileOpen ? "-translate-y-2 -rotate-45" : ""}`} />
+          <div className="flex flex-col gap-[5px]">
+            <span className={`h-[2px] w-5 rounded-full bg-current transition-all duration-300 ease-out ${mobileOpen ? "translate-y-[7px] rotate-45" : ""}`} />
+            <span className={`h-[2px] w-5 rounded-full bg-current transition-all duration-200 ease-out ${mobileOpen ? "scale-x-0 opacity-0" : ""}`} />
+            <span className={`h-[2px] w-5 rounded-full bg-current transition-all duration-300 ease-out ${mobileOpen ? "-translate-y-[7px] -rotate-45" : ""}`} />
           </div>
         </button>
       </div>
 
-      {/* Mobile menu */}
+      {/* Mobile menu — smooth slide-down */}
+      <div
+        className={`overflow-hidden border-border bg-background/95 backdrop-blur-xl transition-all duration-300 ease-out lg:hidden ${
+          mobileOpen ? "max-h-[480px] border-t opacity-100" : "max-h-0 opacity-0"
+        }`}
+      >
+        <nav className="mx-auto flex max-w-7xl flex-col gap-1 px-4 py-4 sm:px-6">
+          {navLinks.map((link, idx) => (
+            <a
+              key={link.href}
+              href={link.href}
+              onClick={() => setMobileOpen(false)}
+              className={`group flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-muted-foreground transition-all duration-200 hover:bg-primary/8 hover:text-foreground ${
+                mobileOpen ? "animate-[fade-in_0.3s_ease-out_both]" : ""
+              }`}
+              style={mobileOpen ? { animationDelay: `${idx * 50}ms` } : undefined}
+            >
+              <span className="flex size-8 items-center justify-center rounded-lg bg-muted/60 text-muted-foreground transition-colors duration-200 group-hover:bg-primary/15 group-hover:text-primary">
+                <HugeiconsIcon icon={link.icon} strokeWidth={2} className="size-4" />
+              </span>
+              {link.label}
+              <HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={2} className="ml-auto size-4 -translate-x-1 opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100" />
+            </a>
+          ))}
+          <div className="mt-3 flex flex-col gap-2.5 border-t border-border pt-4">
+            <a
+              href="/auth"
+              onClick={() => setMobileOpen(false)}
+              className="flex items-center justify-center gap-2 rounded-xl border border-border px-4 py-3 text-sm font-medium text-muted-foreground transition-colors duration-200 hover:bg-muted/40 hover:text-foreground"
+            >
+              Sign In
+            </a>
+            <a
+              href="/ship"
+              onClick={() => setMobileOpen(false)}
+              className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground shadow-sm transition-all duration-300 hover:shadow-lg hover:shadow-primary/25"
+            >
+              <HugeiconsIcon icon={Package02Icon} strokeWidth={2} className="size-4" />
+              Ship Now
+            </a>
+          </div>
+        </nav>
+      </div>
+
+      {/* Mobile backdrop */}
       {mobileOpen && (
-        <div className="border-t border-border bg-background lg:hidden">
-          <nav className="mx-auto flex max-w-7xl flex-col gap-1 px-4 py-4 sm:px-6">
-            {navLinks.map((link) => (
-              <a
-                key={link.href}
-                href={link.href}
-                onClick={() => setMobileOpen(false)}
-                className="rounded-lg px-4 py-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"
-              >
-                {link.label}
-              </a>
-            ))}
-            <div className="mt-2 flex flex-col gap-2 border-t border-border pt-4">
-              <a
-                href="/auth"
-                onClick={() => setMobileOpen(false)}
-                className="rounded-lg px-4 py-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"
-              >
-                Sign In
-              </a>
-              <a
-                href="/ship"
-                onClick={() => setMobileOpen(false)}
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-primary px-5 text-sm font-semibold text-primary-foreground"
-              >
-                <HugeiconsIcon icon={Package02Icon} strokeWidth={2} className="size-4" />
-                Ship Now
-              </a>
-            </div>
-          </nav>
-        </div>
+        <div
+          className="fixed inset-0 top-16 z-[-1] bg-slate-950/30 backdrop-blur-[2px] lg:hidden"
+          onClick={() => setMobileOpen(false)}
+        />
       )}
     </header>
   )
