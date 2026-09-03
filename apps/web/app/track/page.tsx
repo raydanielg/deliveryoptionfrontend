@@ -87,7 +87,7 @@ function TrackContent() {
       <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 lg:px-8">
           <a href="/" className="flex items-center gap-2.5">
-            <img src="/assets/social-media (1).png" alt="Xerin" className="size-9 rounded-lg object-cover" />
+            <img src="/assets/social-media.png" alt="Xerin" className="size-9 rounded-lg object-cover" />
             <span className="text-lg font-bold tracking-tight">Xerin Express</span>
           </a>
           <div className="flex items-center gap-3">

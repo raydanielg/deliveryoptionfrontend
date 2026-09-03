@@ -34,7 +34,7 @@ export default function LandingPage() {
       <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 lg:px-8">
           <div className="flex items-center gap-2.5">
-            <img src="/assets/social-media (1).png" alt="Xerin" className="size-9 rounded-lg object-cover" />
+            <img src="/assets/social-media.png" alt="Xerin" className="size-9 rounded-lg object-cover" />
             <span className="text-lg font-bold tracking-tight">Xerin Express</span>
           </div>
           <div className="hidden items-center gap-6 md:flex">
@@ -205,7 +205,7 @@ export default function LandingPage() {
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
             <div>
               <div className="mb-3 flex items-center gap-2">
-                <img src="/assets/social-media (1).png" alt="Xerin" className="size-7 rounded object-cover" />
+                <img src="/assets/social-media.png" alt="Xerin" className="size-7 rounded object-cover" />
                 <span className="font-bold">Xerin Express</span>
               </div>
               <p className="text-sm text-muted-foreground">Multipurpose logistics & delivery management platform for domestic, international, and freight operations.</p>
