@@ -14,7 +14,7 @@ import {
   SidebarRail,
 } from "@workspace/ui/components/sidebar"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { TruckIcon, BikeIcon, Store02Icon, DashboardSquare02Icon, Package02Icon, MapIcon, Settings05Icon, UsersIcon, ChartIcon, Route02Icon, BoxIcon, UserGroupIcon, CoinsIcon, File02Icon, Globe02Icon, CustomerService01Icon, PackageReceiveIcon } from "@hugeicons/core-free-icons"
+import { TruckIcon, BikeIcon, Store02Icon, DashboardSquare02Icon, Package02Icon, MapIcon, Settings05Icon, UsersIcon, ChartIcon, Route02Icon, BoxIcon, UserGroupIcon, CoinsIcon, File02Icon, Globe02Icon, CustomerService01Icon, PackageReceiveIcon, AlertCircleIcon, Bell02Icon } from "@hugeicons/core-free-icons"
 import Image from "next/image"
 
 const data = {
@@ -111,6 +111,10 @@ const data = {
         {
           title: "Manifests",
           url: "/dashboard/manifests",
+        },
+        {
+          title: "Stations",
+          url: "/dashboard/stations",
         },
       ],
     },
@@ -291,6 +295,27 @@ const data = {
         {
           title: "Ratings",
           url: "/dashboard/support/ratings",
+        },
+      ],
+    },
+    {
+      title: "Exceptions",
+      url: "/dashboard/exceptions",
+      icon: (
+        <HugeiconsIcon icon={AlertCircleIcon} strokeWidth={2} />
+      ),
+      items: [
+        {
+          title: "All Exceptions",
+          url: "/dashboard/exceptions",
+        },
+        {
+          title: "Returns",
+          url: "/dashboard/exceptions/returns",
+        },
+        {
+          title: "Notifications",
+          url: "/dashboard/notifications",
         },
       ],
     },
