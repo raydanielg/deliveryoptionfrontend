@@ -8,32 +8,17 @@ import {
   BikeIcon,
   Store02Icon,
   Package02Icon,
-  MapIcon,
   Route02Icon,
   BoxIcon,
   Globe02Icon,
-  CustomerService01Icon,
-  PackageReceiveIcon,
-  ChartIcon,
   ShieldCheckIcon,
-  Clock01Icon,
-  Location01Icon,
   Search01Icon,
   ArrowRight01Icon,
   ArrowUpRightIcon,
-  Call01Icon,
+  CallIcon,
   Mail01Icon,
   Location02Icon,
-  DashboardSquare02Icon,
   Wallet01Icon,
-  AlertCircleIcon,
-  CheckmarkCircle01Icon,
-  DeliveryTruck01Icon,
-  DeliveryBox01Icon,
-  SentIcon,
-  Rocket01Icon,
-  Target01Icon,
-  Layers01Icon,
 } from "@hugeicons/core-free-icons"
 import { RevealOnScroll } from "@/components/reveal-on-scroll"
 import { TextRotator } from "@/components/text-rotator"
@@ -650,7 +635,7 @@ export function LandingFooter() {
                   info@xerinexpress.co.tz
                 </a>
                 <a href="tel:+255700000000" className="flex items-center gap-2 transition-colors hover:text-white">
-                  <HugeiconsIcon icon={Call01Icon} strokeWidth={2} className="size-4 shrink-0 text-primary" />
+                  <HugeiconsIcon icon={CallIcon} strokeWidth={2} className="size-4 shrink-0 text-primary" />
                   +255 700 000 000
                 </a>
               </div>
