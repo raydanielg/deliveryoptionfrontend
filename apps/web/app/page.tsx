@@ -9,7 +9,6 @@ import {
   Coverage,
   HowItWorks,
   WhyChooseUs,
-  StatsSection,
   CTASection,
   LandingFooter,
 } from "@/components/landing-sections"
@@ -26,7 +25,6 @@ export default function Page() {
         <Coverage />
         <HowItWorks />
         <WhyChooseUs />
-        <StatsSection />
         <CTASection />
       </main>
       <LandingFooter />

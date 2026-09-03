@@ -458,32 +458,8 @@ export function WhyChooseUs() {
 }
 
 /* ───────────────────────────── Stats ───────────────────────────── */
-const stats = [
-  { value: "10,000+", label: "Shipments Delivered" },
-  { value: "8", label: "Major Cities Covered" },
-  { value: "99.2%", label: "On-time Delivery Rate" },
-  { value: "24/7", label: "Customer Support" },
-]
-
 export function StatsSection() {
-  return (
-    <section className="bg-background py-20 lg:py-28">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-          {stats.map((stat, idx) => (
-            <RevealOnScroll key={stat.label} delay={idx * 80}>
-              <div className="flex flex-col items-center gap-2 rounded-xl border border-border p-8 text-center transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5">
-                <span className="text-4xl font-semibold tracking-tight text-primary lg:text-5xl">
-                  {stat.value}
-                </span>
-                <span className="text-sm font-medium text-muted-foreground">{stat.label}</span>
-              </div>
-            </RevealOnScroll>
-          ))}
-        </div>
-      </div>
-    </section>
-  )
+  return null
 }
 
 /* ───────────────────────────── CTA ───────────────────────────── */
