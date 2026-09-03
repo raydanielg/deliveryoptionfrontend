@@ -14,12 +14,12 @@ const fontMono = Geist_Mono({
 })
 
 export const metadata = {
-  title: "Xerin Delivery — Logistics Platform",
+  title: "Xerin Delivery Express — Logistics Platform",
   description: "Multipurpose logistics & delivery management platform for domestic, international, and freight operations.",
   icons: {
-    icon: "/assets/m app2.png",
-    shortcut: "/assets/m app2.png",
-    apple: "/assets/m app2.png",
+    icon: "/assets/social-media (1).png",
+    shortcut: "/assets/social-media (1).png",
+    apple: "/assets/social-media (1).png",
   },
 }
 

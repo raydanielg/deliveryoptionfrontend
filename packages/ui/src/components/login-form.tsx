@@ -65,11 +65,11 @@ export function LoginForm({
             <FieldGroup>
               <div className="flex flex-col items-center gap-2 text-center">
                 <img
-                  src="/assets/m app2.png"
-                  alt="Xerin Delivery"
+                  src="/assets/social-media (1).png"
+                  alt="Xerin Delivery Express"
                   className="size-16 object-contain"
                 />
-                <h1 className="text-2xl font-bold">Xerin Delivery</h1>
+                <h1 className="text-2xl font-bold">Xerin Delivery Express</h1>
                 <p className="text-balance text-muted-foreground">
                   Sign in to your account to continue
                 </p>

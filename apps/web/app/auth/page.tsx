@@ -12,7 +12,7 @@ export default function AuthPage() {
       <div className="absolute inset-0 bg-gradient-to-tr from-slate-950/80 via-black/60 to-slate-900/40 backdrop-blur-[1.5px]" />
       <LoginForm className="relative z-10 w-full max-w-md shadow-2xl" />
       <p className="absolute bottom-4 left-0 right-0 z-10 text-center text-xs text-white/50">
-        &copy; {new Date().getFullYear()} Xerin Express. All rights reserved.
+        &copy; {new Date().getFullYear()} Xerin Delivery Express. All rights reserved.
       </p>
       <Toaster />
     </div>

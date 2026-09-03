@@ -20,9 +20,9 @@ import Image from "next/image"
 const data = {
   teams: [
     {
-      name: "Xerin Delivery",
+      name: "Xerin Delivery Express",
       logo: (
-        <Image src="/assets/m app2.png" alt="Xerin" width={20} height={20} className="rounded-sm object-cover" />
+        <Image src="/assets/social-media (1).png" alt="Xerin" width={20} height={20} className="rounded-sm object-cover" />
       ),
       plan: "Admin",
     },
