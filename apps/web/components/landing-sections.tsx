@@ -308,34 +308,52 @@ const services = [
 
 export function Services() {
   return (
-    <section id="services" className="bg-background py-20 lg:py-28">
+    <section id="services" className="relative bg-background py-20 lg:py-28">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <RevealOnScroll>
-          <div className="mb-16 max-w-2xl">
-            <span className="text-xs font-medium uppercase tracking-[0.2em] text-primary">
+          <div className="mb-14 flex flex-col items-start gap-4">
+            <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.15em] text-primary">
+              <span className="size-1.5 rounded-full bg-primary" />
               Our Services
             </span>
-            <h2 className="mt-6 text-3xl font-semibold tracking-tight text-balance sm:text-4xl lg:text-5xl">
+            <h2 className="max-w-2xl text-3xl font-bold tracking-tight text-balance sm:text-4xl lg:text-5xl">
               Everything you need to ship and deliver
             </h2>
+            <p className="max-w-xl text-base text-muted-foreground">
+              From domestic parcels to international freight — powerful logistics tools built for speed, reliability, and scale.
+            </p>
           </div>
         </RevealOnScroll>
 
-        <div className="grid gap-px overflow-hidden rounded-xl border border-border bg-border sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-5 sm:grid-cols-2">
           {services.map((service, idx) => (
-            <RevealOnScroll key={service.number} delay={idx * 60} className="h-full">
-              <div className="group flex h-full flex-col gap-4 bg-background p-8 transition-all duration-300 hover:bg-muted/30 hover:-translate-y-0.5">
-                <div className="flex items-center justify-between">
-                  <div className="flex size-11 items-center justify-center rounded-lg bg-primary/10 transition-transform duration-300 group-hover:scale-110">
-                    <HugeiconsIcon icon={service.icon} strokeWidth={2} className="size-5 text-primary" />
+            <RevealOnScroll key={service.number} delay={idx * 50} className="h-full">
+              <div className="group relative flex h-full flex-col gap-5 overflow-hidden rounded-2xl border border-border bg-card p-7 transition-all duration-300 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/5 lg:p-8">
+                {/* Hover gradient glow */}
+                <div className="pointer-events-none absolute -right-12 -top-12 size-32 rounded-full bg-primary/5 blur-3xl transition-opacity duration-500 group-hover:bg-primary/10" />
+
+                <div className="relative flex items-center justify-between">
+                  <div className="flex size-12 items-center justify-center rounded-xl bg-gradient-to-br from-primary/15 to-primary/5 ring-1 ring-primary/10 transition-all duration-300 group-hover:scale-110 group-hover:from-primary/20 group-hover:to-primary/10 group-hover:ring-primary/20">
+                    <HugeiconsIcon icon={service.icon} strokeWidth={2} className="size-6 text-primary" />
                   </div>
-                  <span className="text-sm font-medium text-muted-foreground/50">
+                  <span className="text-3xl font-bold tabular-nums text-muted-foreground/15 transition-colors duration-300 group-hover:text-primary/20">
                     {service.number}
                   </span>
                 </div>
-                <div className="flex flex-col gap-2">
-                  <h3 className="text-lg font-semibold">{service.title}</h3>
-                  <p className="text-sm text-muted-foreground">{service.desc}</p>
+
+                <div className="relative flex flex-col gap-2">
+                  <h3 className="text-lg font-semibold tracking-tight transition-colors duration-200 group-hover:text-primary">
+                    {service.title}
+                  </h3>
+                  <p className="text-sm leading-relaxed text-muted-foreground">
+                    {service.desc}
+                  </p>
+                </div>
+
+                {/* Bottom accent line */}
+                <div className="relative mt-auto flex items-center gap-2 pt-3">
+                  <span className="h-px flex-1 bg-border transition-all duration-300 group-hover:bg-primary/30" />
+                  <HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={2} className="size-4 text-muted-foreground/40 transition-all duration-300 group-hover:translate-x-1 group-hover:text-primary" />
                 </div>
               </div>
             </RevealOnScroll>
