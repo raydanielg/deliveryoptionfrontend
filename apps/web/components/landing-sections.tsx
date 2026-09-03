@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
@@ -365,266 +365,273 @@ export function Services() {
 }
 
 /* ───────────────────────────── Coverage ───────────────────────────── */
-const domesticCities = [
-  { name: "Dar es Salaam", tag: "Hub", x: 52, y: 78 },
-  { name: "Dodoma", tag: "Capital", x: 48, y: 58 },
-  { name: "Arusha", tag: "Gateway", x: 55, y: 32 },
-  { name: "Mwanza", tag: "Lake", x: 38, y: 28 },
-  { name: "Zanzibar", tag: "Island", x: 60, y: 82 },
-  { name: "Mbeya", tag: "Highland", x: 42, y: 88 },
-  { name: "Tanga", tag: "Coast", x: 58, y: 48 },
-  { name: "Morogoro", tag: "Crossroad", x: 50, y: 65 },
+let L: any = null
+
+const coverageLocations = [
+  { name: "Dar es Salaam", lat: -6.79, lng: 39.28, type: "hub" as const, flag: "" },
+  { name: "Dodoma", lat: -6.17, lng: 35.74, type: "domestic" as const, flag: "" },
+  { name: "Arusha", lat: -3.37, lng: 36.69, type: "domestic" as const, flag: "" },
+  { name: "Mwanza", lat: -2.52, lng: 32.90, type: "domestic" as const, flag: "" },
+  { name: "Zanzibar", lat: -6.13, lng: 39.32, type: "domestic" as const, flag: "" },
+  { name: "Mbeya", lat: -8.91, lng: 33.46, type: "domestic" as const, flag: "" },
+  { name: "Tanga", lat: -5.07, lng: 39.10, type: "domestic" as const, flag: "" },
+  { name: "Morogoro", lat: -6.83, lng: 37.66, type: "domestic" as const, flag: "" },
+  { name: "Nairobi", lat: -1.29, lng: 36.82, type: "international" as const, flag: "🇰🇪" },
+  { name: "Kampala", lat: 0.35, lng: 32.58, type: "international" as const, flag: "🇺🇬" },
+  { name: "Kigali", lat: -1.94, lng: 30.06, type: "international" as const, flag: "🇷🇼" },
+  { name: "Bujumbura", lat: -3.36, lng: 29.36, type: "international" as const, flag: "🇧🇮" },
+  { name: "Lusaka", lat: -15.39, lng: 28.33, type: "international" as const, flag: "🇿🇲" },
+  { name: "Lilongwe", lat: -13.96, lng: 33.79, type: "international" as const, flag: "🇲🇼" },
+  { name: "Maputo", lat: -25.97, lng: 32.57, type: "international" as const, flag: "🇲🇿" },
+  { name: "Kinshasa", lat: -4.32, lng: 15.31, type: "international" as const, flag: "🇨🇩" },
+  { name: "Juba", lat: 4.86, lng: 31.57, type: "international" as const, flag: "🇸🇸" },
+  { name: "Addis Ababa", lat: 9.03, lng: 38.74, type: "international" as const, flag: "🇪🇹" },
 ]
 
-const internationalCountries = [
-  { name: "Kenya", flag: "🇰🇪", x: 68, y: 30 },
-  { name: "Uganda", flag: "🇺🇬", x: 55, y: 18 },
-  { name: "Rwanda", flag: "🇷🇼", x: 48, y: 42 },
-  { name: "Burundi", flag: "🇧🇮", x: 45, y: 52 },
-  { name: "Zambia", flag: "🇿🇲", x: 35, y: 72 },
-  { name: "Malawi", flag: "🇲🇼", x: 52, y: 72 },
-  { name: "Mozambique", flag: "🇲🇿", x: 58, y: 88 },
-  { name: "DRC", flag: "🇨🇩", x: 25, y: 48 },
-  { name: "South Sudan", flag: "🇸🇸", x: 50, y: 8 },
-  { name: "Ethiopia", flag: "🇪🇹", x: 62, y: 12 },
-]
-
-const coverageStats = [
-  { value: "8", label: "Domestic Cities", sub: "Across Tanzania" },
-  { value: "10", label: "Countries", sub: "East & Central Africa" },
-  { value: "24/7", label: "Operations", sub: "Day & Night Dispatch" },
-  { value: "50+", label: "Routes", sub: "Active delivery lanes" },
-]
+const DAR_HUB = { lat: -6.79, lng: 39.28 }
 
 export function Coverage() {
+  const mapRef = useRef<HTMLDivElement>(null)
+  const [mapReady, setMapReady] = useState(false)
+
+  useEffect(() => {
+    let mounted = true
+
+    async function initMap() {
+      if (typeof window === "undefined" || !mapRef.current) return
+      if (!L) {
+        L = (await import("leaflet")).default
+        if (!document.getElementById("leaflet-coverage-css")) {
+          const link = document.createElement("link")
+          link.id = "leaflet-coverage-css"
+          link.rel = "stylesheet"
+          link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          document.head.appendChild(link)
+        }
+      }
+      if (!mounted || !mapRef.current) return
+
+      const map = L.map(mapRef.current, {
+        center: [DAR_HUB.lat, DAR_HUB.lng],
+        zoom: 5,
+        zoomControl: false,
+        scrollWheelZoom: false,
+        attributionControl: false,
+        dragging: true,
+        doubleClickZoom: true,
+      })
+
+      L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
+        maxZoom: 19,
+      }).addTo(map)
+
+      L.control.zoom({ position: "topright" }).addTo(map)
+
+      // Draw animated polylines from Dar hub to all other locations
+      coverageLocations.forEach((loc, idx) => {
+        if (loc.type === "hub") return
+
+        const isDomestic = loc.type === "domestic"
+        const color = isDomestic ? "#f59e0b" : "#10b981"
+        const opacity = isDomestic ? 0.5 : 0.35
+
+        // Curved line using intermediate points
+        const lat1 = DAR_HUB.lat
+        const lng1 = DAR_HUB.lng
+        const lat2 = loc.lat
+        const lng2 = loc.lng
+
+        const midLat = (lat1 + lat2) / 2 + (lat2 - lat1) * 0.15
+        const midLng = (lng1 + lng2) / 2 + (lng2 - lng1) * 0.15
+
+        const polyline = L.polyline(
+          [
+            [lat1, lng1],
+            [midLat, midLng],
+            [lat2, lng2],
+          ],
+          {
+            color,
+            weight: 1.5,
+            opacity,
+            dashArray: "6 8",
+            className: "coverage-route",
+          }
+        ).addTo(map)
+
+        // Animate dash offset
+        let offset = 0
+        const animate = () => {
+          offset -= 0.5
+          const el = (polyline as any)._path
+          if (el) {
+            el.style.strokeDashoffset = String(offset)
+          }
+        }
+        setInterval(animate, 50)
+
+        // Marker for the location
+        const markerHtml =
+          loc.type === "international"
+            ? `<div style="position:relative;display:flex;flex-direction:column;align-items:center;cursor:pointer;">
+                 <div style="width:10px;height:10px;border-radius:50%;background:#10b981;border:2px solid #064e3b;box-shadow:0 0 8px rgba(16,185,129,0.6);"></div>
+                 <div style="margin-top:4px;font-size:10px;font-weight:600;color:#10b981;white-space:nowrap;text-shadow:0 1px 4px rgba(0,0,0,0.8);">${loc.flag} ${loc.name}</div>
+               </div>`
+            : `<div style="position:relative;display:flex;flex-direction:column;align-items:center;cursor:pointer;">
+                 <div style="width:8px;height:8px;border-radius:50%;background:#f59e0b;border:2px solid #78350f;box-shadow:0 0 6px rgba(245,158,11,0.5);"></div>
+                 <div style="margin-top:3px;font-size:10px;font-weight:500;color:#fbbf24;white-space:nowrap;text-shadow:0 1px 4px rgba(0,0,0,0.8);">${loc.name}</div>
+               </div>`
+
+        L.marker([loc.lat, loc.lng], {
+          icon: L.divIcon({
+            className: "coverage-marker",
+            html: markerHtml,
+            iconSize: [60, 30],
+            iconAnchor: [30, 15],
+          }),
+        }).addTo(map)
+      })
+
+      // Pulsing hub marker for Dar es Salaam
+      const hubHtml = `<div style="position:relative;display:flex;flex-direction:column;align-items:center;">
+        <div style="position:absolute;width:28px;height:28px;border-radius:50%;background:rgba(245,158,11,0.2);animation:coverage-pulse 2s ease-out infinite;"></div>
+        <div style="position:relative;width:14px;height:14px;border-radius:50%;background:#f59e0b;border:3px solid #fff;box-shadow:0 0 16px rgba(245,158,11,0.8);"></div>
+        <div style="margin-top:4px;font-size:11px;font-weight:700;color:#f59e0b;white-space:nowrap;text-shadow:0 1px 6px rgba(0,0,0,0.9);">Dar es Salaam</div>
+      </div>`
+
+      L.marker([DAR_HUB.lat, DAR_HUB.lng], {
+        icon: L.divIcon({
+          className: "coverage-hub-marker",
+          html: hubHtml,
+          iconSize: [80, 40],
+          iconAnchor: [40, 20],
+        }),
+      }).addTo(map)
+
+      setMapReady(true)
+    }
+
+    initMap()
+
+    return () => {
+      mounted = false
+    }
+  }, [])
+
   return (
     <section id="coverage" className="relative overflow-hidden bg-slate-950 py-20 lg:py-28">
-      {/* Ambient glow */}
-      <div className="pointer-events-none absolute left-1/4 top-1/3 size-[400px] rounded-full bg-primary/10 blur-[120px]" />
-      <div className="pointer-events-none absolute right-1/4 bottom-1/3 size-[350px] rounded-full bg-emerald-500/8 blur-[100px]" />
+      <div className="pointer-events-none absolute left-1/4 top-1/3 size-[400px] rounded-full bg-amber-500/8 blur-[120px]" />
+      <div className="pointer-events-none absolute right-1/4 bottom-1/3 size-[350px] rounded-full bg-emerald-500/6 blur-[100px]" />
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Header */}
         <RevealOnScroll>
-          <div className="mx-auto mb-14 max-w-3xl text-center">
-            <span className="text-xs font-medium uppercase tracking-[0.2em] text-primary">
+          <div className="mx-auto mb-12 max-w-3xl text-center">
+            <span className="inline-flex items-center gap-2 rounded-full border border-amber-500/20 bg-amber-500/5 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.15em] text-amber-400">
+              <span className="size-1.5 rounded-full bg-amber-500" />
               Coverage Area
             </span>
-            <h2 className="mt-4 text-3xl font-semibold tracking-tight text-white text-balance sm:text-4xl lg:text-5xl">
+            <h2 className="mt-5 text-3xl font-bold tracking-tight text-white text-balance sm:text-4xl lg:text-5xl">
               Connecting Tanzania to the world
             </h2>
             <p className="mt-4 text-base text-white/50 text-pretty">
               From Dar es Salaam to Nairobi, Kigali to Addis Ababa — our logistics network spans
-              the nation and reaches across East Africa.
+              the nation and reaches across East & Central Africa.
             </p>
           </div>
         </RevealOnScroll>
 
-        {/* Stats bar */}
         <RevealOnScroll delay={100}>
-          <div className="mb-12 grid grid-cols-2 gap-4 sm:grid-cols-4">
-            {coverageStats.map((stat) => (
-              <div
-                key={stat.label}
-                className="group relative overflow-hidden rounded-xl border border-white/8 bg-white/[0.03] p-5 text-center transition-all duration-300 hover:border-primary/30 hover:bg-white/[0.06]"
-              >
-                <div className="text-3xl font-bold text-white">{stat.value}</div>
-                <div className="mt-1 text-sm font-medium text-primary">{stat.label}</div>
-                <div className="mt-0.5 text-xs text-white/40">{stat.sub}</div>
-                <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-              </div>
-            ))}
-          </div>
-        </RevealOnScroll>
+          <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-slate-900/40 shadow-2xl">
+            {/* Map container */}
+            <div ref={mapRef} className="h-[500px] w-full sm:h-[560px] lg:h-[620px]" />
 
-        {/* Map visualization */}
-        <RevealOnScroll delay={200}>
-          <div className="relative overflow-hidden rounded-2xl border border-white/8 bg-gradient-to-br from-slate-900/80 via-slate-950/60 to-slate-900/80 p-6 sm:p-8 lg:p-10">
-            {/* Grid background */}
-            <div
-              className="pointer-events-none absolute inset-0 opacity-[0.04]"
-              style={{
-                backgroundImage: `linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)`,
-                backgroundSize: "40px 40px",
-              }}
-            />
-
-            {/* Tanzania map area with domestic cities */}
-            <div className="relative z-10 grid gap-8 lg:grid-cols-2">
-              {/* Left: Domestic map */}
-              <div>
-                <div className="mb-4 flex items-center gap-2">
-                  <div className="size-2 rounded-full bg-primary" />
-                  <h3 className="text-sm font-semibold uppercase tracking-wider text-primary">Tanzania Network</h3>
-                </div>
-
-                {/* Map container */}
-                <div className="relative aspect-[4/5] overflow-hidden rounded-xl border border-white/5 bg-slate-950/40">
-                  {/* SVG routes */}
-                  <svg className="absolute inset-0 size-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-                    {/* Dar es Salaam as hub — routes to all cities */}
-                    {domesticCities
-                      .filter((c) => c.name !== "Dar es Salaam")
-                      .map((city) => (
-                        <line
-                          key={city.name}
-                          x1={52}
-                          y1={78}
-                          x2={city.x}
-                          y2={city.y}
-                          stroke="rgba(99,102,241,0.2)"
-                          strokeWidth="0.3"
-                          strokeDasharray="1.5 1"
-                        >
-                          <animate
-                            attributeName="stroke-dashoffset"
-                            from="3"
-                            to="0"
-                            dur="2s"
-                            repeatCount="indefinite"
-                          />
-                        </line>
-                      ))}
-                  </svg>
-
-                  {/* City pins */}
-                  {domesticCities.map((city) => (
-                    <div
-                      key={city.name}
-                      className="group absolute -translate-x-1/2 -translate-y-1/2"
-                      style={{ left: `${city.x}%`, top: `${city.y}%` }}
-                    >
-                      {/* Pulse for hub */}
-                      {city.tag === "Hub" && (
-                        <div className="absolute inset-0 -translate-x-1/2 -translate-y-1/2 size-4 rounded-full bg-primary/30">
-                          <div className="size-full animate-ping rounded-full bg-primary/40" />
-                        </div>
-                      )}
-                      <div
-                        className={`relative size-2.5 rounded-full border-2 transition-all duration-300 group-hover:scale-150 ${
-                          city.tag === "Hub"
-                            ? "border-primary bg-primary shadow-[0_0_12px_rgba(99,102,241,0.6)]"
-                            : "border-white/40 bg-white/20 group-hover:border-primary group-hover:bg-primary/60"
-                        }`}
-                      />
-                      <div className="absolute left-1/2 top-full mt-1 -translate-x-1/2 whitespace-nowrap text-center transition-all duration-300">
-                        <div className="text-[10px] font-medium text-white/70 group-hover:text-white">{city.name}</div>
-                        <div className="text-[8px] uppercase tracking-wide text-primary/60 group-hover:text-primary">{city.tag}</div>
-                      </div>
-                    </div>
-                  ))}
-
-                  {/* Label */}
-                  <div className="absolute bottom-3 left-3 rounded-md bg-slate-950/60 px-2 py-1 text-[10px] font-medium text-white/40 backdrop-blur-sm">
-                    Domestic Routes
-                  </div>
+            {/* Loading overlay */}
+            {!mapReady && (
+              <div className="absolute inset-0 flex items-center justify-center bg-slate-950">
+                <div className="flex flex-col items-center gap-3">
+                  <div className="size-8 animate-spin rounded-full border-2 border-amber-500/30 border-t-amber-500" />
+                  <span className="text-sm text-white/40">Loading map...</span>
                 </div>
               </div>
+            )}
 
-              {/* Right: International map */}
-              <div>
-                <div className="mb-4 flex items-center gap-2">
-                  <div className="size-2 rounded-full bg-emerald-500" />
-                  <h3 className="text-sm font-semibold uppercase tracking-wider text-emerald-500">East Africa Network</h3>
-                </div>
-
-                {/* Map container */}
-                <div className="relative aspect-[4/5] overflow-hidden rounded-xl border border-white/5 bg-slate-950/40">
-                  {/* SVG routes from Tanzania center */}
-                  <svg className="absolute inset-0 size-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-                    {/* Tanzania center point ~ 52, 78 */}
-                    {internationalCountries.map((country) => (
-                      <line
-                        key={country.name}
-                        x1={52}
-                        y1={78}
-                        x2={country.x}
-                        y2={country.y}
-                        stroke="rgba(16,185,129,0.15)"
-                        strokeWidth="0.3"
-                        strokeDasharray="1.5 1"
-                      >
-                        <animate
-                          attributeName="stroke-dashoffset"
-                          from="3"
-                          to="0"
-                          dur="2.5s"
-                          repeatCount="indefinite"
-                        />
-                      </line>
-                    ))}
-                  </svg>
-
-                  {/* Country pins */}
-                  {internationalCountries.map((country) => (
-                    <div
-                      key={country.name}
-                      className="group absolute -translate-x-1/2 -translate-y-1/2"
-                      style={{ left: `${country.x}%`, top: `${country.y}%` }}
-                    >
-                      <div className="relative size-2.5 rounded-full border-2 border-emerald-500/50 bg-emerald-500/20 transition-all duration-300 group-hover:scale-150 group-hover:border-emerald-500 group-hover:bg-emerald-500/60" />
-                      <div className="absolute left-1/2 top-full mt-1 -translate-x-1/2 whitespace-nowrap text-center transition-all duration-300">
-                        <div className="text-[10px] font-medium text-white/70 group-hover:text-white">
-                          {country.flag} {country.name}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-
-                  {/* Tanzania hub label */}
-                  <div
-                    className="absolute -translate-x-1/2 -translate-y-1/2"
-                    style={{ left: "52%", top: "78%" }}
-                  >
-                    <div className="size-3 rounded-full border-2 border-primary bg-primary shadow-[0_0_10px_rgba(99,102,241,0.5)]" />
-                    <div className="absolute left-1/2 top-full mt-1 -translate-x-1/2 whitespace-nowrap text-[10px] font-bold text-primary">
-                      Tanzania
-                    </div>
-                  </div>
-
-                  {/* Label */}
-                  <div className="absolute bottom-3 left-3 rounded-md bg-slate-950/60 px-2 py-1 text-[10px] font-medium text-white/40 backdrop-blur-sm">
-                    International Routes
-                  </div>
-                </div>
+            {/* Top-left legend overlay */}
+            <div className="pointer-events-none absolute left-4 top-4 z-[400] flex flex-col gap-2 rounded-xl border border-white/10 bg-slate-950/80 p-3 backdrop-blur-md">
+              <div className="flex items-center gap-2">
+                <div className="size-2.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.6)]" />
+                <span className="text-xs font-medium text-white/80">Tanzania Hub</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="size-2 rounded-full bg-amber-500/60" />
+                <span className="text-xs text-white/60">Domestic Cities</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="size-2 rounded-full bg-emerald-500/60" />
+                <span className="text-xs text-white/60">International Routes</span>
               </div>
             </div>
 
-            {/* Bottom: City chips */}
-            <div className="relative z-10 mt-8 space-y-4">
-              <div>
-                <div className="mb-2 text-xs font-medium uppercase tracking-wider text-white/40">Domestic Cities</div>
-                <div className="flex flex-wrap gap-2">
-                  {domesticCities.map((city) => (
-                    <span
-                      key={city.name}
-                      className="inline-flex items-center gap-1.5 rounded-full border border-white/8 bg-white/[0.04] px-3 py-1.5 text-xs font-medium text-white/70 transition-all duration-300 hover:border-primary/30 hover:bg-primary/10 hover:text-white"
-                    >
-                      <span className="size-1.5 rounded-full bg-primary" />
-                      {city.name}
-                      <span className="text-[10px] text-primary/50">{city.tag}</span>
-                    </span>
-                  ))}
-                </div>
+            {/* Bottom gradient fade */}
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-slate-950/60 to-transparent" />
+          </div>
+        </RevealOnScroll>
+
+        {/* City chips */}
+        <RevealOnScroll delay={200}>
+          <div className="mt-8 grid gap-6 sm:grid-cols-2">
+            <div>
+              <div className="mb-3 text-xs font-semibold uppercase tracking-wider text-amber-400/80">Domestic Cities</div>
+              <div className="flex flex-wrap gap-2">
+                {coverageLocations.filter((l) => l.type === "domestic" || l.type === "hub").map((city) => (
+                  <span
+                    key={city.name}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/15 bg-amber-500/5 px-3 py-1.5 text-xs font-medium text-amber-200/80 transition-all duration-300 hover:border-amber-500/40 hover:bg-amber-500/10 hover:text-amber-100"
+                  >
+                    <span className={`size-1.5 rounded-full ${city.type === "hub" ? "bg-amber-500" : "bg-amber-500/50"}`} />
+                    {city.name}
+                  </span>
+                ))}
               </div>
-              <div>
-                <div className="mb-2 text-xs font-medium uppercase tracking-wider text-white/40">International</div>
-                <div className="flex flex-wrap gap-2">
-                  {internationalCountries.map((country) => (
-                    <span
-                      key={country.name}
-                      className="inline-flex items-center gap-1.5 rounded-full border border-white/8 bg-white/[0.04] px-3 py-1.5 text-xs font-medium text-white/70 transition-all duration-300 hover:border-emerald-500/30 hover:bg-emerald-500/10 hover:text-white"
-                    >
-                      <span>{country.flag}</span>
-                      {country.name}
-                    </span>
-                  ))}
-                </div>
+            </div>
+            <div>
+              <div className="mb-3 text-xs font-semibold uppercase tracking-wider text-emerald-400/80">International</div>
+              <div className="flex flex-wrap gap-2">
+                {coverageLocations.filter((l) => l.type === "international").map((country) => (
+                  <span
+                    key={country.name}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/15 bg-emerald-500/5 px-3 py-1.5 text-xs font-medium text-emerald-200/80 transition-all duration-300 hover:border-emerald-500/40 hover:bg-emerald-500/10 hover:text-emerald-100"
+                  >
+                    <span>{country.flag}</span>
+                    {country.name}
+                  </span>
+                ))}
               </div>
             </div>
           </div>
         </RevealOnScroll>
       </div>
+
+      <style>{`
+        @keyframes coverage-pulse {
+          0% { transform: scale(0.8); opacity: 0.8; }
+          100% { transform: scale(2.5); opacity: 0; }
+        }
+        .coverage-route {
+          animation: coverage-dash 1.5s linear infinite;
+        }
+        @keyframes coverage-dash {
+          to { stroke-dashoffset: -14; }
+        }
+        .leaflet-container {
+          background: #0f172a;
+        }
+        .coverage-marker > div > div:first-child {
+          transition: transform 0.2s;
+        }
+        .coverage-marker:hover > div > div:first-child {
+          transform: scale(1.4);
+        }
+      `}</style>
     </section>
   )
 }
