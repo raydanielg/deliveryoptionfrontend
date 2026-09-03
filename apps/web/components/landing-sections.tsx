@@ -152,6 +152,38 @@ export function LandingHeader() {
   )
 }
 
+/* ───────────────────────────── Trust Marquee ───────────────────────────── */
+const marqueeItems = [
+  "Real-time Tracking",
+  "OTP Verification",
+  "Proof of Delivery",
+  "Multi-carrier Fleet",
+  "Online Payments",
+  "Dar es Salaam, Tanzania",
+]
+
+export function TrustMarquee() {
+  return (
+    <section className="relative overflow-hidden border-y border-border/40 bg-background">
+      {/* Fade edges */}
+      <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r from-background to-transparent" />
+      <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-16 bg-gradient-to-l from-background to-transparent" />
+
+      <div
+        className="flex w-max items-center gap-8 py-3.5"
+        style={{ animation: "marquee 25s linear infinite" }}
+      >
+        {[...marqueeItems, ...marqueeItems, ...marqueeItems, ...marqueeItems].map((item, idx) => (
+          <div key={idx} className="flex items-center gap-3 whitespace-nowrap">
+            <span className="size-1.5 rounded-full bg-primary/60" />
+            <span className="text-sm font-medium text-muted-foreground">{item}</span>
+          </div>
+        ))}
+      </div>
+    </section>
+  )
+}
+
 /* ───────────────────────────── Hero ───────────────────────────── */
 const heroImages = [
   "/assets/2149095908.jpg",

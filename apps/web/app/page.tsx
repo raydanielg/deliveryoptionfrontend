@@ -3,6 +3,7 @@
 import {
   LandingHeader,
   Hero,
+  TrustMarquee,
   Services,
   Coverage,
   HowItWorks,
@@ -17,6 +18,7 @@ export default function Page() {
       <LandingHeader />
       <main className="flex-1">
         <Hero />
+        <TrustMarquee />
         <Services />
         <Coverage />
         <HowItWorks />
