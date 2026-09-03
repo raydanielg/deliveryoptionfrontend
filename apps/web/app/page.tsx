@@ -3,8 +3,6 @@
 import {
   LandingHeader,
   Hero,
-  TrustStrip,
-  WhoWeAre,
   Services,
   Coverage,
   HowItWorks,
@@ -19,8 +17,6 @@ export default function Page() {
       <LandingHeader />
       <main className="flex-1">
         <Hero />
-        <TrustStrip />
-        <WhoWeAre />
         <Services />
         <Coverage />
         <HowItWorks />

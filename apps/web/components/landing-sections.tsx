@@ -22,53 +22,111 @@ import {
 } from "@hugeicons/core-free-icons"
 import { RevealOnScroll } from "@/components/reveal-on-scroll"
 import { TextRotator } from "@/components/text-rotator"
-import { NetworkBackground } from "@/components/network-background"
 
 /* ───────────────────────────── Header ───────────────────────────── */
+const navLinks = [
+  { label: "Ship a Package", href: "/ship" },
+  { label: "Services", href: "#services" },
+  { label: "Coverage", href: "#coverage" },
+  { label: "How It Works", href: "#how-it-works" },
+  { label: "Why Us", href: "#why-us" },
+  { label: "Track", href: "/track" },
+]
+
 export function LandingHeader() {
+  const [mobileOpen, setMobileOpen] = useState(false)
+
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/60 bg-background/95 backdrop-blur-md">
+    <header className="sticky top-0 z-50 w-full border-b border-border/60 bg-background/90 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+        {/* Logo */}
         <a href="/" className="flex items-center gap-2.5 transition-opacity hover:opacity-80">
-          <img src="/assets/social-media.png" alt="Xerin" className="size-8 rounded-lg object-cover" />
-          <span className="text-base font-semibold tracking-tight">Xerin Express</span>
+          <img src="/assets/social-media.png" alt="Xerin" className="size-9 rounded-lg object-cover ring-1 ring-primary/20" />
+          <div className="flex flex-col leading-none">
+            <span className="text-base font-bold tracking-tight">Xerin Express</span>
+            <span className="text-[10px] font-medium uppercase tracking-wider text-primary/70">Logistics Platform</span>
+          </div>
         </a>
 
-        <nav className="hidden items-center gap-7 lg:flex">
-          {[
-            { label: "Ship a Package", href: "/ship" },
-            { label: "Services", href: "#services" },
-            { label: "Coverage", href: "#coverage" },
-            { label: "How It Works", href: "#how-it-works" },
-            { label: "Why Us", href: "#why-us" },
-            { label: "Track", href: "/track" },
-          ].map((link) => (
+        {/* Desktop nav */}
+        <nav className="hidden items-center gap-1 lg:flex">
+          {navLinks.map((link) => (
             <a
               key={link.href}
               href={link.href}
-              className="group relative text-sm font-medium text-muted-foreground transition-colors duration-200 hover:text-foreground"
+              className="group relative rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-all duration-200 hover:bg-muted/50 hover:text-foreground"
             >
               {link.label}
-              <span className="absolute -bottom-1 left-0 h-px w-0 bg-primary transition-all duration-300 group-hover:w-full" />
+              <span className="absolute inset-x-3 -bottom-px h-px scale-x-0 bg-primary transition-transform duration-300 group-hover:scale-x-100" />
             </a>
           ))}
         </nav>
 
-        <div className="flex items-center gap-3">
+        {/* Desktop CTA */}
+        <div className="hidden items-center gap-3 lg:flex">
           <a
             href="/auth"
-            className="hidden text-sm font-medium text-muted-foreground transition-colors duration-200 hover:text-foreground sm:block"
+            className="text-sm font-medium text-muted-foreground transition-colors duration-200 hover:text-foreground"
           >
             Sign In
           </a>
           <a
-            href="/auth/sign-up"
-            className="inline-flex h-9 items-center justify-center rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground transition-all duration-300 hover:scale-105 hover:shadow-lg"
+            href="/ship"
+            className="inline-flex h-9 items-center gap-1.5 justify-center rounded-lg bg-primary px-5 text-sm font-semibold text-primary-foreground shadow-sm transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-primary/25"
           >
-            Get Started
+            <HugeiconsIcon icon={Package02Icon} strokeWidth={2} className="size-4" />
+            Ship Now
           </a>
         </div>
+
+        {/* Mobile toggle */}
+        <button
+          onClick={() => setMobileOpen(!mobileOpen)}
+          className="flex size-10 items-center justify-center rounded-lg border border-border lg:hidden"
+          aria-label="Toggle menu"
+        >
+          <div className="flex flex-col gap-1.5">
+            <span className={`h-0.5 w-5 bg-foreground transition-all duration-300 ${mobileOpen ? "translate-y-2 rotate-45" : ""}`} />
+            <span className={`h-0.5 w-5 bg-foreground transition-all duration-300 ${mobileOpen ? "opacity-0" : ""}`} />
+            <span className={`h-0.5 w-5 bg-foreground transition-all duration-300 ${mobileOpen ? "-translate-y-2 -rotate-45" : ""}`} />
+          </div>
+        </button>
       </div>
+
+      {/* Mobile menu */}
+      {mobileOpen && (
+        <div className="border-t border-border bg-background lg:hidden">
+          <nav className="mx-auto flex max-w-7xl flex-col gap-1 px-4 py-4 sm:px-6">
+            {navLinks.map((link) => (
+              <a
+                key={link.href}
+                href={link.href}
+                onClick={() => setMobileOpen(false)}
+                className="rounded-lg px-4 py-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"
+              >
+                {link.label}
+              </a>
+            ))}
+            <div className="mt-2 flex flex-col gap-2 border-t border-border pt-4">
+              <a
+                href="/auth"
+                onClick={() => setMobileOpen(false)}
+                className="rounded-lg px-4 py-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"
+              >
+                Sign In
+              </a>
+              <a
+                href="/ship"
+                onClick={() => setMobileOpen(false)}
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-primary px-5 text-sm font-semibold text-primary-foreground"
+              >
+                <HugeiconsIcon icon={Package02Icon} strokeWidth={2} className="size-4" />
+                Ship Now
+              </a>
+            </div>
+          </nav>
+        </div>
+      )}
     </header>
   )
 }
@@ -118,7 +176,6 @@ export function Hero() {
         {/* Dark overlay for readability */}
         <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/60 to-background/90" />
         <div className="absolute inset-0 bg-gradient-to-tr from-slate-950/60 via-transparent to-primary/5" />
-        <NetworkBackground />
       </div>
 
       <div className="relative z-10 mx-auto flex max-w-7xl flex-col items-center gap-12 px-4 py-20 text-center sm:px-6 lg:px-8 lg:py-28">
@@ -178,74 +235,6 @@ export function Hero() {
             </a>
           </div>
         </div>
-      </div>
-    </section>
-  )
-}
-
-/* ───────────────────────────── Trust Strip ───────────────────────────── */
-const trustItems = [
-  "Real-time Tracking",
-  "OTP Verification",
-  "Proof of Delivery",
-  "Multi-carrier Fleet",
-  "Online Payments",
-]
-
-export function TrustStrip() {
-  return (
-    <section className="border-b border-border/40 bg-background">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <RevealOnScroll>
-          <div className="flex flex-col items-center gap-6 py-8 lg:flex-row lg:justify-between">
-            <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3">
-              {trustItems.map((cap) => (
-                <span
-                  key={cap}
-                  className="text-sm font-medium text-muted-foreground transition-colors duration-200 hover:text-foreground"
-                >
-                  {cap}
-                </span>
-              ))}
-            </div>
-            <div className="flex items-center gap-2 text-sm font-medium text-foreground">
-              <span className="size-1.5 animate-pulse rounded-full bg-primary" />
-              Dar es Salaam, Tanzania
-            </div>
-          </div>
-        </RevealOnScroll>
-      </div>
-    </section>
-  )
-}
-
-/* ───────────────────────────── Who We Are ───────────────────────────── */
-export function WhoWeAre() {
-  return (
-    <section id="who-we-are" className="bg-background py-20 lg:py-28">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <RevealOnScroll>
-          <div className="mx-auto flex max-w-3xl flex-col items-center gap-8 text-center">
-            <span className="text-xs font-medium uppercase tracking-[0.2em] text-primary">
-              Who We Are
-            </span>
-            <h2 className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl lg:text-5xl">
-              Built for <span className="text-primary">modern logistics</span>
-            </h2>
-            <p className="text-lg text-muted-foreground text-pretty">
-              Xerin Express is a technology-driven delivery platform combining intelligent routing,
-              real-time tracking, and seamless payments. We serve businesses and individuals across
-              Tanzania and beyond with reliable, transparent, and affordable delivery services.
-            </p>
-            <a
-              href="/auth/sign-up"
-              className="inline-flex h-11 items-center gap-2 rounded-lg border border-border px-6 text-sm font-medium transition-all duration-300 hover:scale-[1.02] hover:bg-muted/30"
-            >
-              Create an Account
-              <HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={2} className="size-4" />
-            </a>
-          </div>
-        </RevealOnScroll>
       </div>
     </section>
   )
