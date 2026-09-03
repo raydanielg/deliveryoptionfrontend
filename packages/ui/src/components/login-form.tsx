@@ -119,8 +119,8 @@ export function LoginForm({
                   Login
                 </Button>
               </Field>
-              <FieldDescription className="text-center">
-                Don&apos;t have an account? <a href="/auth/sign-up">Sign up</a>
+              <FieldDescription className="text-center text-muted-foreground">
+                Authorized personnel only. Contact your administrator for access.
               </FieldDescription>
             </FieldGroup>
           </form>
