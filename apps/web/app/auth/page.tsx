@@ -1,15 +1,13 @@
 import { LoginForm } from "@workspace/ui/components/login-form"
 import { Toaster } from "@workspace/ui/components/sonner"
+import { AuthBackground } from "@/components/auth-background"
 
 export default function AuthPage() {
   return (
     <div className="grid min-h-svh lg:grid-cols-2">
       {/* Branding panel */}
       <div className="relative hidden flex-col bg-primary/5 lg:flex">
-        <div className="absolute inset-0">
-          <img src="/assets/41714.jpg" alt="" className="h-full w-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-br from-slate-950/80 via-slate-900/60 to-slate-900/40" />
-        </div>
+        <AuthBackground />
         <div className="relative z-10 flex h-full flex-col justify-between p-12">
           {/* Logo */}
           <div className="flex items-center gap-2.5 text-lg font-semibold text-white">
@@ -70,8 +68,7 @@ export default function AuthPage() {
       {/* Form panel */}
       <div className="relative flex flex-col items-center justify-center p-6">
         <div className="absolute inset-0 lg:hidden">
-          <img src="/assets/41714.jpg" alt="" className="h-full w-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-tr from-slate-950/80 via-black/60 to-slate-900/40 backdrop-blur-[1.5px]" />
+          <AuthBackground />
         </div>
         <LoginForm className="relative z-10 w-full max-w-md shadow-2xl" />
         <p className="relative z-10 mt-4 text-center text-xs text-muted-foreground">
