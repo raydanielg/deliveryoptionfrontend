@@ -39,7 +39,7 @@ export function SignUpForm({
 
     setIsLoading(true)
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api/v1"}/auth/register`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://swg.xerinexpress.com/api/v1"}/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, password, confirmPassword: confirm }),
