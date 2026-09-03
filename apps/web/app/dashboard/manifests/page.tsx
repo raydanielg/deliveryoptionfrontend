@@ -6,10 +6,13 @@ import { Card, CardContent } from "@workspace/ui/components/card"
 import { Badge } from "@workspace/ui/components/badge"
 import { Skeleton } from "@workspace/ui/components/skeleton"
 import { api } from "@/lib/api"
+import { useRouter } from "next/navigation"
+import { Button } from "@workspace/ui/components/button"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { Package02Icon } from "@hugeicons/core-free-icons"
+import { Package02Icon, PlusIcon } from "@hugeicons/core-free-icons"
 
 export default function ManifestsPage() {
+  const router = useRouter()
   const [manifests, setManifests] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -28,9 +31,15 @@ export default function ManifestsPage() {
 
   return (
     <DashboardLayout breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Operations", href: "/dashboard/operations" }, { label: "Manifests" }]}>
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Manifests</h1>
-        <p className="text-sm text-muted-foreground">Bulk shipment manifests</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Manifests</h1>
+          <p className="text-sm text-muted-foreground">Bulk shipment manifests & SGR parcel dispatch</p>
+        </div>
+        <Button onClick={() => router.push("/dashboard/manifests/new-sgr")}>
+          <HugeiconsIcon icon={PlusIcon} className="size-4 mr-2" />
+          New SGR Manifest
+        </Button>
       </div>
 
       <Card>
@@ -62,15 +71,15 @@ export default function ManifestsPage() {
                   </td></tr>
                 ) : (
                   manifests.map((m) => (
-                    <tr key={m.id} className="border-b last:border-0 hover:bg-muted/50">
+                    <tr key={m.id} className="border-b last:border-0 hover:bg-muted/50 cursor-pointer" onClick={() => router.push(`/dashboard/manifests/${m.id}`)}>
                       <td className="px-4 py-3 font-medium">{m.manifestNumber}</td>
                       <td className="px-4 py-3 text-muted-foreground">
-                        {m.route ? `${m.route.fromCity?.name} → ${m.route.toCity?.name}` : "—"}
+                        {m.originStation ? `${m.originStation} → ${m.destinationStation}` : m.route ? `${m.route.fromCity?.name} → ${m.route.toCity?.name}` : "—"}
                       </td>
-                      <td className="px-4 py-3 text-muted-foreground">{m.driver?.user?.name || "—"}</td>
+                      <td className="px-4 py-3 text-muted-foreground">{m.batchNo || m.driver?.user?.name || "—"}</td>
                       <td className="px-4 py-3">{m.totalShipments || 0}</td>
                       <td className="px-4 py-3">{Number(m.totalWeightKg || 0).toFixed(1)} kg</td>
-                      <td className="px-4 py-3"><Badge variant="secondary">{m.status}</Badge></td>
+                      <td className="px-4 py-3"><Badge variant={m.status === "COMPLETED" ? "default" : "secondary"}>{m.status}</Badge></td>
                       <td className="px-4 py-3 text-muted-foreground">{new Date(m.createdAt).toLocaleDateString()}</td>
                     </tr>
                   ))

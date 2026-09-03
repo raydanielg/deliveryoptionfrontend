@@ -110,8 +110,14 @@ export const api = {
     updateStatus: (id: string, body: Record<string, any>) => request(`/vehicles/${id}/status`, { method: "PATCH", body }),
   },
   manifests: {
-    list: () => request("/manifests"),
+    list: (params?: string) => request(`/manifests${params ? `?${params}` : ""}`),
+    get: (id: string) => request(`/manifests/${id}`),
     create: (body: Record<string, any>) => request("/manifests", { method: "POST", body }),
+    createSGR: (body: Record<string, any>) => request("/manifests/sgr", { method: "POST", body }),
+    scanParcel: (id: string, body: Record<string, any>) => request(`/manifests/${id}/scan`, { method: "POST", body }),
+    completeLoading: (id: string) => request(`/manifests/${id}/complete-loading`, { method: "POST" }),
+    signHandover: (id: string, body: Record<string, any>) => request(`/manifests/${id}/handover`, { method: "POST", body }),
+    getByQR: (qrCode: string) => request(`/manifests/qr/${qrCode}`),
     updateStatus: (id: string, body: Record<string, any>) => request(`/manifests/${id}/status`, { method: "PATCH", body }),
   },
   waybills: {
