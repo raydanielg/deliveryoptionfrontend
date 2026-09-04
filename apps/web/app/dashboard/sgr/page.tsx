@@ -140,7 +140,7 @@ export default function SGRPage() {
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="grid gap-2">
                     <Label>Origin Station <span className="text-destructive">*</span></Label>
-                    <Select value={booking.originStationId} onValueChange={(v) => setBooking(prev => ({ ...prev, originStationId: v }))}>
+                    <Select value={booking.originStationId} onValueChange={(v) => setBooking(prev => ({ ...prev, originStationId: v ?? "" }))}>
                       <SelectTrigger><SelectValue placeholder="Select origin" /></SelectTrigger>
                       <SelectContent>
                         {stations.map((st: any) => <SelectItem key={st.id} value={st.id}>{st.name} — {st.city}</SelectItem>)}
@@ -149,7 +149,7 @@ export default function SGRPage() {
                   </div>
                   <div className="grid gap-2">
                     <Label>Destination Station <span className="text-destructive">*</span></Label>
-                    <Select value={booking.destinationStationId} onValueChange={(v) => setBooking(prev => ({ ...prev, destinationStationId: v }))}>
+                    <Select value={booking.destinationStationId} onValueChange={(v) => setBooking(prev => ({ ...prev, destinationStationId: v ?? "" }))}>
                       <SelectTrigger><SelectValue placeholder="Select destination" /></SelectTrigger>
                       <SelectContent>
                         {stations.filter((st: any) => st.id !== booking.originStationId).map((st: any) => <SelectItem key={st.id} value={st.id}>{st.name} — {st.city}</SelectItem>)}

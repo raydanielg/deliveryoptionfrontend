@@ -139,7 +139,7 @@ export default function AirCargoPage() {
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="grid gap-2">
                     <Label>Origin Airport <span className="text-destructive">*</span></Label>
-                    <Select value={booking.originStationId} onValueChange={(v) => setBooking(prev => ({ ...prev, originStationId: v }))}>
+                    <Select value={booking.originStationId} onValueChange={(v) => setBooking(prev => ({ ...prev, originStationId: v ?? "" }))}>
                       <SelectTrigger><SelectValue placeholder="Select origin" /></SelectTrigger>
                       <SelectContent>
                         {airports.map((st: any) => <SelectItem key={st.id} value={st.id}>{st.name} — {st.city}</SelectItem>)}
@@ -148,7 +148,7 @@ export default function AirCargoPage() {
                   </div>
                   <div className="grid gap-2">
                     <Label>Destination Airport <span className="text-destructive">*</span></Label>
-                    <Select value={booking.destinationStationId} onValueChange={(v) => setBooking(prev => ({ ...prev, destinationStationId: v }))}>
+                    <Select value={booking.destinationStationId} onValueChange={(v) => setBooking(prev => ({ ...prev, destinationStationId: v ?? "" }))}>
                       <SelectTrigger><SelectValue placeholder="Select destination" /></SelectTrigger>
                       <SelectContent>
                         {airports.filter((st: any) => st.id !== booking.originStationId).map((st: any) => <SelectItem key={st.id} value={st.id}>{st.name} — {st.city}</SelectItem>)}
