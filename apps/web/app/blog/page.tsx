@@ -79,7 +79,7 @@ export default function BlogPage() {
             Logistics insights, delivery tips, company news, and industry updates from the Xerin Express team.
           </p>
           <div className="mt-8 relative max-w-md mx-auto">
-            <Search01Icon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-500" strokeWidth={2} />
+            <HugeiconsIcon icon={Search01Icon} strokeWidth={2} className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-500" />
             <Input
               placeholder="Search articles..."
               value={search}

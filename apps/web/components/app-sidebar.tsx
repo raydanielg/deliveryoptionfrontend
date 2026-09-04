@@ -14,7 +14,7 @@ import {
   SidebarRail,
 } from "@workspace/ui/components/sidebar"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { TruckIcon, BikeIcon, Store02Icon, DashboardSquare02Icon, Package02Icon, MapIcon, Settings05Icon, UsersIcon, ChartIcon, Route02Icon, BoxIcon, UserGroupIcon, CoinsIcon, File02Icon, Globe02Icon, CustomerService01Icon, PackageReceiveIcon, AlertCircleIcon, BellIcon, BloggerIcon, Train01Icon, Airplane01Icon, WarehouseIcon, Radar02Icon, Container01Icon, CallIcon } from "@hugeicons/core-free-icons"
+import { TruckIcon, BikeIcon, Store02Icon, DashboardSquare02Icon, Package02Icon, MapIcon, Settings05Icon, UsersIcon, ChartIcon, Route02Icon, BoxIcon, UserGroupIcon, CoinsIcon, File02Icon, Globe02Icon, CustomerService01Icon, PackageReceiveIcon, AlertCircleIcon, BellIcon, BloggerIcon, Train01Icon, Airplane01Icon, WarehouseIcon, Radar02Icon, ContainerIcon, CallIcon } from "@hugeicons/core-free-icons"
 import Image from "next/image"
 
 const data = {
