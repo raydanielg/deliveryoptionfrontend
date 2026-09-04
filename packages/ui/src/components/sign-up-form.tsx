@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { Mail01Icon, LockPasswordIcon, UserCircleIcon } from "@hugeicons/core-free-icons"
+import { Mail01Icon, LockPasswordIcon, UserCircleIcon, PhoneIcon } from "@hugeicons/core-free-icons"
 import { toast } from "sonner"
 
 import { cn } from "@workspace/ui/lib/utils"
@@ -27,6 +27,7 @@ export function SignUpForm({
     const form = e.target as HTMLFormElement
     const name = (form.elements.namedItem("name") as HTMLInputElement).value
     const email = (form.elements.namedItem("email") as HTMLInputElement).value
+    const phone = (form.elements.namedItem("phone") as HTMLInputElement).value
     const password = (form.elements.namedItem("password") as HTMLInputElement).value
     const confirm = (form.elements.namedItem("confirm-password") as HTMLInputElement).value
 
@@ -42,7 +43,7 @@ export function SignUpForm({
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://swg.xerinexpress.com/api/v1"}/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password, confirmPassword: confirm }),
+        body: JSON.stringify({ name, email, phone, password, confirmPassword: confirm, role: "CUSTOMER" }),
       })
 
       const data = await res.json()
@@ -54,11 +55,14 @@ export function SignUpForm({
       if (typeof window !== "undefined") {
         localStorage.setItem("token", data.data.token)
         localStorage.setItem("user", JSON.stringify(data.data.user))
+        sessionStorage.setItem("resetEmail", email)
+        sessionStorage.setItem("userName", name)
+        sessionStorage.setItem("justRegistered", "true")
       }
 
-      toast.success("Account created successfully! Redirecting to dashboard...")
+      toast.success("Account created! Redirecting to verification...")
       setTimeout(() => {
-        window.location.href = "/dashboard"
+        window.location.href = "/auth/verify"
       }, 500)
     } catch (err) {
       setIsLoading(false)
@@ -75,12 +79,12 @@ export function SignUpForm({
               <div className="flex flex-col items-center gap-2 text-center">
                 <img
                   src="/assets/m app2.png"
-                  alt="Xerin Delivery"
+                  alt="Xerin Express"
                   className="size-16 object-contain"
                 />
                 <h1 className="text-2xl font-bold">Create Account</h1>
                 <p className="text-balance text-muted-foreground">
-                  Sign up to get started with Xerin Delivery
+                  Sign up to start shipping with Xerin Express
                 </p>
               </div>
               <Field>
@@ -110,6 +114,22 @@ export function SignUpForm({
                     id="email"
                     type="email"
                     placeholder="you@example.com"
+                    required
+                    className="h-12 ps-10 text-base"
+                  />
+                </div>
+              </Field>
+              <Field>
+                <FieldLabel htmlFor="phone">Phone Number</FieldLabel>
+                <div className="relative">
+                  <HugeiconsIcon
+                    icon={PhoneIcon}
+                    className="pointer-events-none absolute top-1/2 left-3 size-5 -translate-y-1/2 text-muted-foreground"
+                  />
+                  <Input
+                    id="phone"
+                    type="tel"
+                    placeholder="+255 700 000 000"
                     required
                     className="h-12 ps-10 text-base"
                   />

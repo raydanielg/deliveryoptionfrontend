@@ -5,10 +5,13 @@ import { DashboardLayout } from "@/components/dashboard-layout"
 import { Card, CardContent } from "@workspace/ui/components/card"
 import { Badge } from "@workspace/ui/components/badge"
 import { Button } from "@workspace/ui/components/button"
+import { Input } from "@workspace/ui/components/input"
 import { Skeleton } from "@workspace/ui/components/skeleton"
 import { api } from "@/lib/api"
 import { useAuth } from "@/lib/use-auth"
 import { toast } from "sonner"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { Search01Icon, Refresh01Icon, CheckmarkCircle02Icon } from "@hugeicons/core-free-icons"
 
 function timeAgo(date: string) {
   const diff = Date.now() - new Date(date).getTime()
@@ -28,18 +31,29 @@ export default function NotificationsPage() {
   const [stats, setStats] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [filterChannel, setFilterChannel] = useState("")
+  const [filterStatus, setFilterStatus] = useState("")
+  const [search, setSearch] = useState("")
+  const [page, setPage] = useState(1)
+  const [total, setTotal] = useState(0)
+  const limit = 50
 
-  useEffect(() => { loadData() }, [filterChannel])
+  useEffect(() => { loadData() }, [filterChannel, filterStatus, page])
 
   async function loadData() {
     try {
       if (isAdmin) {
-        const params = filterChannel ? `channel=${filterChannel}` : ""
+        const params = new URLSearchParams()
+        if (filterChannel) params.set("channel", filterChannel)
+        if (filterStatus) params.set("status", filterStatus)
+        params.set("page", String(page))
+        params.set("limit", String(limit))
+
         const [logsRes, statsRes] = await Promise.all([
-          api.notificationService.logs(params),
+          api.notificationService.logs(params.toString()),
           api.notificationService.stats(),
         ])
         setLogs(logsRes.data || [])
+        setTotal(logsRes.total || 0)
         setStats(statsRes.data)
       } else {
         const res = await api.notifications.list()
@@ -77,6 +91,16 @@ export default function NotificationsPage() {
     DELIVERED: "default",
   }
 
+  const filteredLogs = search
+    ? logs.filter((log) =>
+        log.recipient?.toLowerCase().includes(search.toLowerCase()) ||
+        log.provider?.toLowerCase().includes(search.toLowerCase()) ||
+        log.errorMessage?.toLowerCase().includes(search.toLowerCase())
+      )
+    : logs
+
+  const totalPages = Math.ceil(total / limit)
+
   return (
     <DashboardLayout breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Notifications" }]}>
       <div className="flex items-center justify-between">
@@ -85,35 +109,85 @@ export default function NotificationsPage() {
             {isAdmin ? "Notification Logs" : "My Notifications"}
           </h1>
           <p className="text-sm text-muted-foreground">
-            {isAdmin ? "SMS, Push, Email delivery tracking" : "Your personal notifications"}
+            {isAdmin ? "SMS, Email, and Push delivery tracking" : "Your personal notifications"}
           </p>
         </div>
-        {!isAdmin && logs.some((n) => !n.isRead) && (
-          <Button variant="outline" size="sm" onClick={handleMarkAllRead}>
-            Mark all as read
-          </Button>
-        )}
+        <div className="flex items-center gap-2">
+          {isAdmin && (
+            <Button variant="outline" size="sm" onClick={() => { setLoading(true); loadData() }}>
+              <HugeiconsIcon icon={Refresh01Icon} className="size-4" />
+              Refresh
+            </Button>
+          )}
+          {!isAdmin && logs.some((n) => !n.isRead) && (
+            <Button variant="outline" size="sm" onClick={handleMarkAllRead}>
+              <HugeiconsIcon icon={CheckmarkCircle02Icon} className="size-4" />
+              Mark all as read
+            </Button>
+          )}
+        </div>
       </div>
 
       {isAdmin && stats && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">Total Sent</p><p className="text-2xl font-bold">{stats.total}</p></CardContent></Card>
-          {stats.byChannel?.map((ch: any) => (
-            <Card key={ch.channel}><CardContent className="p-4"><p className="text-sm text-muted-foreground">{ch.channel}</p><p className="text-2xl font-bold">{ch._count.channel}</p></CardContent></Card>
+          <Card>
+            <CardContent className="p-4">
+              <p className="text-sm text-muted-foreground">Total Sent</p>
+              <p className="text-2xl font-bold">{stats.total}</p>
+            </CardContent>
+          </Card>
+          {stats.byStatus?.map((st: any) => (
+            <Card key={st.status}>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm text-muted-foreground">{st.status}</p>
+                  <Badge variant={statusColors[st.status] || "secondary"} className="text-[10px]">{st.status}</Badge>
+                </div>
+                <p className="text-2xl font-bold">{st._count.status}</p>
+              </CardContent>
+            </Card>
           ))}
         </div>
       )}
 
       {isAdmin && (
-        <div className="flex items-center gap-4">
-          <label className="text-sm font-medium">Filter by Channel:</label>
-          <select className="rounded-md border border-input bg-background px-3 py-1 text-sm" value={filterChannel} onChange={e => setFilterChannel(e.target.value)}>
-            <option value="">All</option>
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Search */}
+          <div className="relative flex-1 min-w-[200px]">
+            <HugeiconsIcon
+              icon={Search01Icon}
+              className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
+            />
+            <Input
+              placeholder="Search recipient, provider, or error..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="ps-9"
+            />
+          </div>
+          {/* Channel Filter */}
+          <select
+            className="rounded-md border border-input bg-background px-3 py-2 text-sm"
+            value={filterChannel}
+            onChange={(e) => { setFilterChannel(e.target.value); setPage(1) }}
+          >
+            <option value="">All Channels</option>
             <option value="SMS">SMS</option>
             <option value="EMAIL">Email</option>
             <option value="PUSH">Push</option>
-            <option value="WHATSAPP">WhatsApp</option>
             <option value="IN_APP">In-App</option>
+          </select>
+          {/* Status Filter */}
+          <select
+            className="rounded-md border border-input bg-background px-3 py-2 text-sm"
+            value={filterStatus}
+            onChange={(e) => { setFilterStatus(e.target.value); setPage(1) }}
+          >
+            <option value="">All Statuses</option>
+            <option value="SENT">Sent</option>
+            <option value="FAILED">Failed</option>
+            <option value="PENDING">Pending</option>
+            <option value="DELIVERED">Delivered</option>
           </select>
         </div>
       )}
@@ -124,7 +198,7 @@ export default function NotificationsPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b text-left">
+                  <tr className="border-b text-left bg-muted/30">
                     <th className="px-4 py-3 font-medium text-muted-foreground">Recipient</th>
                     <th className="px-4 py-3 font-medium text-muted-foreground">Channel</th>
                     <th className="px-4 py-3 font-medium text-muted-foreground">Provider</th>
@@ -135,16 +209,16 @@ export default function NotificationsPage() {
                 </thead>
                 <tbody>
                   {loading ? (
-                    Array.from({ length: 5 }).map((_, i) => (
+                    Array.from({ length: 8 }).map((_, i) => (
                       <tr key={i} className="border-b last:border-0">
                         {Array.from({ length: 6 }).map((_, j) => <td key={j} className="px-4 py-3"><Skeleton className="h-5 w-24" /></td>)}
                       </tr>
                     ))
-                  ) : logs.length === 0 ? (
+                  ) : filteredLogs.length === 0 ? (
                     <tr><td colSpan={6} className="px-4 py-12 text-center text-muted-foreground">No notification logs found</td></tr>
                   ) : (
-                    logs.map((log) => (
-                      <tr key={log.id} className="border-b last:border-0 hover:bg-muted/50">
+                    filteredLogs.map((log) => (
+                      <tr key={log.id} className="border-b last:border-0 hover:bg-muted/50 transition-colors">
                         <td className="px-4 py-3 font-medium">{log.recipient}</td>
                         <td className="px-4 py-3"><Badge variant={channelColors[log.channel] || "secondary"}>{log.channel}</Badge></td>
                         <td className="px-4 py-3 text-muted-foreground">{log.provider || "—"}</td>
@@ -156,6 +230,33 @@ export default function NotificationsPage() {
                   )}
                 </tbody>
               </table>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between border-t px-4 py-3">
+                  <p className="text-xs text-muted-foreground">
+                    Page {page} of {totalPages} ({total} total)
+                  </p>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={page <= 1}
+                      onClick={() => setPage((p) => p - 1)}
+                    >
+                      Previous
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={page >= totalPages}
+                      onClick={() => setPage((p) => p + 1)}
+                    >
+                      Next
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             <div className="divide-y border-border/40">
