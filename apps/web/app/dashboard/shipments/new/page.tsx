@@ -33,7 +33,7 @@ import {
   Cash01Icon,
   CreditCard01Icon,
   Wallet01Icon,
-  Smartphone01Icon,
+  SmartphoneIcon,
   Building03Icon,
   Home02Icon,
   Store01Icon,
@@ -86,7 +86,7 @@ const SERVICE_OPTIONS = {
     { value: "OTHER", label: "Other", icon: Package02Icon },
   ],
   paymentMethod: [
-    { value: "MOBILE_MONEY", label: "Mobile Money", desc: "M-Pesa, Tigo Pesa, Airtel Money", icon: Smartphone01Icon },
+    { value: "MOBILE_MONEY", label: "Mobile Money", desc: "M-Pesa, Tigo Pesa, Airtel Money", icon: SmartphoneIcon },
     { value: "CARD", label: "Credit/Debit Card", desc: "Visa, Mastercard", icon: CreditCard01Icon },
     { value: "BANK_TRANSFER", label: "Bank Transfer", desc: "Direct bank transfer", icon: Building03Icon },
     { value: "CASH_ON_DELIVERY", label: "Cash on Delivery", desc: "Pay when you receive", icon: Cash01Icon },

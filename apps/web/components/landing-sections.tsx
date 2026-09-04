@@ -24,7 +24,7 @@ import {
   Moon02Icon,
   Train01Icon,
   Airplane01Icon,
-  Warehouse01Icon,
+  WarehouseIcon,
 } from "@hugeicons/core-free-icons"
 import { RevealOnScroll } from "@/components/reveal-on-scroll"
 import { TextRotator } from "@/components/text-rotator"
@@ -339,7 +339,7 @@ const services = [
   { number: "04", icon: Train01Icon, title: "SGR Parcel Service", desc: "Rail parcel transport between SGR stations. Station-to-station, door-to-station, and door-to-door options with manifest tracking." },
   { number: "05", icon: Airplane01Icon, title: "Air Cargo", desc: "Domestic and international air freight. Airport-to-airport, door-to-airport, and door-to-door with customs clearance." },
   { number: "06", icon: Globe02Icon, title: "International Shipping", desc: "Cross-border logistics to East Africa and global destinations with full customs handling." },
-  { number: "07", icon: Warehouse01Icon, title: "Warehouse & Fulfillment", desc: "Receiving, shelving, consolidation, and release. Integrated warehousing with order management and automated dispatch." },
+  { number: "07", icon: WarehouseIcon, title: "Warehouse & Fulfillment", desc: "Receiving, shelving, consolidation, and release. Integrated warehousing with order management and automated dispatch." },
   { number: "08", icon: Wallet01Icon, title: "Online Payments", desc: "Integrated payment gateways — Selcom, Azampesa, and mobile money for seamless checkout." },
   { number: "09", icon: ShieldCheckIcon, title: "Insurance & Proof", desc: "OTP verification, proof of delivery photos, and shipment insurance for high-value items." },
 ]

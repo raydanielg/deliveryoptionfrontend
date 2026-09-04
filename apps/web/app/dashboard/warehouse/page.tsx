@@ -10,7 +10,7 @@ import { Label } from "@workspace/ui/components/label"
 import { Skeleton } from "@workspace/ui/components/skeleton"
 import { api } from "@/lib/api"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { Warehouse01Icon, Package02Icon, PackageReceiveIcon, Container01Icon, CheckmarkCircle02Icon } from "@hugeicons/core-free-icons"
+import { WarehouseIcon, Package02Icon, PackageReceiveIcon, Container01Icon, CheckmarkCircle02Icon } from "@hugeicons/core-free-icons"
 import { toast } from "sonner"
 
 export default function WarehousePage() {
@@ -60,7 +60,7 @@ export default function WarehousePage() {
             Receive
           </Button>
           <Button onClick={() => loadData()}>
-            <HugeiconsIcon icon={Warehouse01Icon} className="size-4 mr-2" />
+            <HugeiconsIcon icon={WarehouseIcon} className="size-4 mr-2" />
             Refresh
           </Button>
         </div>

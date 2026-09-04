@@ -8,7 +8,7 @@ import { Button } from "@workspace/ui/components/button"
 import { Skeleton } from "@workspace/ui/components/skeleton"
 import { api } from "@/lib/api"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { Radar02Icon, TruckIcon, Train01Icon, Airplane01Icon, Warehouse01Icon, AlertCircleIcon } from "@hugeicons/core-free-icons"
+import { Radar02Icon, TruckIcon, Train01Icon, Airplane01Icon, WarehouseIcon, AlertCircleIcon } from "@hugeicons/core-free-icons"
 import { toast } from "sonner"
 
 export default function ControlTowerPage() {
@@ -61,7 +61,7 @@ export default function ControlTowerPage() {
           { label: "Road Delivery", icon: TruckIcon, color: "from-blue-500 to-cyan-500", stats: { "Active": capacity?.road?.active ?? 0, "Delivered": capacity?.road?.delivered ?? 0 } },
           { label: "SGR Parcel", icon: Train01Icon, color: "from-green-500 to-emerald-600", stats: { "Total": sgrStats?.total ?? 0, "In Transit": sgrStats?.inTransit ?? 0 } },
           { label: "Air Cargo", icon: Airplane01Icon, color: "from-purple-500 to-pink-500", stats: { "Total": airCargoStats?.total ?? 0, "In Transit": airCargoStats?.inTransit ?? 0 } },
-          { label: "Warehouse", icon: Warehouse01Icon, color: "from-orange-500 to-amber-500", stats: { "In WH": warehouseStats?.total ?? 0, "Released": warehouseStats?.released ?? 0 } },
+          { label: "Warehouse", icon: WarehouseIcon, color: "from-orange-500 to-amber-500", stats: { "In WH": warehouseStats?.total ?? 0, "Released": warehouseStats?.released ?? 0 } },
         ].map((mode, i) => (
           <Card key={i}>
             <CardContent className="p-4">
