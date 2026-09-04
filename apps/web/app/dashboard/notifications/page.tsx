@@ -1,17 +1,27 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import * as React from "react"
 import { DashboardLayout } from "@/components/dashboard-layout"
-import { Card, CardContent } from "@workspace/ui/components/card"
-import { Badge } from "@workspace/ui/components/badge"
+import { PageHeader } from "@/components/shared/page-header"
+import { MetricCard } from "@/components/shared/metric-card"
+import { StatusBadge } from "@/components/shared/status-badge"
+import { FilterSelect, NOTIFICATION_CHANNEL_OPTIONS, NOTIFICATION_STATUS_OPTIONS } from "@/components/shared/filter-select"
+import { DataTable, type Column, useTableState } from "@/components/shared/data-table"
+import { EmptyState } from "@/components/shared/states"
 import { Button } from "@workspace/ui/components/button"
-import { Input } from "@workspace/ui/components/input"
+import { Card } from "@workspace/ui/components/card"
 import { Skeleton } from "@workspace/ui/components/skeleton"
 import { api } from "@/lib/api"
 import { useAuth } from "@/lib/use-auth"
 import { toast } from "sonner"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { Search01Icon, Refresh01Icon, CheckmarkCircle02Icon } from "@hugeicons/core-free-icons"
+import {
+  Refresh01Icon,
+  CheckmarkCircle02Icon,
+  Notification03Icon,
+  Cancel01Icon,
+  Clock01Icon,
+} from "@hugeicons/core-free-icons"
 
 function timeAgo(date: string) {
   const diff = Date.now() - new Date(date).getTime()
@@ -24,245 +34,261 @@ function timeAgo(date: string) {
   return `${days}d ago`
 }
 
+function formatDate(date: string | null | undefined) {
+  if (!date) return "—"
+  return new Date(date).toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  })
+}
+
+interface NotifLog {
+  id: string
+  recipient: string
+  channel: string
+  provider?: string
+  status: string
+  errorMessage?: string
+  sentAt?: string
+}
+
+interface NotifStats {
+  total: number
+  byStatus?: { status: string; _count: { status: number } }[]
+}
+
 export default function NotificationsPage() {
   const { user } = useAuth()
   const isAdmin = user?.role === "SUPER_ADMIN" || user?.role === "OPERATIONS_MANAGER"
-  const [logs, setLogs] = useState<any[]>([])
-  const [stats, setStats] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
-  const [filterChannel, setFilterChannel] = useState("")
-  const [filterStatus, setFilterStatus] = useState("")
-  const [search, setSearch] = useState("")
-  const [page, setPage] = useState(1)
-  const [total, setTotal] = useState(0)
-  const limit = 50
+  const [logs, setLogs] = React.useState<NotifLog[]>([])
+  const [stats, setStats] = React.useState<NotifStats | null>(null)
+  const [loading, setLoading] = React.useState(true)
+  const [error, setError] = React.useState<{ status?: number; detail?: string } | null>(null)
+  const [userNotifs, setUserNotifs] = React.useState<any[]>([])
+  const [userLoading, setUserLoading] = React.useState(true)
 
-  useEffect(() => { loadData() }, [filterChannel, filterStatus, page])
+  const { page, setPage, search, setSearch, debounced, filters, setFilter } = useTableState({
+    channel: "",
+    status: "",
+  })
 
-  async function loadData() {
-    try {
-      if (isAdmin) {
-        const params = new URLSearchParams()
-        if (filterChannel) params.set("channel", filterChannel)
-        if (filterStatus) params.set("status", filterStatus)
-        params.set("page", String(page))
-        params.set("limit", String(limit))
+  const limit = 25
 
-        const [logsRes, statsRes] = await Promise.all([
-          api.notificationService.logs(params.toString()),
-          api.notificationService.stats(),
-        ])
-        setLogs(logsRes.data || [])
-        setTotal(logsRes.total || 0)
-        setStats(statsRes.data)
-      } else {
+  const loadData = React.useCallback(async () => {
+    if (!isAdmin) {
+      try {
         const res = await api.notifications.list()
-        setLogs(res.data || [])
+        setUserNotifs(res.data || [])
+      } catch {
+      } finally {
+        setUserLoading(false)
       }
+      return
+    }
+
+    setLoading(true)
+    setError(null)
+    try {
+      const params = new URLSearchParams()
+      if (filters.channel) params.set("channel", filters.channel)
+      if (filters.status) params.set("status", filters.status)
+      params.set("page", String(page))
+      params.set("limit", String(limit))
+
+      const [logsRes, statsRes] = await Promise.all([
+        api.notificationService.logs(params.toString()),
+        api.notificationService.stats(),
+      ])
+      setLogs(logsRes.data || [])
+      setStats(statsRes.data)
     } catch (err: any) {
+      setError({ detail: err.message || "Failed to load notification logs" })
       toast.error(err.message || "Failed to load notifications")
     } finally {
       setLoading(false)
     }
-  }
+  }, [isAdmin, filters.channel, filters.status, page])
+
+  React.useEffect(() => {
+    loadData()
+  }, [loadData])
 
   async function handleMarkAllRead() {
     try {
       await api.notifications.markAllRead()
-      setLogs((prev) => prev.map((n) => ({ ...n, isRead: true })))
+      setUserNotifs((prev) => prev.map((n) => ({ ...n, isRead: true })))
       toast.success("All notifications marked as read")
     } catch (err: any) {
       toast.error(err.message || "Failed to mark notifications")
     }
   }
 
-  const channelColors: Record<string, any> = {
-    SMS: "default",
-    EMAIL: "secondary",
-    PUSH: "outline",
-    WHATSAPP: "default",
-    IN_APP: "secondary",
-  }
+  const filteredLogs = React.useMemo(() => {
+    if (!debounced) return logs
+    const q = debounced.toLowerCase()
+    return logs.filter(
+      (log) =>
+        log.recipient?.toLowerCase().includes(q) ||
+        log.provider?.toLowerCase().includes(q) ||
+        log.errorMessage?.toLowerCase().includes(q),
+    )
+  }, [logs, debounced])
 
-  const statusColors: Record<string, any> = {
-    SENT: "default",
-    PENDING: "secondary",
-    FAILED: "destructive",
-    DELIVERED: "default",
-  }
+  const total = filteredLogs.length
 
-  const filteredLogs = search
-    ? logs.filter((log) =>
-        log.recipient?.toLowerCase().includes(search.toLowerCase()) ||
-        log.provider?.toLowerCase().includes(search.toLowerCase()) ||
-        log.errorMessage?.toLowerCase().includes(search.toLowerCase())
-      )
-    : logs
+  const columns: Column<NotifLog>[] = [
+    {
+      id: "recipient",
+      header: "Recipient",
+      cell: (row) => <span className="font-medium">{row.recipient}</span>,
+    },
+    {
+      id: "channel",
+      header: "Channel",
+      cell: (row) => (
+        <span className="inline-flex items-center gap-1.5 rounded-md bg-muted px-2 py-0.5 text-xs font-medium">
+          {row.channel}
+        </span>
+      ),
+    },
+    {
+      id: "provider",
+      header: "Provider",
+      secondary: true,
+      cell: (row) => <span className="text-muted-foreground">{row.provider || "—"}</span>,
+    },
+    {
+      id: "status",
+      header: "Status",
+      cell: (row) => <StatusBadge status={row.status} size="sm" />,
+    },
+    {
+      id: "error",
+      header: "Error",
+      secondary: true,
+      cell: (row) => (
+        <span className="max-w-xs truncate text-muted-foreground">
+          {row.errorMessage || "—"}
+        </span>
+      ),
+    },
+    {
+      id: "sentAt",
+      header: "Sent",
+      align: "right",
+      cell: (row) => (
+        <span className="whitespace-nowrap text-muted-foreground">
+          {formatDate(row.sentAt)}
+        </span>
+      ),
+    },
+  ]
 
-  const totalPages = Math.ceil(total / limit)
+  const sentCount = stats?.byStatus?.find((s) => s.status === "SENT")?._count.status ?? 0
+  const failedCount = stats?.byStatus?.find((s) => s.status === "FAILED")?._count.status ?? 0
+  const pendingCount = stats?.byStatus?.find((s) => s.status === "PENDING")?._count.status ?? 0
 
   return (
     <DashboardLayout breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Notifications" }]}>
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">
-            {isAdmin ? "Notification Logs" : "My Notifications"}
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            {isAdmin ? "SMS, Email, and Push delivery tracking" : "Your personal notifications"}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          {isAdmin && (
-            <Button variant="outline" size="sm" onClick={() => { setLoading(true); loadData() }}>
-              <HugeiconsIcon icon={Refresh01Icon} className="size-4" />
-              Refresh
-            </Button>
-          )}
-          {!isAdmin && logs.some((n) => !n.isRead) && (
-            <Button variant="outline" size="sm" onClick={handleMarkAllRead}>
-              <HugeiconsIcon icon={CheckmarkCircle02Icon} className="size-4" />
-              Mark all as read
-            </Button>
-          )}
-        </div>
-      </div>
+      <div className="flex flex-col gap-6 p-4 lg:p-6">
+        <PageHeader
+          title={isAdmin ? "Notification Logs" : "My Notifications"}
+          description={isAdmin ? "SMS, Email, and Push delivery tracking" : "Your personal notifications"}
+          actions={
+            <>
+              {isAdmin && (
+                <Button variant="outline" size="sm" onClick={() => loadData()}>
+                  <HugeiconsIcon icon={Refresh01Icon} className="size-4" />
+                  Refresh
+                </Button>
+              )}
+              {!isAdmin && userNotifs.some((n) => !n.isRead) && (
+                <Button variant="outline" size="sm" onClick={handleMarkAllRead}>
+                  <HugeiconsIcon icon={CheckmarkCircle02Icon} className="size-4" />
+                  Mark all as read
+                </Button>
+              )}
+            </>
+          }
+        />
 
-      {isAdmin && stats && (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Card>
-            <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">Total Sent</p>
-              <p className="text-2xl font-bold">{stats.total}</p>
-            </CardContent>
-          </Card>
-          {stats.byStatus?.map((st: any) => (
-            <Card key={st.status}>
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm text-muted-foreground">{st.status}</p>
-                  <Badge variant={statusColors[st.status] || "secondary"} className="text-[10px]">{st.status}</Badge>
-                </div>
-                <p className="text-2xl font-bold">{st._count.status}</p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
-
-      {isAdmin && (
-        <div className="flex flex-wrap items-center gap-3">
-          {/* Search */}
-          <div className="relative flex-1 min-w-[200px]">
-            <HugeiconsIcon
-              icon={Search01Icon}
-              className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
+        {isAdmin && stats && (
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <MetricCard
+              label="Total Sent"
+              value={stats.total?.toLocaleString() ?? "0"}
+              icon={Notification03Icon}
+              loading={loading}
             />
-            <Input
-              placeholder="Search recipient, provider, or error..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="ps-9"
+            <MetricCard
+              label="Delivered"
+              value={sentCount.toLocaleString()}
+              icon={CheckmarkCircle02Icon}
+              loading={loading}
+              hint="Successfully delivered"
+            />
+            <MetricCard
+              label="Failed"
+              value={failedCount.toLocaleString()}
+              icon={Cancel01Icon}
+              loading={loading}
+              positiveIsGood={false}
+              hint="Delivery failures"
+            />
+            <MetricCard
+              label="Pending"
+              value={pendingCount.toLocaleString()}
+              icon={Clock01Icon}
+              loading={loading}
+              hint="Awaiting confirmation"
             />
           </div>
-          {/* Channel Filter */}
-          <select
-            className="rounded-md border border-input bg-background px-3 py-2 text-sm"
-            value={filterChannel}
-            onChange={(e) => { setFilterChannel(e.target.value); setPage(1) }}
-          >
-            <option value="">All Channels</option>
-            <option value="SMS">SMS</option>
-            <option value="EMAIL">Email</option>
-            <option value="PUSH">Push</option>
-            <option value="IN_APP">In-App</option>
-          </select>
-          {/* Status Filter */}
-          <select
-            className="rounded-md border border-input bg-background px-3 py-2 text-sm"
-            value={filterStatus}
-            onChange={(e) => { setFilterStatus(e.target.value); setPage(1) }}
-          >
-            <option value="">All Statuses</option>
-            <option value="SENT">Sent</option>
-            <option value="FAILED">Failed</option>
-            <option value="PENDING">Pending</option>
-            <option value="DELIVERED">Delivered</option>
-          </select>
-        </div>
-      )}
+        )}
 
-      <Card>
-        <CardContent className="p-0">
-          {isAdmin ? (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b text-left bg-muted/30">
-                    <th className="px-4 py-3 font-medium text-muted-foreground">Recipient</th>
-                    <th className="px-4 py-3 font-medium text-muted-foreground">Channel</th>
-                    <th className="px-4 py-3 font-medium text-muted-foreground">Provider</th>
-                    <th className="px-4 py-3 font-medium text-muted-foreground">Status</th>
-                    <th className="px-4 py-3 font-medium text-muted-foreground">Error</th>
-                    <th className="px-4 py-3 font-medium text-muted-foreground">Sent At</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {loading ? (
-                    Array.from({ length: 8 }).map((_, i) => (
-                      <tr key={i} className="border-b last:border-0">
-                        {Array.from({ length: 6 }).map((_, j) => <td key={j} className="px-4 py-3"><Skeleton className="h-5 w-24" /></td>)}
-                      </tr>
-                    ))
-                  ) : filteredLogs.length === 0 ? (
-                    <tr><td colSpan={6} className="px-4 py-12 text-center text-muted-foreground">No notification logs found</td></tr>
-                  ) : (
-                    filteredLogs.map((log) => (
-                      <tr key={log.id} className="border-b last:border-0 hover:bg-muted/50 transition-colors">
-                        <td className="px-4 py-3 font-medium">{log.recipient}</td>
-                        <td className="px-4 py-3"><Badge variant={channelColors[log.channel] || "secondary"}>{log.channel}</Badge></td>
-                        <td className="px-4 py-3 text-muted-foreground">{log.provider || "—"}</td>
-                        <td className="px-4 py-3"><Badge variant={statusColors[log.status] || "secondary"}>{log.status}</Badge></td>
-                        <td className="px-4 py-3 text-muted-foreground max-w-xs truncate text-red-500">{log.errorMessage || "—"}</td>
-                        <td className="px-4 py-3 text-muted-foreground">{log.sentAt ? new Date(log.sentAt).toLocaleString() : "—"}</td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-
-              {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="flex items-center justify-between border-t px-4 py-3">
-                  <p className="text-xs text-muted-foreground">
-                    Page {page} of {totalPages} ({total} total)
-                  </p>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={page <= 1}
-                      onClick={() => setPage((p) => p - 1)}
-                    >
-                      Previous
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={page >= totalPages}
-                      onClick={() => setPage((p) => p + 1)}
-                    >
-                      Next
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="divide-y border-border/40">
-              {loading ? (
-                Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} className="flex gap-3 px-4 py-4">
+        {isAdmin ? (
+          <Card className="p-5">
+            <DataTable
+              columns={columns}
+              data={filteredLogs}
+              loading={loading}
+              error={error}
+              onRetry={loadData}
+              page={page}
+              onPageChange={setPage}
+              pageSize={limit}
+              total={total}
+              search={search}
+              onSearchChange={setSearch}
+              searchPlaceholder="Search recipient, provider, or error…"
+              rowKey={(row) => row.id}
+              emptyTitle="No notification logs found"
+              emptyDescription="Try clearing filters or widening your date range."
+              filters={
+                <>
+                  <FilterSelect
+                    label="Channel"
+                    value={filters.channel ?? ""}
+                    onChange={(v) => setFilter("channel", v)}
+                    options={NOTIFICATION_CHANNEL_OPTIONS}
+                  />
+                  <FilterSelect
+                    label="Status"
+                    value={filters.status ?? ""}
+                    onChange={(v) => setFilter("status", v)}
+                    options={NOTIFICATION_STATUS_OPTIONS}
+                  />
+                </>
+              }
+            />
+          </Card>
+        ) : (
+          <Card className="overflow-hidden">
+            {userLoading ? (
+              <div className="space-y-3 p-4">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="flex gap-3 px-2 py-4">
                     <Skeleton className="size-2 rounded-full" />
                     <div className="flex-1 space-y-1.5">
                       <Skeleton className="h-4 w-48" />
@@ -270,20 +296,30 @@ export default function NotificationsPage() {
                       <Skeleton className="h-2.5 w-16" />
                     </div>
                   </div>
-                ))
-              ) : logs.length === 0 ? (
-                <div className="px-4 py-12 text-center">
-                  <p className="text-sm font-medium text-muted-foreground">No notifications</p>
-                  <p className="mt-1 text-xs text-muted-foreground/70">You&apos;ll see updates about your shipments here</p>
-                </div>
-              ) : (
-                logs.map((n) => (
-                  <div key={n.id} className={`flex gap-3 px-4 py-3.5 transition-colors hover:bg-muted/30 ${n.isRead ? "opacity-60" : ""}`}>
-                    <div className={`mt-1.5 flex size-2 shrink-0 rounded-full ${n.isRead ? "bg-muted-foreground/30" : "bg-primary"}`} />
-                    <div className="flex-1 min-w-0">
+                ))}
+              </div>
+            ) : userNotifs.length === 0 ? (
+              <EmptyState
+                title="No notifications"
+                description="You'll see updates about your shipments here."
+                className="border-0"
+              />
+            ) : (
+              <div className="divide-y divide-border/40">
+                {userNotifs.map((n) => (
+                  <div
+                    key={n.id}
+                    className={`flex gap-3 px-5 py-4 transition-colors hover:bg-muted/30 ${n.isRead ? "opacity-60" : ""}`}
+                  >
+                    <div
+                      className={`mt-1.5 size-2 shrink-0 rounded-full ${n.isRead ? "bg-muted-foreground/30" : "bg-primary"}`}
+                    />
+                    <div className="min-0 flex-1">
                       <div className="flex items-center justify-between gap-2">
                         <p className="text-sm font-medium text-foreground">{n.title}</p>
-                        <span className="text-[10px] text-muted-foreground/70 shrink-0">{timeAgo(n.createdAt)}</span>
+                        <span className="shrink-0 text-[10px] text-muted-foreground/70">
+                          {timeAgo(n.createdAt)}
+                        </span>
                       </div>
                       <p className="mt-0.5 text-xs text-muted-foreground">{n.message}</p>
                       {!n.isRead && (
@@ -291,7 +327,11 @@ export default function NotificationsPage() {
                           onClick={async () => {
                             try {
                               await api.notifications.markRead(n.id)
-                              setLogs((prev) => prev.map((item) => item.id === n.id ? { ...item, isRead: true } : item))
+                              setUserNotifs((prev) =>
+                                prev.map((item) =>
+                                  item.id === n.id ? { ...item, isRead: true } : item,
+                                ),
+                              )
                             } catch {}
                           }}
                           className="mt-1 text-[10px] font-medium text-primary hover:underline"
@@ -301,12 +341,12 @@ export default function NotificationsPage() {
                       )}
                     </div>
                   </div>
-                ))
-              )}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                ))}
+              </div>
+            )}
+          </Card>
+        )}
+      </div>
     </DashboardLayout>
   )
 }
