@@ -124,11 +124,9 @@ export default function AirCargoPage() {
         </div>
         <div className="flex gap-2">
           <Dialog open={bookingOpen} onOpenChange={setBookingOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <HugeiconsIcon icon={PlusIcon} className="size-4 mr-2" />
-                New Booking
-              </Button>
+            <DialogTrigger render={<Button />}>
+              <HugeiconsIcon icon={PlusIcon} className="size-4 mr-2" />
+              New Booking
             </DialogTrigger>
             <DialogContent className="max-w-lg">
               <DialogHeader>

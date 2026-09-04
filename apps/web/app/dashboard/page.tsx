@@ -22,6 +22,8 @@ import {
   DeliveryPerformanceSection,
   RecentActivitySection,
 } from "@/components/dashboard-sections"
+import { RoleDashboard } from "@/components/role-dashboards"
+import { useAuth } from "@/lib/use-auth"
 
 const recentShipments = [
   { tracking: "XRD-2026-000928", customer: "Amani Joseph", route: "Mwanza → Dar es Salaam", driver: "John M.", status: "In Transit", amount: "TZS 35,000", time: "2 min ago" },
@@ -80,6 +82,17 @@ const recentActivities = [
 export default function Page() {
   const [range, setRange] = React.useState("today")
   const [region, setRegion] = React.useState("all")
+  const { user } = useAuth()
+  const role = user?.role || "CUSTOMER"
+  const isAdminRole = role === "SUPER_ADMIN" || role === "OPERATIONS_MANAGER"
+
+  if (!isAdminRole) {
+    return (
+      <DashboardLayout breadcrumbs={[{ label: "Dashboard" }, { label: "Overview" }]}>
+        <RoleDashboard />
+      </DashboardLayout>
+    )
+  }
 
   return (
     <DashboardLayout breadcrumbs={[{ label: "Dashboard" }, { label: "Overview" }]}>
@@ -88,7 +101,7 @@ export default function Page() {
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-2xl font-bold tracking-tight">Delivery Dashboard</h1>
-            <p className="text-sm text-muted-foreground">Welcome back, Ezra. Here&apos;s your logistics overview today.</p>
+            <p className="text-sm text-muted-foreground">Welcome back, {user?.name?.split(" ")[0] || "Admin"}. Here&apos;s your logistics overview today.</p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <Select value={range} onValueChange={(v) => setRange(v ?? "today")}>
