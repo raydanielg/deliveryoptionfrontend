@@ -15,7 +15,7 @@ import {
   Wallet01Icon,
   Call01Icon,
   Location02Icon,
-  Ship01Icon,
+  ShipIcon,
   Train01Icon,
   Building03Icon,
   Scale01Icon,
@@ -41,7 +41,7 @@ const cargoTypes = [
   { icon: TruckIcon, title: "Vehicles & Parts", desc: "Automobiles, spare parts, automotive cargo" },
   { icon: Building03Icon, title: "Construction Materials", desc: "Steel, cement, tiles, building supplies" },
   { icon: Package02Icon, title: "Bulk Goods", desc: "Large quantity shipments, pallets, containers" },
-  { icon: Ship01Icon, title: "Sea Freight Cargo", desc: "Full and partial container loads" },
+  { icon: ShipIcon, title: "Sea Freight Cargo", desc: "Full and partial container loads" },
   { icon: Train01Icon, title: "Rail Freight", desc: "Cost-effective overland freight via rail" },
 ]
 

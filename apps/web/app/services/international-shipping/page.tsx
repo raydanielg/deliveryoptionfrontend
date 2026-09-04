@@ -16,7 +16,7 @@ import {
   Wallet01Icon,
   Call01Icon,
   Location02Icon,
-  Ship01Icon,
+  ShipIcon,
   File02Icon,
   Building03Icon,
 } from "@hugeicons/core-free-icons"

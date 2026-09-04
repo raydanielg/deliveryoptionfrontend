@@ -23,7 +23,7 @@ import {
   ArrowLeft01Icon,
   Airplane01Icon,
   Train01Icon,
-  Ship01Icon,
+  ShipIcon,
   Rocket01Icon,
   FlashIcon,
   Clock01Icon,
@@ -57,7 +57,7 @@ const SERVICE_OPTIONS = {
   transportMode: [
     { value: "ROAD", label: "Road", desc: "Ground transport", icon: TruckIcon },
     { value: "AIR", label: "Air", desc: "Fastest option", icon: Airplane01Icon },
-    { value: "SEA", label: "Sea", desc: "Cost-effective bulk", icon: Ship01Icon },
+    { value: "SEA", label: "Sea", desc: "Cost-effective bulk", icon: ShipIcon },
     { value: "COURIER", label: "Courier", desc: "Express delivery", icon: Rocket01Icon },
     { value: "RAIL", label: "Rail", desc: "Eco-friendly freight", icon: Train01Icon },
   ],
