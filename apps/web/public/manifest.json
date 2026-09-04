@@ -1,0 +1,66 @@
+{
+  "name": "Xerin Express — Logistics & Delivery Platform",
+  "short_name": "Xerin Express",
+  "description": "Multipurpose logistics & delivery management platform for domestic, international, and freight operations. Send parcels, track shipments, and manage deliveries with ease.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#ffffff",
+  "theme_color": "#F97316",
+  "categories": ["logistics", "delivery", "business", "productivity"],
+  "lang": "en",
+  "dir": "ltr",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/assets/favicon.png",
+      "sizes": "16x16",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/favicon.png",
+      "sizes": "32x32",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/favicon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "Open the main dashboard",
+      "url": "/dashboard"
+    },
+    {
+      "name": "Track Shipment",
+      "short_name": "Track",
+      "description": "Track a shipment",
+      "url": "/dashboard/tracking"
+    },
+    {
+      "name": "Shipments",
+      "short_name": "Shipments",
+      "description": "View all shipments",
+      "url": "/dashboard/shipments"
+    }
+  ]
+}
