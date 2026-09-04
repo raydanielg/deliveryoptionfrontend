@@ -5,6 +5,8 @@ import { useEffect, useState } from "react"
 const phrases = [
   { text: "Domestic Delivery", color: "text-primary" },
   { text: "International Shipping", color: "text-emerald-600" },
+  { text: "SGR Parcel Service", color: "text-primary" },
+  { text: "Air Cargo", color: "text-emerald-600" },
   { text: "Freight Forwarding", color: "text-primary" },
   { text: "Parcel Express", color: "text-emerald-600" },
   { text: "Last-Mile Delivery", color: "text-primary" },

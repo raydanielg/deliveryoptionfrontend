@@ -265,4 +265,57 @@ export const api = {
     stations: () => request("/capacity/stations"),
     manifest: (id: string) => request(`/capacity/manifests/${id}`),
   },
+  blog: {
+    list: (params?: string) => request(`/blog${params ? `?${params}` : ""}`),
+    listPublic: (params?: string) => request(`/blog/public${params ? `?${params}` : ""}`),
+    get: (id: string) => request(`/blog/${id}`),
+    getBySlug: (slug: string) => request(`/blog/public/${slug}`),
+    create: (body: Record<string, any>) => request("/blog", { method: "POST", body }),
+    update: (id: string, body: Record<string, any>) => request(`/blog/${id}`, { method: "PUT", body }),
+    delete: (id: string) => request(`/blog/${id}`, { method: "DELETE" }),
+    stats: () => request("/blog/stats"),
+    uploadImages: (id: string, formData: FormData) =>
+      request(`/blog/${id}/images`, { method: "POST", body: formData, headers: {} }),
+    deleteImage: (id: string, imageId: string) =>
+      request(`/blog/${id}/images/${imageId}`, { method: "DELETE" }),
+    uploadAttachments: (id: string, formData: FormData) =>
+      request(`/blog/${id}/attachments`, { method: "POST", body: formData, headers: {} }),
+    deleteAttachment: (id: string, attachmentId: string) =>
+      request(`/blog/${id}/attachments/${attachmentId}`, { method: "DELETE" }),
+    categories: {
+      list: () => request("/blog/categories"),
+      create: (body: Record<string, any>) => request("/blog/categories", { method: "POST", body }),
+      update: (id: string, body: Record<string, any>) => request(`/blog/categories/${id}`, { method: "PUT", body }),
+      delete: (id: string) => request(`/blog/categories/${id}`, { method: "DELETE" }),
+    },
+  },
+  sgr: {
+    list: (params?: string) => request(`/sgr${params ? `?${params}` : ""}`),
+    get: (id: string) => request(`/sgr/${id}`),
+    stats: () => request("/sgr/stats"),
+    createBooking: (body: Record<string, any>) => request("/sgr/booking", { method: "POST", body }),
+    verifyWeigh: (id: string, body: Record<string, any>) => request(`/sgr/${id}/verify-weigh`, { method: "POST", body }),
+    consolidate: (body: Record<string, any>) => request("/sgr/consolidate", { method: "POST", body }),
+    loadOnTrain: (body: Record<string, any>) => request("/sgr/load-on-train", { method: "POST", body }),
+    arriveAtDestination: (manifestId: string, body: Record<string, any>) => request(`/sgr/manifests/${manifestId}/arrive`, { method: "POST", body }),
+  },
+  airCargo: {
+    list: (params?: string) => request(`/air-cargo${params ? `?${params}` : ""}`),
+    get: (id: string) => request(`/air-cargo/${id}`),
+    stats: () => request("/air-cargo/stats"),
+    createBooking: (body: Record<string, any>) => request("/air-cargo/booking", { method: "POST", body }),
+    acceptCargo: (id: string, body: Record<string, any>) => request(`/air-cargo/${id}/accept`, { method: "POST", body }),
+    createFlightDispatch: (body: Record<string, any>) => request("/air-cargo/flight-dispatch", { method: "POST", body }),
+    arriveAtAirport: (manifestId: string, body: Record<string, any>) => request(`/air-cargo/manifests/${manifestId}/arrive`, { method: "POST", body }),
+  },
+  warehouse: {
+    list: (params?: string) => request(`/warehouse${params ? `?${params}` : ""}`),
+    stats: () => request("/warehouse/stats"),
+    receive: (stationId: string, body: Record<string, any>) => request(`/warehouse/${stationId}/receive`, { method: "POST", body }),
+    verifyWeigh: (body: Record<string, any>) => request("/warehouse/verify-weigh", { method: "POST", body }),
+    generateLabel: (id: string) => request(`/warehouse/${id}/generate-label`, { method: "POST" }),
+    assignShelfBin: (body: Record<string, any>) => request("/warehouse/assign-shelf-bin", { method: "POST", body }),
+    consolidate: (body: Record<string, any>) => request("/warehouse/consolidate", { method: "POST", body }),
+    release: (body: Record<string, any>) => request("/warehouse/release", { method: "POST", body }),
+  },
 }

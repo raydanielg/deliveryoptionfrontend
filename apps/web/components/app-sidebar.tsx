@@ -14,7 +14,7 @@ import {
   SidebarRail,
 } from "@workspace/ui/components/sidebar"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { TruckIcon, BikeIcon, Store02Icon, DashboardSquare02Icon, Package02Icon, MapIcon, Settings05Icon, UsersIcon, ChartIcon, Route02Icon, BoxIcon, UserGroupIcon, CoinsIcon, File02Icon, Globe02Icon, CustomerService01Icon, PackageReceiveIcon, AlertCircleIcon, BellIcon } from "@hugeicons/core-free-icons"
+import { TruckIcon, BikeIcon, Store02Icon, DashboardSquare02Icon, Package02Icon, MapIcon, Settings05Icon, UsersIcon, ChartIcon, Route02Icon, BoxIcon, UserGroupIcon, CoinsIcon, File02Icon, Globe02Icon, CustomerService01Icon, PackageReceiveIcon, AlertCircleIcon, BellIcon, BlogIcon, Train01Icon, Airplane01Icon, Warehouse01Icon, Radar02Icon, Container01Icon } from "@hugeicons/core-free-icons"
 import Image from "next/image"
 
 const data = {
@@ -115,6 +115,94 @@ const data = {
         {
           title: "Stations",
           url: "/dashboard/stations",
+        },
+      ],
+    },
+    {
+      title: "SGR Parcel Service",
+      url: "/dashboard/sgr",
+      icon: (
+        <HugeiconsIcon icon={Train01Icon} strokeWidth={2} />
+      ),
+      items: [
+        {
+          title: "SGR Shipments",
+          url: "/dashboard/sgr",
+        },
+        {
+          title: "Stations",
+          url: "/dashboard/sgr/stations",
+        },
+        {
+          title: "Dispatch & Manifests",
+          url: "/dashboard/sgr/dispatch",
+        },
+        {
+          title: "Capacity",
+          url: "/dashboard/sgr/capacity",
+        },
+      ],
+    },
+    {
+      title: "Air Cargo",
+      url: "/dashboard/air-cargo",
+      icon: (
+        <HugeiconsIcon icon={Airplane01Icon} strokeWidth={2} />
+      ),
+      items: [
+        {
+          title: "Air Cargo Shipments",
+          url: "/dashboard/air-cargo",
+        },
+        {
+          title: "Flight Dispatch",
+          url: "/dashboard/air-cargo/dispatch",
+        },
+        {
+          title: "Airports",
+          url: "/dashboard/air-cargo/airports",
+        },
+      ],
+    },
+    {
+      title: "Warehouse",
+      url: "/dashboard/warehouse",
+      icon: (
+        <HugeiconsIcon icon={Warehouse01Icon} strokeWidth={2} />
+      ),
+      items: [
+        {
+          title: "Inventory",
+          url: "/dashboard/warehouse",
+        },
+        {
+          title: "Receiving",
+          url: "/dashboard/warehouse/receiving",
+        },
+        {
+          title: "Consolidation",
+          url: "/dashboard/warehouse/consolidation",
+        },
+      ],
+    },
+    {
+      title: "Control Tower",
+      url: "/dashboard/control-tower",
+      icon: (
+        <HugeiconsIcon icon={Radar02Icon} strokeWidth={2} />
+      ),
+      items: [
+        {
+          title: "Overview",
+          url: "/dashboard/control-tower",
+        },
+        {
+          title: "By Mode",
+          url: "/dashboard/control-tower/modes",
+        },
+        {
+          title: "Exceptions",
+          url: "/dashboard/control-tower/exceptions",
         },
       ],
     },
@@ -295,6 +383,23 @@ const data = {
         {
           title: "Ratings",
           url: "/dashboard/support/ratings",
+        },
+      ],
+    },
+    {
+      title: "Blog",
+      url: "/dashboard/blog",
+      icon: (
+        <HugeiconsIcon icon={BlogIcon} strokeWidth={2} />
+      ),
+      items: [
+        {
+          title: "All Posts",
+          url: "/dashboard/blog",
+        },
+        {
+          title: "Categories",
+          url: "/dashboard/blog/categories",
         },
       ],
     },

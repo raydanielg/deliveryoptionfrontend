@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
+import { useTheme } from "next-themes"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
   TruckIcon,
@@ -19,6 +20,11 @@ import {
   Mail01Icon,
   Location02Icon,
   Wallet01Icon,
+  SunIcon,
+  Moon02Icon,
+  Train01Icon,
+  Airplane01Icon,
+  Warehouse01Icon,
 } from "@hugeicons/core-free-icons"
 import { RevealOnScroll } from "@/components/reveal-on-scroll"
 import { TextRotator } from "@/components/text-rotator"
@@ -32,6 +38,32 @@ const navLinks = [
   { label: "Why Us", href: "#why-us", icon: ShieldCheckIcon },
   { label: "Track", href: "/track", icon: Search01Icon },
 ]
+
+function ThemeToggle() {
+  const { resolvedTheme, setTheme } = useTheme()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => setMounted(true), [])
+
+  const isDark = resolvedTheme === "dark"
+
+  return (
+    <button
+      onClick={() => setTheme(isDark ? "light" : "dark")}
+      className="group relative flex size-9 items-center justify-center rounded-lg border border-border text-foreground transition-all duration-300 hover:border-primary/40 hover:bg-muted/40"
+      aria-label="Toggle theme"
+      title={isDark ? "Switch to light mode" : "Switch to dark mode"}
+    >
+      {mounted && (
+        <HugeiconsIcon
+          icon={isDark ? SunIcon : Moon02Icon}
+          strokeWidth={2}
+          className="size-[18px] transition-transform duration-500 group-hover:rotate-[15deg]"
+        />
+      )}
+    </button>
+  )
+}
 
 export function LandingHeader() {
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -64,6 +96,7 @@ export function LandingHeader() {
 
         {/* Desktop CTA */}
         <div className="hidden items-center gap-3 lg:flex">
+          <ThemeToggle />
           <a
             href="/auth"
             className="text-sm font-medium text-muted-foreground transition-colors duration-200 hover:text-foreground"
@@ -122,13 +155,16 @@ export function LandingHeader() {
             </a>
           ))}
           <div className="mt-3 flex flex-col gap-2.5 border-t border-border pt-4">
-            <a
-              href="/auth"
-              onClick={() => setMobileOpen(false)}
-              className="flex items-center justify-center gap-2 rounded-xl border border-border px-4 py-3 text-sm font-medium text-muted-foreground transition-colors duration-200 hover:bg-muted/40 hover:text-foreground"
-            >
-              Sign In
-            </a>
+            <div className="flex items-center justify-between gap-2">
+              <a
+                href="/auth"
+                onClick={() => setMobileOpen(false)}
+                className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-border px-4 py-3 text-sm font-medium text-muted-foreground transition-colors duration-200 hover:bg-muted/40 hover:text-foreground"
+              >
+                Sign In
+              </a>
+              <ThemeToggle />
+            </div>
             <a
               href="/ship"
               onClick={() => setMobileOpen(false)}
@@ -158,6 +194,8 @@ const marqueeItems = [
   "OTP Verification",
   "Proof of Delivery",
   "Multi-carrier Fleet",
+  "SGR Parcel Service",
+  "Air Cargo",
   "Online Payments",
   "Dar es Salaam, Tanzania",
 ]
@@ -243,8 +281,8 @@ export function Hero() {
               <TextRotator />.
             </h1>
             <p className="max-w-xl text-lg text-muted-foreground text-pretty animate-[fade-in_0.8s_ease-out_0.2s_both]">
-              Xerin Express is a multipurpose logistics &amp; delivery platform for domestic,
-              international, and freight operations. Track, ship, and deliver with confidence.
+              Xerin Express is a multimodal logistics platform — road, rail (SGR), and air cargo —
+              for domestic, international, and freight operations. Track, ship, and deliver with confidence.
             </p>
           </div>
 
@@ -295,14 +333,14 @@ export function Hero() {
 
 /* ───────────────────────────── Services ───────────────────────────── */
 const services = [
-  { number: "01", icon: TruckIcon, title: "Domestic Delivery", desc: "Same-day and next-day delivery across all major cities in Tanzania with real-time tracking." },
-  { number: "02", icon: Globe02Icon, title: "International Shipping", desc: "Cross-border logistics to East Africa and global destinations with customs handling." },
-  { number: "03", icon: BoxIcon, title: "Freight Forwarding", desc: "Bulk freight solutions for businesses — FCL, LCL, and air freight with end-to-end visibility." },
-  { number: "04", icon: Package02Icon, title: "Parcel Express", desc: "Fast, affordable parcel delivery with categorized pricing by weight and size tiers." },
-  { number: "05", icon: BikeIcon, title: "Last-Mile Delivery", desc: "Reliable last-mile fulfillment for e-commerce, restaurants, and on-demand businesses." },
-  { number: "06", icon: Store02Icon, title: "E-commerce Fulfillment", desc: "Integrated fulfillment with order management, warehousing, and automated dispatch." },
-  { number: "07", icon: Wallet01Icon, title: "Online Payments", desc: "Integrated payment gateways — Selcom, Azampesa, and mobile money for seamless checkout." },
-  { number: "08", icon: Route02Icon, title: "Scheduled Delivery", desc: "Plan and schedule shipments in advance with flexible time slots and recurring pickups." },
+  { number: "01", icon: BikeIcon, title: "Boda Boda Delivery", desc: "Quick city delivery for small goods, documents, and parcels. Affordable, fast, and perfect for short distances." },
+  { number: "02", icon: TruckIcon, title: "Kirikuu / Van", desc: "Medium cargo delivery for businesses, shops, and intra-city moves. Reliable and cost-effective for bulkier items." },
+  { number: "03", icon: TruckIcon, title: "Lori / Truck", desc: "Large and heavy cargo freight for long-distance hauls. Full truckload and less-than-truckload options." },
+  { number: "04", icon: Train01Icon, title: "SGR Parcel Service", desc: "Rail parcel transport between SGR stations. Station-to-station, door-to-station, and door-to-door options with manifest tracking." },
+  { number: "05", icon: Airplane01Icon, title: "Air Cargo", desc: "Domestic and international air freight. Airport-to-airport, door-to-airport, and door-to-door with customs clearance." },
+  { number: "06", icon: Globe02Icon, title: "International Shipping", desc: "Cross-border logistics to East Africa and global destinations with full customs handling." },
+  { number: "07", icon: Warehouse01Icon, title: "Warehouse & Fulfillment", desc: "Receiving, shelving, consolidation, and release. Integrated warehousing with order management and automated dispatch." },
+  { number: "08", icon: Wallet01Icon, title: "Online Payments", desc: "Integrated payment gateways — Selcom, Azampesa, and mobile money for seamless checkout." },
   { number: "09", icon: ShieldCheckIcon, title: "Insurance & Proof", desc: "OTP verification, proof of delivery photos, and shipment insurance for high-value items." },
 ]
 
@@ -785,11 +823,11 @@ const footerSections = [
     title: "Services",
     links: [
       { label: "Ship a Package", href: "/ship" },
-      { label: "Domestic Delivery", href: "#services" },
-      { label: "International Shipping", href: "#services" },
-      { label: "Freight Forwarding", href: "#services" },
-      { label: "Parcel Express", href: "#services" },
-      { label: "E-commerce Fulfillment", href: "#services" },
+      { label: "Domestic Delivery", href: "/services/domestic-delivery" },
+      { label: "International Shipping", href: "/services/international-shipping" },
+      { label: "Freight Forwarding", href: "/services/freight-forwarding" },
+      { label: "Parcel Express", href: "/services/parcel-express" },
+      { label: "E-commerce Fulfillment", href: "/services/ecommerce-fulfillment" },
     ],
   },
   {
@@ -799,6 +837,7 @@ const footerSections = [
       { label: "How It Works", href: "#how-it-works" },
       { label: "Coverage Area", href: "#coverage" },
       { label: "Why Choose Us", href: "#why-us" },
+      { label: "Blog", href: "/blog" },
       { label: "Track Shipment", href: "/track" },
     ],
   },
@@ -878,9 +917,13 @@ export function LandingFooter() {
                   <HugeiconsIcon icon={Mail01Icon} strokeWidth={2} className="size-4 shrink-0 text-primary" />
                   info@xerinexpress.co.tz
                 </a>
-                <a href="tel:+255700000000" className="flex items-center gap-2 transition-colors hover:text-white">
+                <a href="tel:+255792810292" className="flex items-center gap-2 transition-colors hover:text-white">
                   <HugeiconsIcon icon={CallIcon} strokeWidth={2} className="size-4 shrink-0 text-primary" />
-                  +255 700 000 000
+                  +255 792 810 292
+                </a>
+                <a href="tel:+971565878379" className="flex items-center gap-2 transition-colors hover:text-white">
+                  <HugeiconsIcon icon={CallIcon} strokeWidth={2} className="size-4 shrink-0 text-primary" />
+                  +971 56 587 8379
                 </a>
               </div>
             </div>

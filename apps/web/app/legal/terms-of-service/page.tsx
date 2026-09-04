@@ -194,7 +194,7 @@ export default function TermsOfServicePage() {
                   <strong className="text-foreground">Xerin Express</strong><br />
                   Dar es Salaam, Tanzania<br />
                   Email: <a href="mailto:info@xerinexpress.co.tz" className="text-primary hover:underline">info@xerinexpress.co.tz</a><br />
-                  Phone: <a href="tel:+255700000000" className="text-primary hover:underline">+255 700 000 000</a>
+                  Phone: <a href="tel:+255792810292" className="text-primary hover:underline">+255 792 810 292</a> &middot; <a href="tel:+971565878379" className="text-primary hover:underline">+971 56 587 8379</a>
                 </p>
               </div>
             </section>
