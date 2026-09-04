@@ -17,9 +17,9 @@ export const metadata = {
   title: "Xerin Delivery Express — Logistics Platform",
   description: "Multipurpose logistics & delivery management platform for domestic, international, and freight operations.",
   icons: {
-    icon: "/assets/social-media.png",
-    shortcut: "/assets/social-media.png",
-    apple: "/assets/social-media.png",
+    icon: "/assets/m%20app2.png",
+    shortcut: "/assets/m%20app2.png",
+    apple: "/assets/m%20app2.png",
   },
 }
 

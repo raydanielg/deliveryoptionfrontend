@@ -411,7 +411,7 @@ export default function ShipPage() {
         {/* Header */}
         <div className="mb-8 flex items-center justify-between">
           <a href="/" className="flex items-center gap-2.5 text-white">
-            <img src="/assets/social-media.png" alt="Xerin" className="size-8 rounded-lg object-cover" />
+            <img src="/assets/m%20app2.png" alt="Xerin" className="size-8 rounded-lg object-cover" />
             <span className="text-base font-semibold tracking-tight">Xerin Express</span>
           </a>
           <a href="/" className="text-sm text-white/60 transition-colors hover:text-white">

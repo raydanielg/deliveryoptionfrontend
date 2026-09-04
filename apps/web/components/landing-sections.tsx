@@ -901,7 +901,7 @@ export function LandingFooter() {
           <RevealOnScroll>
             <div className="flex flex-col gap-5">
               <a href="/" className="flex items-center gap-2.5 transition-opacity hover:opacity-80">
-                <img src="/assets/social-media.png" alt="Xerin" className="size-8 rounded-lg object-cover" />
+                <img src="/assets/m%20app2.png" alt="Xerin" className="size-8 rounded-lg object-cover" />
                 <span className="text-lg font-semibold tracking-tight text-white">Xerin Express</span>
               </a>
               <p className="max-w-xs text-sm text-white/50 text-pretty">

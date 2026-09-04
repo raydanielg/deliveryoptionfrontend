@@ -11,7 +11,7 @@ export default function AuthPage() {
         <div className="relative z-10 flex h-full flex-col justify-between p-12">
           {/* Logo */}
           <div className="flex items-center gap-2.5 text-lg font-semibold text-white">
-            <img src="/assets/social-media.png" alt="Xerin" className="size-9 rounded-lg object-cover" />
+            <img src="/assets/m%20app2.png" alt="Xerin" className="size-9 rounded-lg object-cover" />
             <span>Xerin Express</span>
           </div>
 
