@@ -39,20 +39,20 @@ export function SummaryCard({
   icon?: any
 }) {
   return (
-    <div className="rounded-lg border bg-card p-4">
+    <div className="group rounded-lg border bg-card p-4 transition-all duration-300 hover:shadow-md hover:border-primary/30 hover:-translate-y-0.5">
       <div className="flex items-center justify-between">
         <p className="text-xs text-muted-foreground">{label}</p>
         {icon && (
-          <div className="flex size-8 items-center justify-center rounded-lg bg-primary/10">
+          <div className="flex size-8 items-center justify-center rounded-lg bg-primary/10 transition-transform duration-300 group-hover:scale-110 group-hover:bg-primary/15">
             <HugeiconsIcon icon={icon} className="size-4 text-primary" />
           </div>
         )}
       </div>
-      <p className="text-xl font-semibold tabular-nums mt-1">{value}</p>
+      <p className="text-xl font-semibold tabular-nums mt-1 transition-colors duration-200 group-hover:text-primary">{value}</p>
       {change && (
         <div className="flex items-center gap-1 mt-1 text-xs">
           {positive !== undefined && (
-            <HugeiconsIcon icon={positive ? TrendingUpIcon : TrendingDownIcon} className={cn("size-3", positive ? "text-emerald-600" : "text-red-600")} />
+            <HugeiconsIcon icon={positive ? TrendingUpIcon : TrendingDownIcon} className={cn("size-3 transition-transform duration-300", positive ? "text-emerald-600 group-hover:scale-125" : "text-red-600")} />
           )}
           <span className={positive === false ? "text-red-600" : "text-emerald-600"}>{change}</span>
         </div>

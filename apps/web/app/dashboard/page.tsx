@@ -9,6 +9,8 @@ import { Button } from "@workspace/ui/components/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@workspace/ui/components/select"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Package02Icon, TruckIcon, Globe02Icon, ArrowRight01Icon, UserGroupIcon, CoinsIcon, Download01Icon } from "@hugeicons/core-free-icons"
+import { ShipmentPerformanceChart } from "@workspace/ui/components/chart-shipment-performance"
+import { ServiceDistributionDonut } from "@workspace/ui/components/chart-service-distribution"
 import {
   SummaryCard,
   ShipmentStatusSection,
@@ -17,7 +19,6 @@ import {
   RevenueOverviewSection,
   RoutePerformanceSection,
   DriverOverviewSection,
-  ServiceOverviewSection,
   DeliveryPerformanceSection,
   RecentActivitySection,
 } from "@/components/dashboard-sections"
@@ -78,17 +79,18 @@ const recentActivities = [
 
 export default function Page() {
   const [range, setRange] = React.useState("today")
+  const [region, setRegion] = React.useState("all")
 
   return (
     <DashboardLayout breadcrumbs={[{ label: "Dashboard" }, { label: "Overview" }]}>
       <div className="flex flex-col gap-6 p-4 lg:p-6">
-        {/* Header */}
-        <div className="flex items-center justify-between gap-2">
+        {/* Header with filters */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-2xl font-bold tracking-tight">Delivery Dashboard</h1>
             <p className="text-sm text-muted-foreground">Welcome back, Ezra. Here&apos;s your logistics overview today.</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Select value={range} onValueChange={(v) => setRange(v ?? "today")}>
               <SelectTrigger className="h-9 w-[120px]"><SelectValue /></SelectTrigger>
               <SelectContent>
@@ -96,6 +98,16 @@ export default function Page() {
                 <SelectItem value="7d">7 Days</SelectItem>
                 <SelectItem value="30d">30 Days</SelectItem>
                 <SelectItem value="90d">90 Days</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={region} onValueChange={(v) => setRegion(v ?? "all")}>
+              <SelectTrigger className="h-9 w-[120px]"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Regions</SelectItem>
+                <SelectItem value="mwanza">Mwanza</SelectItem>
+                <SelectItem value="dar">Dar es Salaam</SelectItem>
+                <SelectItem value="arusha">Arusha</SelectItem>
+                <SelectItem value="international">International</SelectItem>
               </SelectContent>
             </Select>
             <Link href="/dashboard/shipments/new">
@@ -111,18 +123,44 @@ export default function Page() {
           </div>
         </div>
 
-        {/* 1. Top Summary - 5 compact cards */}
+        {/* 1. KPI Summary Cards with animations */}
         <div className="grid grid-cols-2 gap-3 @xl/main:grid-cols-3 @3xl/main:grid-cols-5">
-          <SummaryCard label="Total Shipments" value="2,847" change="+18.2%" positive={true} icon={Package02Icon} />
-          <SummaryCard label="In Transit" value="142" change="+12.4%" positive={true} icon={TruckIcon} />
-          <SummaryCard label="Available Drivers" value="38" change="-2.1%" positive={false} icon={UserGroupIcon} />
-          <SummaryCard label="Revenue (Month)" value="TZS 84.2M" change="+24.6%" positive={true} icon={CoinsIcon} />
-          <SummaryCard label="International" value="428" subtitle="Cross-border shipments" icon={Globe02Icon} />
+          <div className="animate-[fade-in_0.5s_ease-out]">
+            <SummaryCard label="Total Shipments" value="2,847" change="+18.2%" positive={true} icon={Package02Icon} />
+          </div>
+          <div className="animate-[fade-in_0.5s_ease-out_0.05s_both]">
+            <SummaryCard label="In Transit" value="142" change="+12.4%" positive={true} icon={TruckIcon} />
+          </div>
+          <div className="animate-[fade-in_0.5s_ease-out_0.1s_both]">
+            <SummaryCard label="Available Drivers" value="38" change="-2.1%" positive={false} icon={UserGroupIcon} />
+          </div>
+          <div className="animate-[fade-in_0.5s_ease-out_0.15s_both]">
+            <SummaryCard label="Revenue (Month)" value="TZS 84.2M" change="+24.6%" positive={true} icon={CoinsIcon} />
+          </div>
+          <div className="animate-[fade-in_0.5s_ease-out_0.2s_both]">
+            <SummaryCard label="International" value="428" subtitle="Cross-border shipments" icon={Globe02Icon} />
+          </div>
         </div>
 
-        {/* 2. Recent Shipments + Live Operations */}
-        <div className="grid gap-4 lg:grid-cols-3">
-          <Card className="lg:col-span-2">
+        {/* 2. Shipment Performance Chart (wide) */}
+        <div className="animate-[fade-in_0.6s_ease-out_0.2s_both]">
+          <ShipmentPerformanceChart />
+        </div>
+
+        {/* 3. Service Distribution Donut + Live Operations */}
+        <div className="grid grid-cols-1 gap-4 @xl/main:grid-cols-2">
+          <div className="rounded-xl border bg-card p-5 animate-[fade-in_0.6s_ease-out_0.25s_both]">
+            <h3 className="text-sm font-semibold mb-4">Service Distribution</h3>
+            <ServiceDistributionDonut />
+          </div>
+          <div className="animate-[fade-in_0.6s_ease-out_0.3s_both]">
+            <LiveOperationsSection deliveries={liveDeliveries} />
+          </div>
+        </div>
+
+        {/* 4. Recent Shipments table */}
+        <div className="animate-[fade-in_0.6s_ease-out_0.3s_both]">
+          <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
@@ -170,27 +208,36 @@ export default function Page() {
               </div>
             </CardContent>
           </Card>
-
-          <LiveOperationsSection deliveries={liveDeliveries} />
         </div>
 
-        {/* 3. Shipment Status + Operational Alerts + Revenue */}
+        {/* 5. Shipment Status + Operational Alerts + Revenue */}
         <div className="grid grid-cols-1 gap-4 @xl/main:grid-cols-3">
-          <ShipmentStatusSection data={shipmentStatusData} />
-          <OperationalAlertsSection alerts={operationalAlerts} />
-          <RevenueOverviewSection />
+          <div className="animate-[fade-in_0.5s_ease-out_0.35s_both]">
+            <ShipmentStatusSection data={shipmentStatusData} />
+          </div>
+          <div className="animate-[fade-in_0.5s_ease-out_0.4s_both]">
+            <OperationalAlertsSection alerts={operationalAlerts} />
+          </div>
+          <div className="animate-[fade-in_0.5s_ease-out_0.45s_both]">
+            <RevenueOverviewSection />
+          </div>
         </div>
 
-        {/* 4. Delivery Performance + Route Performance + Driver Overview */}
+        {/* 6. Delivery Performance + Route Performance + Driver Overview */}
         <div className="grid grid-cols-1 gap-4 @xl/main:grid-cols-3">
-          <DeliveryPerformanceSection />
-          <RoutePerformanceSection routes={topRoutes} />
-          <DriverOverviewSection />
+          <div className="animate-[fade-in_0.5s_ease-out_0.5s_both]">
+            <DeliveryPerformanceSection />
+          </div>
+          <div className="animate-[fade-in_0.5s_ease-out_0.55s_both]">
+            <RoutePerformanceSection routes={topRoutes} />
+          </div>
+          <div className="animate-[fade-in_0.5s_ease-out_0.6s_both]">
+            <DriverOverviewSection />
+          </div>
         </div>
 
-        {/* 5. Service Breakdown + Recent Activity */}
-        <div className="grid grid-cols-1 gap-4 @xl/main:grid-cols-2">
-          <ServiceOverviewSection />
+        {/* 7. Recent Activity */}
+        <div className="animate-[fade-in_0.5s_ease-out_0.65s_both]">
           <RecentActivitySection activities={recentActivities} />
         </div>
       </div>
