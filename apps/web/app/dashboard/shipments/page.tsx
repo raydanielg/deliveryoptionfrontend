@@ -10,8 +10,6 @@ import { Input } from "@workspace/ui/components/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@workspace/ui/components/select"
 import { Skeleton } from "@workspace/ui/components/skeleton"
 import { api } from "@/lib/api"
-import { HugeiconsIcon } from "@hugeicons/react"
-import { Package02Icon, PlusIcon, SearchIcon, MapIcon, TruckIcon } from "@hugeicons/core-free-icons"
 
 const statusColors: Record<string, "default" | "secondary" | "destructive"> = {
   DELIVERED: "default",
@@ -62,24 +60,19 @@ export default function ShipmentsPage() {
       <div className="flex items-center justify-between gap-2">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Shipments</h1>
-          <p className="text-sm text-muted-foreground">Manage all shipments across the platform</p>
+          <p className="text-sm text-muted-foreground">View and track your shipments</p>
         </div>
         <Link href="/dashboard/shipments/new">
-          <Button>
-            <HugeiconsIcon icon={PlusIcon} strokeWidth={2} className="size-4" />
-            New Shipment
-          </Button>
+          <Button>New Shipment</Button>
         </Link>
       </div>
 
       <div className="flex items-center gap-2">
         <div className="relative flex-1 max-w-sm">
-          <HugeiconsIcon icon={SearchIcon} strokeWidth={2} className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
           <Input
             placeholder="Search tracking #, city..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9"
           />
         </div>
         <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v ?? "ALL")}>
@@ -126,7 +119,6 @@ export default function ShipmentsPage() {
                 ) : filtered.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="px-4 py-12 text-center text-muted-foreground">
-                      <HugeiconsIcon icon={Package02Icon} strokeWidth={2} className="size-8 mx-auto mb-2 opacity-50" />
                       No shipments found
                     </td>
                   </tr>
@@ -139,10 +131,7 @@ export default function ShipmentsPage() {
                         </Link>
                       </td>
                       <td className="px-4 py-3 text-muted-foreground">
-                        <div className="flex items-center gap-1">
-                          <HugeiconsIcon icon={MapIcon} strokeWidth={2} className="size-3" />
-                          {s.fromAddress?.city} → {s.toAddress?.city}
-                        </div>
+                        {s.fromAddress?.city} → {s.toAddress?.city}
                       </td>
                       <td className="px-4 py-3">{s.chargeableWeightKg} kg</td>
                       <td className="px-4 py-3 font-medium">{s.currency} {Number(s.totalAmount || 0).toLocaleString()}</td>

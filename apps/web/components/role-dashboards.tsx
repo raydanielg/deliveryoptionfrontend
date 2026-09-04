@@ -585,13 +585,32 @@ export function ReportViewerDashboard() {
 }
 
 /* ---------- Customer Dashboard ---------- */
+function CustomerStatCard({ label, value, subtitle, accent }: {
+  label: string
+  value: string
+  subtitle?: string
+  accent?: string
+}) {
+  return (
+    <Card className="overflow-hidden">
+      <CardContent className="p-5">
+        <div className="flex flex-col gap-1">
+          <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</span>
+          <span className={`text-3xl font-bold tracking-tight ${accent || ""}`}>{value}</span>
+          {subtitle && <span className="text-xs text-muted-foreground">{subtitle}</span>}
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
 export function CustomerDashboard() {
   const { user } = useAuth()
   const [shipments, setShipments] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    api.shipments.list("createdByMe=true&limit=5")
+    api.shipments.list("limit=10")
       .then((res) => { setShipments(res.data || []); setLoading(false) })
       .catch(() => setLoading(false))
   }, [])
@@ -600,70 +619,96 @@ export function CustomerDashboard() {
 
   const active = shipments.filter((s) => !["DELIVERED", "CANCELLED"].includes(s.status))
   const delivered = shipments.filter((s) => s.status === "DELIVERED")
+  const pending = shipments.filter((s) => s.status === "BOOKED")
+
+  const statusBadgeVariant: Record<string, "default" | "secondary" | "destructive"> = {
+    DELIVERED: "default",
+    CANCELLED: "destructive",
+  }
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="grid grid-cols-2 gap-3 @xl/main:grid-cols-4">
-        <RoleSummaryCard label="Active Shipments" value={active.length.toString()} icon={TruckIcon} subtitle="In progress" />
-        <RoleSummaryCard label="Delivered" value={delivered.length.toString()} icon={CheckmarkCircle02Icon} />
-        <RoleSummaryCard label="Total Shipments" value={shipments.length.toString()} icon={Package02Icon} />
-        <RoleSummaryCard label="Pending" value={shipments.filter((s) => s.status === "BOOKED").length.toString()} icon={Clock01Icon} />
+      {/* Stats Grid */}
+      <div className="grid grid-cols-2 gap-4 @xl/main:grid-cols-4">
+        <CustomerStatCard label="Active" value={active.length.toString()} subtitle="In progress" accent="text-blue-600" />
+        <CustomerStatCard label="Delivered" value={delivered.length.toString()} subtitle="Completed" accent="text-emerald-600" />
+        <CustomerStatCard label="Total" value={shipments.length.toString()} subtitle="All shipments" />
+        <CustomerStatCard label="Pending" value={pending.length.toString()} subtitle="Awaiting dispatch" accent="text-amber-600" />
       </div>
-      <div className="grid grid-cols-1 gap-4 @xl/main:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-            <CardDescription>Ship and track your packages</CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-wrap gap-2">
-            <Link href="/dashboard/shipments/new"><Button size="sm"><HugeiconsIcon icon={Package02Icon} className="size-4" /> New Shipment</Button></Link>
-            <Link href="/dashboard/tracking"><Button variant="outline" size="sm"><HugeiconsIcon icon={MapIcon} className="size-4" /> Track Package</Button></Link>
-            <Link href="/dashboard/payments"><Button variant="outline" size="sm"><HugeiconsIcon icon={CoinsIcon} className="size-4" /> Payments</Button></Link>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Shipments</CardTitle>
-            <CardDescription>Your latest shipments</CardDescription>
-          </CardHeader>
-          <CardContent className="p-0">
-            {shipments.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12 text-center">
-                <HugeiconsIcon icon={Package02Icon} className="size-10 text-muted-foreground/40" />
-                <p className="mt-2 text-sm text-muted-foreground">No shipments yet</p>
-                <Link href="/dashboard/shipments/new"><Button size="sm" className="mt-3">Create your first shipment</Button></Link>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b text-left">
-                      <th className="px-6 py-3 font-medium text-muted-foreground">Tracking #</th>
-                      <th className="px-6 py-3 font-medium text-muted-foreground">Route</th>
-                      <th className="px-6 py-3 font-medium text-muted-foreground">Status</th>
-                      <th className="px-6 py-3 font-medium text-muted-foreground">Action</th>
+
+      {/* Quick Actions */}
+      <Card>
+        <CardContent className="flex flex-wrap items-center gap-3 p-4">
+          <span className="text-sm font-medium text-muted-foreground">Quick Actions:</span>
+          <Link href="/dashboard/shipments/new"><Button size="sm">New Shipment</Button></Link>
+          <Link href="/dashboard/tracking"><Button variant="outline" size="sm">Track Package</Button></Link>
+          <Link href="/dashboard/shipments"><Button variant="outline" size="sm">My Shipments</Button></Link>
+          <Link href="/dashboard/orders"><Button variant="outline" size="sm">My Orders</Button></Link>
+        </CardContent>
+      </Card>
+
+      {/* Recent Shipments */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Recent Shipments</CardTitle>
+              <CardDescription>Your latest shipment activity</CardDescription>
+            </div>
+            <Link href="/dashboard/shipments">
+              <Button variant="ghost" size="sm">View All</Button>
+            </Link>
+          </div>
+        </CardHeader>
+        <CardContent className="p-0">
+          {shipments.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <p className="text-sm font-medium text-muted-foreground">No shipments yet</p>
+              <p className="mt-1 text-xs text-muted-foreground/70">Create your first shipment to get started</p>
+              <Link href="/dashboard/shipments/new"><Button size="sm" className="mt-4">New Shipment</Button></Link>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b text-left">
+                    <th className="px-6 py-3 font-medium text-muted-foreground">Tracking #</th>
+                    <th className="px-6 py-3 font-medium text-muted-foreground">Route</th>
+                    <th className="px-6 py-3 font-medium text-muted-foreground">Amount</th>
+                    <th className="px-6 py-3 font-medium text-muted-foreground">Status</th>
+                    <th className="px-6 py-3 font-medium text-muted-foreground">Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {shipments.map((ship) => (
+                    <tr key={ship.id} className="border-b last:border-0 transition-colors hover:bg-muted/50">
+                      <td className="px-6 py-3">
+                        <Link href={`/dashboard/shipments/${ship.id}`} className="font-medium text-primary hover:underline">
+                          {ship.trackingNumber}
+                        </Link>
+                      </td>
+                      <td className="px-6 py-3 text-muted-foreground">
+                        {ship.fromAddress?.city} → {ship.toAddress?.city}
+                      </td>
+                      <td className="px-6 py-3 font-medium">
+                        {ship.currency} {Number(ship.totalAmount || 0).toLocaleString()}
+                      </td>
+                      <td className="px-6 py-3">
+                        <Badge variant={statusBadgeVariant[ship.status] ?? "secondary"}>
+                          {ship.status?.replace(/_/g, " ").toLowerCase()}
+                        </Badge>
+                      </td>
+                      <td className="px-6 py-3 text-muted-foreground">
+                        {new Date(ship.createdAt).toLocaleDateString()}
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {shipments.map((ship) => (
-                      <tr key={ship.id} className="border-b last:border-0 transition-colors hover:bg-muted/50">
-                        <td className="px-6 py-3 font-medium">{ship.trackingNumber}</td>
-                        <td className="px-6 py-3 text-muted-foreground">{ship.fromAddress?.city} → {ship.toAddress?.city}</td>
-                        <td className="px-6 py-3"><Badge variant="secondary">{ship.status?.replace(/_/g, " ")}</Badge></td>
-                        <td className="px-6 py-3">
-                          <Link href={`/dashboard/shipments/${ship.id}`}>
-                            <Button variant="ghost" size="sm" className="h-7">Track <HugeiconsIcon icon={ArrowRight01Icon} className="size-3" /></Button>
-                          </Link>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   )
 }
@@ -687,10 +732,7 @@ export function RoleDashboard() {
           </p>
         </div>
         <Link href="/dashboard/shipments/new">
-          <Button size="sm">
-            <HugeiconsIcon icon={Package02Icon} className="size-4" />
-            New Shipment
-          </Button>
+          <Button size="sm">New Shipment</Button>
         </Link>
       </div>
 
