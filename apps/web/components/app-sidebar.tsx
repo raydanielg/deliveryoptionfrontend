@@ -14,7 +14,7 @@ import {
   SidebarRail,
 } from "@workspace/ui/components/sidebar"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { TruckIcon, BikeIcon, Store02Icon, DashboardSquare02Icon, Package02Icon, MapIcon, Settings05Icon, UsersIcon, ChartIcon, Route02Icon, BoxIcon, UserGroupIcon, CoinsIcon, File02Icon, Globe02Icon, CustomerService01Icon, PackageReceiveIcon, AlertCircleIcon, BellIcon, BlogIcon, Train01Icon, Airplane01Icon, WarehouseIcon, Radar02Icon, Container01Icon } from "@hugeicons/core-free-icons"
+import { TruckIcon, BikeIcon, Store02Icon, DashboardSquare02Icon, Package02Icon, MapIcon, Settings05Icon, UsersIcon, ChartIcon, Route02Icon, BoxIcon, UserGroupIcon, CoinsIcon, File02Icon, Globe02Icon, CustomerService01Icon, PackageReceiveIcon, AlertCircleIcon, BellIcon, BloggerIcon, Train01Icon, Airplane01Icon, WarehouseIcon, Radar02Icon, Container01Icon, CallIcon } from "@hugeicons/core-free-icons"
 import Image from "next/image"
 
 const data = {
@@ -122,7 +122,7 @@ const data = {
       title: "SGR Parcel Service",
       url: "/dashboard/sgr",
       icon: (
-        <HugeiconsIcon icon={Train01Icon} strokeWidth={2} />
+        <HugeiconsIcon icon={CallIcon} strokeWidth={2} />
       ),
       items: [
         {
@@ -390,7 +390,7 @@ const data = {
       title: "Blog",
       url: "/dashboard/blog",
       icon: (
-        <HugeiconsIcon icon={BlogIcon} strokeWidth={2} />
+        <HugeiconsIcon icon={BloggerIcon} strokeWidth={2} />
       ),
       items: [
         {

@@ -14,7 +14,7 @@ import {
   CheckmarkCircle02Icon,
   ArrowRight01Icon,
   Wallet01Icon,
-  Call01Icon,
+  CallIcon,
   Location02Icon,
   ShipIcon,
   File02Icon,
@@ -201,7 +201,7 @@ export default function InternationalShippingPage() {
                   Ship a Package
                 </Link>
                 <a href="tel:+255792810292" className="inline-flex h-12 items-center gap-2 rounded-lg border border-white/15 px-6 text-sm font-medium text-white transition-colors hover:bg-white/5">
-                  <HugeiconsIcon icon={Call01Icon} strokeWidth={2} className="size-4" />
+                  <HugeiconsIcon icon={CallIcon} strokeWidth={2} className="size-4" />
                   Contact Us
                 </a>
               </div>

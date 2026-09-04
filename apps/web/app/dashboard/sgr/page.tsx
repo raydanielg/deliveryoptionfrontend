@@ -9,7 +9,7 @@ import { Input } from "@workspace/ui/components/input"
 import { Skeleton } from "@workspace/ui/components/skeleton"
 import { api } from "@/lib/api"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { Train01Icon, Package02Icon, Scale01Icon, CheckmarkCircle02Icon } from "@hugeicons/core-free-icons"
+import { Train01Icon, Package02Icon, ScaleIcon, CheckmarkCircle02Icon } from "@hugeicons/core-free-icons"
 import { toast } from "sonner"
 
 export default function SGRPage() {
@@ -64,7 +64,7 @@ export default function SGRPage() {
         {[
           { label: "Total Shipments", value: stats?.total ?? 0, icon: Package02Icon, color: "from-blue-500 to-cyan-500" },
           { label: "In Transit", value: stats?.inTransit ?? 0, icon: Train01Icon, color: "from-orange-500 to-amber-500" },
-          { label: "At Station", value: stats?.atStation ?? 0, icon: Scale01Icon, color: "from-purple-500 to-pink-500" },
+          { label: "At Station", value: stats?.atStation ?? 0, icon: ScaleIcon, color: "from-purple-500 to-pink-500" },
           { label: "Delivered", value: stats?.delivered ?? 0, icon: CheckmarkCircle02Icon, color: "from-green-500 to-emerald-500" },
         ].map((stat, i) => (
           <Card key={i}>

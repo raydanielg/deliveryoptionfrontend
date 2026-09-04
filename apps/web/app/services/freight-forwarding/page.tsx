@@ -4,7 +4,7 @@ import Link from "next/link"
 import { LandingHeader, LandingFooter } from "@/components/landing-sections"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
-  PackageLock01Icon,
+  PackageProcess01Icon,
   Package02Icon,
   TruckIcon,
   Shield01Icon,
@@ -13,17 +13,17 @@ import {
   CheckmarkCircle02Icon,
   ArrowRight01Icon,
   Wallet01Icon,
-  Call01Icon,
+  CallIcon,
   Location02Icon,
   ShipIcon,
   Train01Icon,
   Building03Icon,
-  Scale01Icon,
+  ScaleIcon,
 } from "@hugeicons/core-free-icons"
 import { Badge } from "@workspace/ui/components/badge"
 
 const features = [
-  { icon: Scale01Icon, title: "Heavy & Oversized", desc: "Specialized handling for heavy machinery, equipment, and oversized cargo." },
+  { icon: ScaleIcon, title: "Heavy & Oversized", desc: "Specialized handling for heavy machinery, equipment, and oversized cargo." },
   { icon: Route02Icon, title: "Multi-Modal Transport", desc: "Road, rail, sea, and air combinations for optimal cost and speed." },
   { icon: Shield01Icon, title: "Cargo Protection", desc: "Professional packing, loading, and insurance options for valuable freight." },
   { icon: Wallet01Icon, title: "Competitive Rates", desc: "Volume-based pricing with transparent quotes for bulk and recurring shipments." },
@@ -37,7 +37,7 @@ const steps = [
 ]
 
 const cargoTypes = [
-  { icon: PackageLock01Icon, title: "Heavy Machinery", desc: "Construction equipment, industrial machinery" },
+  { icon: PackageProcess01Icon, title: "Heavy Machinery", desc: "Construction equipment, industrial machinery" },
   { icon: TruckIcon, title: "Vehicles & Parts", desc: "Automobiles, spare parts, automotive cargo" },
   { icon: Building03Icon, title: "Construction Materials", desc: "Steel, cement, tiles, building supplies" },
   { icon: Package02Icon, title: "Bulk Goods", desc: "Large quantity shipments, pallets, containers" },
@@ -77,7 +77,7 @@ export default function FreightForwardingPage() {
                   href="tel:+255792810292"
                   className="inline-flex h-12 items-center gap-2 rounded-lg border border-white/15 px-6 text-sm font-medium text-white transition-colors hover:bg-white/5"
                 >
-                  <HugeiconsIcon icon={Call01Icon} strokeWidth={2} className="size-4" />
+                  <HugeiconsIcon icon={CallIcon} strokeWidth={2} className="size-4" />
                   Speak to Our Team
                 </a>
               </div>
@@ -87,7 +87,7 @@ export default function FreightForwardingPage() {
               <div className="relative rounded-3xl border border-white/10 bg-slate-900/50 p-8 backdrop-blur-sm">
                 <div className="flex items-center gap-4 mb-6">
                   <div className="flex size-14 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500 to-red-500 text-white">
-                    <HugeiconsIcon icon={PackageLock01Icon} strokeWidth={2} className="size-7" />
+                    <HugeiconsIcon icon={PackageProcess01Icon} strokeWidth={2} className="size-7" />
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-white">Freight Forwarding</h3>
@@ -203,7 +203,7 @@ export default function FreightForwardingPage() {
                   Request a Quote
                 </Link>
                 <a href="tel:+255792810292" className="inline-flex h-12 items-center gap-2 rounded-lg border border-white/15 px-6 text-sm font-medium text-white transition-colors hover:bg-white/5">
-                  <HugeiconsIcon icon={Call01Icon} strokeWidth={2} className="size-4" />
+                  <HugeiconsIcon icon={CallIcon} strokeWidth={2} className="size-4" />
                   Call Us
                 </a>
               </div>

@@ -28,7 +28,7 @@ import {
   FlashIcon,
   Clock01Icon,
   Shield01Icon,
-  PackageLock01Icon,
+  PackageProcess01Icon,
   FragileIcon,
   Cash01Icon,
   CreditCard01Icon,
@@ -38,11 +38,11 @@ import {
   Home02Icon,
   Store01Icon,
   Location01Icon,
-  Call01Icon,
+  CallIcon,
   Mail01Icon,
   UserCircleIcon,
   ViewIcon,
-  Scale01Icon,
+  ScaleIcon,
   RulerIcon,
   InformationSquareIcon,
   SparklesIcon,
@@ -52,7 +52,7 @@ const SERVICE_OPTIONS = {
   category: [
     { value: "DOMESTIC", label: "Domestic", desc: "Within the country", icon: TruckIcon, color: "from-blue-500 to-cyan-500" },
     { value: "INTERNATIONAL", label: "International", desc: "Cross-border delivery", icon: Airplane01Icon, color: "from-purple-500 to-pink-500" },
-    { value: "SPECIAL_TRANSPORT", label: "Special Transport", desc: "Heavy & oversized items", icon: PackageLock01Icon, color: "from-orange-500 to-red-500" },
+    { value: "SPECIAL_TRANSPORT", label: "Special Transport", desc: "Heavy & oversized items", icon: PackageProcess01Icon, color: "from-orange-500 to-red-500" },
   ],
   transportMode: [
     { value: "ROAD", label: "Road", desc: "Ground transport", icon: TruckIcon },
@@ -438,7 +438,7 @@ export default function NewShipmentPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <HugeiconsIcon icon={Scale01Icon} strokeWidth={2} className="size-5 text-primary" />
+                <HugeiconsIcon icon={ScaleIcon} strokeWidth={2} className="size-5 text-primary" />
                 Weight & Dimensions
               </CardTitle>
               <CardDescription>Enter package weight and size</CardDescription>
@@ -566,7 +566,7 @@ export default function NewShipmentPage() {
                 <div className="grid gap-2">
                   <Label>Phone <span className="text-destructive">*</span></Label>
                   <div className="relative">
-                    <HugeiconsIcon icon={Call01Icon} className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+                    <HugeiconsIcon icon={CallIcon} className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
                     <Input value={form.fromPhone} onChange={(e) => updateForm("fromPhone", e.target.value)} placeholder="+255..." className="ps-9" />
                   </div>
                 </div>
@@ -650,7 +650,7 @@ export default function NewShipmentPage() {
                 <div className="grid gap-2">
                   <Label>Phone <span className="text-destructive">*</span></Label>
                   <div className="relative">
-                    <HugeiconsIcon icon={Call01Icon} className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+                    <HugeiconsIcon icon={CallIcon} className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
                     <Input value={form.toPhone} onChange={(e) => updateForm("toPhone", e.target.value)} placeholder="+255..." className="ps-9" />
                   </div>
                 </div>

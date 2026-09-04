@@ -13,7 +13,7 @@ import {
   CheckmarkCircle02Icon,
   ArrowRight01Icon,
   Wallet01Icon,
-  Call01Icon,
+  CallIcon,
   Location02Icon,
   BoxIcon,
   Globe02Icon,
@@ -75,7 +75,7 @@ export default function EcommerceFulfillmentPage() {
                   href="mailto:info@xerinexpress.co.tz"
                   className="inline-flex h-12 items-center gap-2 rounded-lg border border-white/15 px-6 text-sm font-medium text-white transition-colors hover:bg-white/5"
                 >
-                  <HugeiconsIcon icon={Call01Icon} strokeWidth={2} className="size-4" />
+                  <HugeiconsIcon icon={CallIcon} strokeWidth={2} className="size-4" />
                   Talk to Sales
                 </a>
               </div>
@@ -199,7 +199,7 @@ export default function EcommerceFulfillmentPage() {
                   Get Started
                 </Link>
                 <a href="mailto:info@xerinexpress.co.tz" className="inline-flex h-12 items-center gap-2 rounded-lg border border-white/15 px-6 text-sm font-medium text-white transition-colors hover:bg-white/5">
-                  <HugeiconsIcon icon={Call01Icon} strokeWidth={2} className="size-4" />
+                  <HugeiconsIcon icon={CallIcon} strokeWidth={2} className="size-4" />
                   Talk to Sales
                 </a>
               </div>
