@@ -20,8 +20,6 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@workspace/ui/components/sidebar"
-import { HugeiconsIcon } from "@hugeicons/react"
-import { UnfoldMoreIcon, CheckmarkBadgeIcon, NotificationIcon, LogoutIcon } from "@hugeicons/core-free-icons"
 
 import { useRouter } from "next/navigation"
 
@@ -54,7 +52,7 @@ export function NavUser({
               <span className="truncate font-medium">{user.name}</span>
               <span className="truncate text-xs">{user.email}</span>
             </div>
-            <HugeiconsIcon icon={UnfoldMoreIcon} strokeWidth={2} className="ms-auto size-4" />
+            <span className="ms-auto text-xs">›</span>
           </DropdownMenuTrigger>
           <DropdownMenuContent
             className="w-fit"
@@ -79,11 +77,9 @@ export function NavUser({
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem>
-                <HugeiconsIcon icon={CheckmarkBadgeIcon} strokeWidth={2} />
                 Account
               </DropdownMenuItem>
               <DropdownMenuItem>
-                <HugeiconsIcon icon={NotificationIcon} strokeWidth={2} />
                 Notifications
               </DropdownMenuItem>
             </DropdownMenuGroup>
@@ -95,7 +91,6 @@ export function NavUser({
               }
               router.push("/auth")
             }}>
-              <HugeiconsIcon icon={LogoutIcon} strokeWidth={2} />
               Log out
             </DropdownMenuItem>
           </DropdownMenuContent>

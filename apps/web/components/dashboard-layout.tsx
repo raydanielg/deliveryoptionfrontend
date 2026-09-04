@@ -17,8 +17,6 @@ import {
   SidebarTrigger,
 } from "@workspace/ui/components/sidebar"
 import { Toaster } from "@workspace/ui/components/sonner"
-import { HugeiconsIcon } from "@hugeicons/react"
-import { BellIcon, Search01Icon } from "@hugeicons/core-free-icons"
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -73,11 +71,10 @@ export function DashboardLayout({ children, breadcrumbs }: DashboardLayoutProps)
           <div className="flex items-center gap-2">
             {/* Search */}
             <div className="relative hidden md:flex items-center">
-              <HugeiconsIcon icon={Search01Icon} strokeWidth={2} className="absolute left-3 size-4 text-muted-foreground" />
               <input
                 type="text"
                 placeholder="Search..."
-                className="h-9 w-48 rounded-lg border border-border/60 bg-muted/30 pl-9 pr-3 text-sm outline-none transition-all duration-200 placeholder:text-muted-foreground focus:w-64 focus:border-primary/40 focus:bg-white focus:ring-2 focus:ring-primary/10 dark:focus:bg-slate-900"
+                className="h-9 w-48 rounded-lg border border-border/60 bg-muted/30 px-3 text-sm outline-none transition-all duration-200 placeholder:text-muted-foreground focus:w-64 focus:border-primary/40 focus:bg-white focus:ring-2 focus:ring-primary/10 dark:focus:bg-slate-900"
               />
             </div>
 
@@ -87,7 +84,7 @@ export function DashboardLayout({ children, breadcrumbs }: DashboardLayoutProps)
                 onClick={() => setNotifOpen((v) => !v)}
                 className="relative flex size-9 items-center justify-center rounded-lg border border-border/40 bg-white text-foreground transition-all duration-200 hover:bg-muted/40 hover:shadow-sm dark:bg-slate-900 dark:hover:bg-slate-800"
               >
-                <HugeiconsIcon icon={BellIcon} strokeWidth={2} className="size-4.5" />
+                <span className="text-sm">🔔</span>
                 <span className="absolute -right-0.5 -top-0.5 flex size-4 items-center justify-center rounded-full bg-primary text-[9px] font-bold text-primary-foreground shadow-sm">
                   3
                 </span>
