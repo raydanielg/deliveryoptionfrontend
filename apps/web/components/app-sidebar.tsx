@@ -5,7 +5,6 @@ import * as React from "react"
 import { NavMain } from "@/components/nav-main"
 import { NavProjects } from "@/components/nav-projects"
 import { NavUser } from "@/components/nav-user"
-import { TeamSwitcher } from "@/components/team-switcher"
 import {
   Sidebar,
   SidebarContent,
@@ -15,32 +14,7 @@ import {
 } from "@workspace/ui/components/sidebar"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { TruckIcon, BikeIcon, Store02Icon, DashboardSquare02Icon, Package02Icon, MapIcon, Settings05Icon, UsersIcon, ChartIcon, Route02Icon, BoxIcon, UserGroupIcon, CoinsIcon, File02Icon, Globe02Icon, CustomerService01Icon, PackageReceiveIcon, AlertCircleIcon, BellIcon, BloggerIcon, Train01Icon, Airplane01Icon, WarehouseIcon, Radar02Icon, ContainerIcon, CallIcon } from "@hugeicons/core-free-icons"
-import Image from "next/image"
-
 const data = {
-  teams: [
-    {
-      name: "Xerin Delivery Express",
-      logo: (
-        <Image src="/assets/m%20app2.png" alt="Xerin" width={20} height={20} className="rounded-sm object-cover" />
-      ),
-      plan: "Admin",
-    },
-    {
-      name: "Operations",
-      logo: (
-        <HugeiconsIcon icon={Route02Icon} strokeWidth={2} />
-      ),
-      plan: "Manager",
-    },
-    {
-      name: "Fleet Hub",
-      logo: (
-        <HugeiconsIcon icon={TruckIcon} strokeWidth={2} />
-      ),
-      plan: "Staff",
-    },
-  ],
   navMain: [
     {
       title: "Dashboard",
@@ -501,7 +475,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <TeamSwitcher teams={data.teams} />
+        <div className="flex h-16 items-center gap-3 px-4">
+          <div className="flex flex-col leading-none">
+            <span className="text-lg font-extrabold tracking-tight text-foreground">
+              Xerin <span className="text-primary">Express</span>
+            </span>
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Logistics &amp; Delivery</span>
+          </div>
+        </div>
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />

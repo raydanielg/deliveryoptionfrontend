@@ -72,11 +72,15 @@ export function LandingHeader() {
     <header className="sticky top-0 z-50 w-full border-b border-border/60 bg-background/90 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
         {/* Logo */}
-        <a href="/" className="flex items-center gap-2.5 transition-opacity hover:opacity-80">
-          <img src="/assets/social-media.png" alt="Xerin" className="size-9 rounded-lg object-cover ring-1 ring-primary/20" />
+        <a href="/" className="flex items-center gap-3 transition-opacity hover:opacity-90">
+          <div className="relative flex size-10 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-tr from-primary/20 via-primary/10 to-transparent p-1 ring-1 ring-primary/30 shadow-sm">
+            <img src="/assets/m%20app2.png" alt="Xerin Express" className="size-full rounded-lg object-contain" />
+          </div>
           <div className="flex flex-col leading-none">
-            <span className="text-base font-bold tracking-tight">Xerin Express</span>
-            <span className="text-[10px] font-medium uppercase tracking-wider text-primary/70">Logistics Platform</span>
+            <span className="text-base font-extrabold tracking-tight text-foreground">
+              Xerin <span className="text-primary">Express</span>
+            </span>
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Logistics & Delivery</span>
           </div>
         </a>
 
@@ -292,7 +296,6 @@ export function Hero() {
             className="flex w-full max-w-xl items-center gap-2 rounded-xl border border-border bg-background/80 p-2 shadow-sm backdrop-blur-sm animate-[fade-in_0.8s_ease-out_0.3s_both]"
           >
             <div className="flex flex-1 items-center gap-2 px-3">
-              <HugeiconsIcon icon={Search01Icon} strokeWidth={2} className="size-5 text-muted-foreground" />
               <input
                 type="text"
                 value={trackingNumber}
@@ -306,7 +309,6 @@ export function Hero() {
               className="inline-flex h-10 items-center gap-1.5 rounded-lg bg-primary px-5 text-sm font-medium text-primary-foreground transition-all duration-300 hover:scale-[1.02] hover:shadow-lg"
             >
               Track
-              <HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={2} className="size-4" />
             </button>
           </form>
 
@@ -316,7 +318,6 @@ export function Hero() {
               className="inline-flex h-11 items-center gap-2 rounded-lg bg-primary px-6 text-sm font-medium text-primary-foreground transition-all duration-300 hover:scale-[1.02] hover:shadow-lg"
             >
               Ship a Package
-              <HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={2} className="size-4" />
             </a>
             <a
               href="#services"
@@ -900,9 +901,13 @@ export function LandingFooter() {
           {/* Brand */}
           <RevealOnScroll>
             <div className="flex flex-col gap-5">
-              <a href="/" className="flex items-center gap-2.5 transition-opacity hover:opacity-80">
-                <img src="/assets/m%20app2.png" alt="Xerin" className="size-8 rounded-lg object-cover" />
-                <span className="text-lg font-semibold tracking-tight text-white">Xerin Express</span>
+              <a href="/" className="flex items-center gap-3 transition-opacity hover:opacity-90">
+                <div className="flex size-9 items-center justify-center rounded-xl bg-white/10 p-1 ring-1 ring-white/20">
+                  <img src="/assets/m%20app2.png" alt="Xerin Express" className="size-full rounded-lg object-contain" />
+                </div>
+                <span className="text-lg font-bold tracking-tight text-white">
+                  Xerin <span className="text-primary">Express</span>
+                </span>
               </a>
               <p className="max-w-xs text-sm text-white/50 text-pretty">
                 Multipurpose logistics &amp; delivery management platform for domestic, international,
