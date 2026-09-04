@@ -54,11 +54,17 @@ export default function ParcelCategoriesPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     try {
+      const payload = {
+        name: form.name,
+        ...(form.description ? { description: form.description } : {}),
+        ...(form.image ? { image: form.image } : {}),
+        isActive: form.isActive,
+      }
       if (editing) {
-        await api.parcelCategories.update(editing.id, form)
+        await api.parcelCategories.update(editing.id, payload)
         toast.success("Category updated")
       } else {
-        await api.parcelCategories.create(form)
+        await api.parcelCategories.create(payload)
         toast.success("Category created")
       }
       setDialogOpen(false)

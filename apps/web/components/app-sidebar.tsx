@@ -477,7 +477,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user } = useAuth()
 
   const allowedKeys = getRoleNavKeys(user?.role)
-  const filteredNav = ALL_NAV_ITEMS.filter((item) => allowedKeys.includes(item.navKey))
+  const filteredNav = ALL_NAV_ITEMS.filter((item) => allowedKeys.includes(item.navKey as never))
   const navItems = filteredNav.map(({ navKey, ...rest }) => rest)
 
   const sidebarUser = {
