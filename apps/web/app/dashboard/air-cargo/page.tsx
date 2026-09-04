@@ -5,10 +5,14 @@ import { DashboardLayout } from "@/components/dashboard-layout"
 import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/components/card"
 import { Badge } from "@workspace/ui/components/badge"
 import { Button } from "@workspace/ui/components/button"
+import { Input } from "@workspace/ui/components/input"
+import { Label } from "@workspace/ui/components/label"
 import { Skeleton } from "@workspace/ui/components/skeleton"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@workspace/ui/components/select"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@workspace/ui/components/dialog"
 import { api } from "@/lib/api"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { Airplane01Icon, Package02Icon, CheckmarkCircle02Icon, AirplaneTakeOff01Icon } from "@hugeicons/core-free-icons"
+import { Airplane01Icon, Package02Icon, CheckmarkCircle02Icon, AirplaneTakeOff01Icon, PlusIcon, ArrowRight01Icon, CheckSquareIcon, Send03Icon } from "@hugeicons/core-free-icons"
 import { toast } from "sonner"
 
 export default function AirCargoPage() {
@@ -16,21 +20,87 @@ export default function AirCargoPage() {
   const [stats, setStats] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState("")
+  const [airports, setAirports] = useState<any[]>([])
+  const [bookingOpen, setBookingOpen] = useState(false)
+  const [bookingLoading, setBookingLoading] = useState(false)
+  const [booking, setBooking] = useState({
+    originStationId: "",
+    destinationStationId: "",
+    senderName: "",
+    senderPhone: "",
+    receiverName: "",
+    receiverPhone: "",
+    actualWeightKg: "",
+    cargoType: "GENERAL",
+    description: "",
+  })
 
   useEffect(() => { loadData() }, [])
 
   async function loadData() {
     try {
-      const [listRes, statsRes] = await Promise.all([
+      const [listRes, statsRes, stRes] = await Promise.all([
         api.airCargo.list(filter ? `?status=${filter}` : ""),
         api.airCargo.stats(),
+        api.stations.list("type=AIRPORT&isActive=true"),
       ])
       setShipments(listRes.data || [])
       setStats(statsRes.data)
+      setAirports(stRes.data || [])
     } catch (err: any) {
-      toast.error(err.message || "Failed to load air cargo shipments")
+      toast.error(err.message || "Failed to load air cargo data")
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function handleBooking() {
+    if (!booking.originStationId || !booking.destinationStationId || !booking.actualWeightKg) {
+      toast.error("Please fill in airports and weight")
+      return
+    }
+    if (booking.originStationId === booking.destinationStationId) {
+      toast.error("Origin and destination must be different")
+      return
+    }
+    setBookingLoading(true)
+    try {
+      await api.airCargo.createBooking({
+        originStationId: booking.originStationId,
+        destinationStationId: booking.destinationStationId,
+        fromFullName: booking.senderName,
+        fromPhone: booking.senderPhone,
+        toFullName: booking.receiverName,
+        toPhone: booking.receiverPhone,
+        actualWeightKg: parseFloat(booking.actualWeightKg),
+        cargoType: booking.cargoType,
+        description: booking.description,
+        serviceLevel: "EXPRESS",
+        fulfillmentType: "AIRPORT_TO_AIRPORT",
+      })
+      toast.success("Air Cargo booking created successfully")
+      setBookingOpen(false)
+      setBooking({ originStationId: "", destinationStationId: "", senderName: "", senderPhone: "", receiverName: "", receiverPhone: "", actualWeightKg: "", cargoType: "GENERAL", description: "" })
+      loadData()
+    } catch (err: any) {
+      toast.error(err.message || "Failed to create booking")
+    } finally {
+      setBookingLoading(false)
+    }
+  }
+
+  async function handleAction(action: string, shipment: any) {
+    try {
+      if (action === "accept") {
+        await api.airCargo.acceptCargo(shipment.id, { accepted: true })
+        toast.success("Cargo accepted")
+      } else if (action === "dispatch") {
+        await api.airCargo.createFlightDispatch({ shipmentIds: [shipment.id] })
+        toast.success("Flight dispatch created")
+      }
+      loadData()
+    } catch (err: any) {
+      toast.error(err.message || `Failed to ${action}`)
     }
   }
 
@@ -52,10 +122,97 @@ export default function AirCargoPage() {
           <h1 className="text-2xl font-bold tracking-tight">Air Cargo</h1>
           <p className="text-sm text-muted-foreground">Manage air freight shipments, flight dispatch & customs</p>
         </div>
-        <Button onClick={() => loadData()}>
-          <HugeiconsIcon icon={Airplane01Icon} className="size-4 mr-2" />
-          Refresh
-        </Button>
+        <div className="flex gap-2">
+          <Dialog open={bookingOpen} onOpenChange={setBookingOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <HugeiconsIcon icon={PlusIcon} className="size-4 mr-2" />
+                New Booking
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-lg">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <HugeiconsIcon icon={Airplane01Icon} className="size-5 text-primary" />
+                  New Air Cargo Booking
+                </DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="grid gap-2">
+                    <Label>Origin Airport <span className="text-destructive">*</span></Label>
+                    <Select value={booking.originStationId} onValueChange={(v) => setBooking(prev => ({ ...prev, originStationId: v }))}>
+                      <SelectTrigger><SelectValue placeholder="Select origin" /></SelectTrigger>
+                      <SelectContent>
+                        {airports.map((st: any) => <SelectItem key={st.id} value={st.id}>{st.name} — {st.city}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label>Destination Airport <span className="text-destructive">*</span></Label>
+                    <Select value={booking.destinationStationId} onValueChange={(v) => setBooking(prev => ({ ...prev, destinationStationId: v }))}>
+                      <SelectTrigger><SelectValue placeholder="Select destination" /></SelectTrigger>
+                      <SelectContent>
+                        {airports.filter((st: any) => st.id !== booking.originStationId).map((st: any) => <SelectItem key={st.id} value={st.id}>{st.name} — {st.city}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="grid gap-2">
+                    <Label>Sender Name</Label>
+                    <Input value={booking.senderName} onChange={(e) => setBooking(prev => ({ ...prev, senderName: e.target.value }))} placeholder="Sender name" />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label>Sender Phone</Label>
+                    <Input value={booking.senderPhone} onChange={(e) => setBooking(prev => ({ ...prev, senderPhone: e.target.value }))} placeholder="+255..." />
+                  </div>
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="grid gap-2">
+                    <Label>Receiver Name</Label>
+                    <Input value={booking.receiverName} onChange={(e) => setBooking(prev => ({ ...prev, receiverName: e.target.value }))} placeholder="Receiver name" />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label>Receiver Phone</Label>
+                    <Input value={booking.receiverPhone} onChange={(e) => setBooking(prev => ({ ...prev, receiverPhone: e.target.value }))} placeholder="+255..." />
+                  </div>
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="grid gap-2">
+                    <Label>Weight (kg) <span className="text-destructive">*</span></Label>
+                    <Input type="number" step="0.01" value={booking.actualWeightKg} onChange={(e) => setBooking(prev => ({ ...prev, actualWeightKg: e.target.value }))} placeholder="e.g. 15.5" />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label>Cargo Type</Label>
+                    <Select value={booking.cargoType} onValueChange={(v) => setBooking(prev => ({ ...prev, cargoType: v }))}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="GENERAL">General Cargo</SelectItem>
+                        <SelectItem value="PERISHABLE">Perishable</SelectItem>
+                        <SelectItem value="DANGEROUS">Dangerous Goods</SelectItem>
+                        <SelectItem value="FRAGILE">Fragile</SelectItem>
+                        <SelectItem value="VALUABLE">Valuable</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="grid gap-2">
+                  <Label>Description</Label>
+                  <Input value={booking.description} onChange={(e) => setBooking(prev => ({ ...prev, description: e.target.value }))} placeholder="Cargo contents" />
+                </div>
+                <Button className="w-full" onClick={handleBooking} disabled={bookingLoading}>
+                  {bookingLoading ? "Creating..." : "Create Air Cargo Booking"}
+                  <HugeiconsIcon icon={ArrowRight01Icon} className="size-4 ml-2" />
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+          <Button variant="outline" onClick={() => loadData()}>
+            <HugeiconsIcon icon={Airplane01Icon} className="size-4 mr-2" />
+            Refresh
+          </Button>
+        </div>
       </div>
 
       {/* Stats */}
@@ -117,7 +274,8 @@ export default function AirCargoPage() {
                     <th className="pb-2 pr-4 font-medium">To</th>
                     <th className="pb-2 pr-4 font-medium">Cargo Type</th>
                     <th className="pb-2 pr-4 font-medium">Status</th>
-                    <th className="pb-2 font-medium">Created</th>
+                    <th className="pb-2 pr-4 font-medium">Created</th>
+                    <th className="pb-2 font-medium">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -133,7 +291,23 @@ export default function AirCargoPage() {
                           {s.status?.replace(/_/g, " ")}
                         </Badge>
                       </td>
-                      <td className="py-3 text-muted-foreground">{new Date(s.createdAt).toLocaleDateString()}</td>
+                      <td className="py-3 pr-4 text-muted-foreground">{new Date(s.createdAt).toLocaleDateString()}</td>
+                      <td className="py-3">
+                        <div className="flex gap-1">
+                          {s.status === "PENDING" && (
+                            <Button size="sm" variant="outline" onClick={() => handleAction("accept", s)}>
+                              <HugeiconsIcon icon={CheckSquareIcon} className="size-3 mr-1" />
+                              Accept
+                            </Button>
+                          )}
+                          {s.status === "CARGO_ACCEPTED" && (
+                            <Button size="sm" variant="outline" onClick={() => handleAction("dispatch", s)}>
+                              <HugeiconsIcon icon={Send03Icon} className="size-3 mr-1" />
+                              Dispatch
+                            </Button>
+                          )}
+                        </div>
+                      </td>
                     </tr>
                   ))}
                 </tbody>

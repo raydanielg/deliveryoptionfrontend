@@ -11,7 +11,7 @@ import { Skeleton } from "@workspace/ui/components/skeleton"
 import { api, ApiError } from "@/lib/api"
 import { toast } from "sonner"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { PrinterIcon, QrCode01Icon, ScanIcon, CheckmarkCircle02Icon } from "@hugeicons/core-free-icons"
+import { PrinterIcon, QrCode01Icon, ScanIcon, CheckmarkCircle02Icon, AlertTriangleIcon, ClipboardCheckIcon, Truck01Icon, Airplane01Icon, Train01Icon } from "@hugeicons/core-free-icons"
 
 const HANDOVER_STEPS = [
   { key: "PREPARED", label: "Prepared by Xerin" },
@@ -29,6 +29,8 @@ export default function ManifestDetailPage() {
   const [scanInput, setScanInput] = useState("")
   const [scanning, setScanning] = useState(false)
   const [handoverName, setHandoverName] = useState("")
+  const [reconcileNote, setReconcileNote] = useState("")
+  const [reconciling, setReconciling] = useState(false)
 
   useEffect(() => { loadManifest() }, [])
 
@@ -84,6 +86,20 @@ export default function ManifestDetailPage() {
     }
   }
 
+  async function handleReconcile() {
+    setReconciling(true)
+    try {
+      await api.manifests.updateStatus(params.id as string, { status: "RECONCILED", note: reconcileNote })
+      toast.success("Manifest reconciled successfully")
+      setReconcileNote("")
+      loadManifest()
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : "Failed to reconcile")
+    } finally {
+      setReconciling(false)
+    }
+  }
+
   if (loading) {
     return (
       <DashboardLayout breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Manifests", href: "/dashboard/manifests" }, { label: "Loading..." }]}>
@@ -101,11 +117,17 @@ export default function ManifestDetailPage() {
   }
 
   const isSGR = !!manifest.originStation
+  const isAir = manifest.transportMode === "AIR" || !!manifest.flightNumber
+  const isRoad = !isSGR && !isAir
+  const modeIcon = isSGR ? Train01Icon : isAir ? Airplane01Icon : Truck01Icon
+  const modeLabel = isSGR ? "SGR Parcel Manifest" : isAir ? "Air Cargo Manifest" : "Road Shipment Manifest"
   const totalWeight = Number(manifest.totalWeightKg || 0)
   const reservedSpace = Number(manifest.reservedBlockSpaceKg || 0)
   const remaining = reservedSpace - totalWeight
   const totalPackages = manifest.shipments?.reduce((sum: number, s: any) => sum + Number(s.order?.quantity || 1), 0) || 0
-  const loadedCount = manifest.shipments?.filter((s: any) => s.status === "IN_TRANSIT").length || 0
+  const loadedCount = manifest.shipments?.filter((s: any) => s.status === "IN_TRANSIT" || s.status === "LOADED").length || 0
+  const pendingCount = manifest.shipments?.filter((s: any) => s.status !== "IN_TRANSIT" && s.status !== "LOADED" && s.status !== "DELIVERED").length || 0
+  const allLoaded = loadedCount === manifest.totalShipments
 
   return (
     <DashboardLayout breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Manifests", href: "/dashboard/manifests" }, { label: manifest.manifestNumber }]}>
@@ -130,8 +152,11 @@ export default function ManifestDetailPage() {
         {/* Header */}
         <div className="flex items-start justify-between border-b pb-6">
           <div>
-            <h2 className="text-2xl font-bold">XERIN SGR PARCEL MANIFEST</h2>
-            <p className="text-sm text-muted-foreground mt-1">Manifest No: <span className="font-semibold text-foreground">{manifest.manifestNumber}</span></p>
+            <h2 className="text-2xl font-bold flex items-center gap-2">
+            <HugeiconsIcon icon={modeIcon} className="size-6" />
+            XERIN {isSGR ? "SGR PARCEL" : isAir ? "AIR CARGO" : "SHIPMENT"} MANIFEST
+          </h2>
+            <p className="text-sm text-muted-foreground mt-1">{modeLabel} — Manifest No: <span className="font-semibold text-foreground">{manifest.manifestNumber}</span></p>
             {isSGR && (
               <div className="mt-3 space-y-1 text-sm">
                 <p><span className="text-muted-foreground">Dispatch Date:</span> {manifest.dispatchDate ? new Date(manifest.dispatchDate).toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric" }) : "—"}</p>
@@ -285,6 +310,81 @@ export default function ManifestDetailPage() {
                 <Button variant="destructive" onClick={handleCompleteLoading}>
                   Complete Loading & Finalize Departure
                 </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Reconciliation Panel */}
+        {(manifest.status === "COMPLETED" || manifest.status === "IN_TRANSIT" || manifest.status === "ARRIVED") && manifest.status !== "RECONCILED" && (
+          <Card className="border-amber-200">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <HugeiconsIcon icon={ClipboardCheckIcon} className="size-5 text-amber-600" />
+                Manifest Reconciliation
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-3 gap-4">
+                <div className="rounded-lg border p-3 text-center">
+                  <p className="text-2xl font-bold text-green-600">{loadedCount}</p>
+                  <p className="text-xs text-muted-foreground">Loaded</p>
+                </div>
+                <div className="rounded-lg border p-3 text-center">
+                  <p className="text-2xl font-bold text-amber-600">{pendingCount}</p>
+                  <p className="text-xs text-muted-foreground">Pending</p>
+                </div>
+                <div className="rounded-lg border p-3 text-center">
+                  <p className="text-2xl font-bold">{manifest.totalShipments}</p>
+                  <p className="text-xs text-muted-foreground">Total Expected</p>
+                </div>
+              </div>
+
+              {pendingCount > 0 && (
+                <div className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 p-3 dark:bg-amber-950/20">
+                  <HugeiconsIcon icon={AlertTriangleIcon} className="size-5 text-amber-600 shrink-0" />
+                  <div className="text-sm">
+                    <p className="font-medium text-amber-900 dark:text-amber-200">Discrepancy Detected</p>
+                    <p className="text-amber-700 dark:text-amber-300">{pendingCount} shipment(s) not loaded. Review missing parcels before reconciliation.</p>
+                  </div>
+                </div>
+              )}
+
+              {allLoaded && (
+                <div className="flex items-start gap-3 rounded-lg border border-green-200 bg-green-50 p-3 dark:bg-green-950/20">
+                  <HugeiconsIcon icon={CheckmarkCircle02Icon} className="size-5 text-green-600 shrink-0" />
+                  <div className="text-sm">
+                    <p className="font-medium text-green-900 dark:text-green-200">All Parcels Loaded</p>
+                    <p className="text-green-700 dark:text-green-300">All {manifest.totalShipments} shipments confirmed loaded. Ready for reconciliation.</p>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Reconciliation notes (optional)..."
+                  value={reconcileNote}
+                  onChange={(e) => setReconcileNote(e.target.value)}
+                  className="flex-1"
+                />
+                <Button onClick={handleReconcile} disabled={reconciling}>
+                  <HugeiconsIcon icon={ClipboardCheckIcon} className="size-4 mr-2" />
+                  {reconciling ? "Reconciling..." : "Confirm Reconciliation"}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {manifest.status === "RECONCILED" && (
+          <Card className="border-green-200">
+            <CardContent className="flex items-center gap-3 py-6">
+              <div className="flex size-12 items-center justify-center rounded-full bg-green-100 dark:bg-green-900">
+                <HugeiconsIcon icon={CheckmarkCircle02Icon} className="size-6 text-green-600" />
+              </div>
+              <div>
+                <p className="font-semibold text-green-900 dark:text-green-200">Manifest Reconciled</p>
+                <p className="text-sm text-muted-foreground">All shipments have been reconciled. This manifest is complete.</p>
               </div>
             </CardContent>
           </Card>

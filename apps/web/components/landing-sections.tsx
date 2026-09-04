@@ -27,7 +27,6 @@ import {
   WarehouseIcon,
 } from "@hugeicons/core-free-icons"
 import { RevealOnScroll } from "@/components/reveal-on-scroll"
-import { TextRotator } from "@/components/text-rotator"
 
 /* ───────────────────────────── Header ───────────────────────────── */
 const navLinks = [
@@ -279,14 +278,14 @@ export function Hero() {
             <span className="text-xs font-medium uppercase tracking-[0.2em] text-primary animate-[fade-in_0.6s_ease-out]">
               Tanzania &amp; East Africa
             </span>
-            <h1 className="max-w-3xl text-4xl font-semibold tracking-tight text-foreground text-balance sm:text-5xl lg:text-6xl animate-[fade-in_0.8s_ease-out_0.1s_both]">
-              Smart logistics for{" "}
+            <h1 className="max-w-4xl text-4xl font-semibold tracking-tight text-foreground text-balance sm:text-5xl lg:text-6xl animate-[fade-in_0.8s_ease-out_0.1s_both]">
+              SMART LOGISTICS.{" "}
               <br className="hidden sm:block" />
-              <TextRotator />.
+              ONE PLATFORM. EVERY MODE.
             </h1>
             <p className="max-w-xl text-lg text-muted-foreground text-pretty animate-[fade-in_0.8s_ease-out_0.2s_both]">
-              Xerin Express is a multimodal logistics platform — road, rail (SGR), and air cargo —
-              for domestic, international, and freight operations. Track, ship, and deliver with confidence.
+              Road · Rail (SGR) · Air Cargo · Last Mile — domestic, international & freight operations
+              in one unified platform. Book, track, and deliver with confidence.
             </p>
           </div>
 
@@ -676,32 +675,72 @@ export function Coverage() {
 }
 
 /* ───────────────────────────── How It Works ───────────────────────────── */
-const steps = [
-  { number: "01", title: "Book a Shipment", desc: "Create an account, select your service type, and enter pickup & delivery details in seconds." },
-  { number: "02", title: "Get a Quote", desc: "Instant pricing based on weight, distance, and service level. Pay online via Selcom or Azampesa." },
-  { number: "03", title: "Driver Assigned", desc: "A nearby driver is automatically assigned. Receive driver details and OTP for pickup verification." },
-  { number: "04", title: "Track in Real-time", desc: "Follow your shipment live on the map with status updates from pickup to delivery." },
-  { number: "05", title: "Delivered with Proof", desc: "OTP-verified delivery with photo proof. Rate your experience and access full delivery history." },
+const modeSteps: Record<string, { number: string; title: string; desc: string }[]> = {
+  road: [
+    { number: "01", title: "Book a Shipment", desc: "Choose Boda Boda, Van, or Truck. Enter pickup & delivery details in seconds." },
+    { number: "02", title: "Get a Quote", desc: "Instant pricing based on distance, weight, and service level. Pay online via Selcom or Azampesa." },
+    { number: "03", title: "Driver Assigned", desc: "A nearby driver is automatically assigned. Receive driver details and OTP for pickup verification." },
+    { number: "04", title: "Track in Real-time", desc: "Follow your shipment live on the map with status updates from pickup to delivery." },
+    { number: "05", title: "Delivered with Proof", desc: "OTP-verified delivery with photo proof. Rate your experience and access full delivery history." },
+  ],
+  sgr: [
+    { number: "01", title: "Book SGR Parcel", desc: "Select origin & destination stations. Choose Station-to-Station, Door-to-Station, or Door-to-Door." },
+    { number: "02", title: "Drop-off / Pickup", desc: "Drop at station or schedule first-mile pickup. Parcel is scanned, weighed, and labeled." },
+    { number: "03", title: "Consolidation & Manifest", desc: "Parcels consolidated by route. Manifest generated with QR code. Block space managed per dispatch." },
+    { number: "04", title: "Rail Dispatch", desc: "Loading scan enforced. Parcel departs on train with real-time status updates." },
+    { number: "05", title: "Collection / Delivery", desc: "Arrive at destination station. OTP/QR collection or last-mile delivery via Boda/Van." },
+  ],
+  air: [
+    { number: "01", title: "Book Air Cargo", desc: "Select origin & destination airports. Choose Airport-to-Airport, Door-to-Airport, or Door-to-Door." },
+    { number: "02", title: "Cargo Acceptance", desc: "Cargo received, weighed, and verified. AWB reference issued. Consolidated for dispatch." },
+    { number: "03", title: "Flight Dispatch", desc: "Cargo uplifted on next available or scheduled flight. Tracking reference linked to AWB." },
+    { number: "04", title: "Arrival & Handling", desc: "Cargo arrives at destination airport. Customs clearance handled if applicable." },
+    { number: "05", title: "Collection / Delivery", desc: "Ready for airport collection or last-mile delivery via road transport." },
+  ],
+}
+
+const modeTabs = [
+  { key: "road", label: "Road", icon: TruckIcon },
+  { key: "sgr", label: "SGR Rail", icon: Train01Icon },
+  { key: "air", label: "Air Cargo", icon: Airplane01Icon },
 ]
 
 export function HowItWorks() {
+  const [activeMode, setActiveMode] = useState<string>("road")
+  const steps = modeSteps[activeMode] ?? modeSteps.road!
+
   return (
     <section id="how-it-works" className="bg-background py-20 lg:py-28">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <RevealOnScroll>
-          <div className="mb-16 max-w-2xl">
+          <div className="mb-12 max-w-2xl">
             <span className="text-xs font-medium uppercase tracking-[0.2em] text-primary">
               How It Works
             </span>
             <h2 className="mt-6 text-3xl font-semibold tracking-tight text-balance sm:text-4xl lg:text-5xl">
-              From booking to delivery in 5 steps
+              Choose your mode. We handle the rest.
             </h2>
+          </div>
+        </RevealOnScroll>
+
+        <RevealOnScroll>
+          <div className="mb-10 flex flex-wrap gap-2">
+            {modeTabs.map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveMode(tab.key)}
+                className={`inline-flex items-center gap-2 rounded-lg border-2 px-4 py-2 text-sm font-medium transition-all ${activeMode === tab.key ? "border-primary bg-primary/5 text-primary" : "border-border text-muted-foreground hover:border-primary/40"}`}
+              >
+                <HugeiconsIcon icon={tab.icon} strokeWidth={2} className="size-4" />
+                {tab.label}
+              </button>
+            ))}
           </div>
         </RevealOnScroll>
 
         <div className="grid gap-6 lg:grid-cols-5">
           {steps.map((step, idx) => (
-            <RevealOnScroll key={step.number} delay={idx * 100}>
+            <RevealOnScroll key={`${activeMode}-${step.number}`} delay={idx * 100}>
               <div className="group flex flex-col gap-4">
                 <div className="flex items-center gap-3">
                   <span className="text-2xl font-semibold text-primary transition-transform duration-300 group-hover:scale-110">
@@ -824,10 +863,11 @@ const footerSections = [
     title: "Services",
     links: [
       { label: "Ship a Package", href: "/ship" },
-      { label: "Domestic Delivery", href: "/services/domestic-delivery" },
+      { label: "Road Delivery", href: "/services/road-delivery" },
+      { label: "SGR Parcel Service", href: "/services/sgr-parcel" },
+      { label: "Air Cargo", href: "/services/air-cargo" },
       { label: "International Shipping", href: "/services/international-shipping" },
-      { label: "Freight Forwarding", href: "/services/freight-forwarding" },
-      { label: "Parcel Express", href: "/services/parcel-express" },
+      { label: "Warehouse & Fulfillment", href: "/services/warehouse" },
       { label: "E-commerce Fulfillment", href: "/services/ecommerce-fulfillment" },
     ],
   },

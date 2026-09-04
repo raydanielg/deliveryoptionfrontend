@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { DashboardLayout } from "@/components/dashboard-layout"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@workspace/ui/components/card"
@@ -10,6 +10,7 @@ import { Label } from "@workspace/ui/components/label"
 import { Textarea } from "@workspace/ui/components/textarea"
 import { Badge } from "@workspace/ui/components/badge"
 import { Separator } from "@workspace/ui/components/separator"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@workspace/ui/components/select"
 import { toast } from "sonner"
 import { api } from "@/lib/api"
 import { HugeiconsIcon } from "@hugeicons/react"
@@ -17,6 +18,7 @@ import {
   Package02Icon,
   CoinsIcon,
   TruckIcon,
+  BikeIcon,
   MapIcon,
   CheckmarkCircle02Icon,
   ArrowRight01Icon,
@@ -69,21 +71,44 @@ const SERVICE_OPTIONS = {
     { value: "ECONOMY", label: "Economy", desc: "5-7 days, best price", icon: CoinsIcon },
     { value: "PRIORITY", label: "Priority", desc: "Top priority handling", icon: SparklesIcon, badge: "Premium" },
   ],
-  fulfillmentType: [
+  roadFulfillmentType: [
     { value: "DOOR_TO_DOOR", label: "Door to Door", desc: "Pickup & deliver to addresses", icon: Home02Icon },
     { value: "DOOR_TO_PICKUP", label: "Door to Pickup", desc: "Deliver to pickup point", icon: Store01Icon },
     { value: "PICKUP_TO_DOOR", label: "Pickup to Door", desc: "Drop at station, deliver to door", icon: Building03Icon },
     { value: "PICKUP_TO_PICKUP", label: "Pickup to Pickup", desc: "Station to station", icon: Store01Icon },
-    { value: "WAREHOUSE_TO_DOOR", label: "Warehouse to Door", desc: "From warehouse to address", icon: Building03Icon },
-    { value: "WAREHOUSE_TO_PICKUP", label: "Warehouse to Pickup", desc: "From warehouse to pickup point", icon: Building03Icon },
+  ],
+  sgrFulfillmentType: [
+    { value: "STATION_TO_STATION", label: "Station to Station", desc: "Drop at origin, collect at destination", icon: Store01Icon },
+    { value: "DOOR_TO_STATION", label: "Door to Station", desc: "Pickup from address, collect at station", icon: Home02Icon },
+    { value: "STATION_TO_DOOR", label: "Station to Door", desc: "Drop at station, deliver to address", icon: Building03Icon },
+    { value: "DOOR_TO_DOOR", label: "Door to Door", desc: "Pickup & deliver to addresses", icon: Home02Icon },
+  ],
+  airCargoFulfillmentType: [
+    { value: "AIRPORT_TO_AIRPORT", label: "Airport to Airport", desc: "Drop at origin, collect at destination", icon: Store01Icon },
+    { value: "DOOR_TO_AIRPORT", label: "Door to Airport", desc: "Pickup from address, collect at airport", icon: Home02Icon },
+    { value: "AIRPORT_TO_DOOR", label: "Airport to Door", desc: "Drop at airport, deliver to address", icon: Building03Icon },
+    { value: "DOOR_TO_DOOR", label: "Door to Door", desc: "Pickup & deliver to addresses", icon: Home02Icon },
   ],
   packageType: [
     { value: "BOX", label: "Box", icon: Package02Icon },
     { value: "ENVELOPE", label: "Envelope", icon: Mail01Icon },
     { value: "BAG", label: "Bag/Sack", icon: Package02Icon },
     { value: "PALLET", label: "Pallet", icon: Package02Icon },
-    { value: "Cylinder", label: "Cylinder/Tube", icon: Package02Icon },
+    { value: "CRATE", label: "Crate", icon: Package02Icon },
+    { value: "CARGO", label: "Cargo", icon: Package02Icon },
     { value: "OTHER", label: "Other", icon: Package02Icon },
+  ],
+  cargoType: [
+    { value: "GENERAL", label: "General Cargo", desc: "Standard goods" },
+    { value: "PERISHABLE", label: "Perishable", desc: "Food, flowers, medicine" },
+    { value: "DANGEROUS", label: "Dangerous Goods", desc: "Hazardous materials" },
+    { value: "FRAGILE", label: "Fragile", desc: "Glass, electronics" },
+    { value: "VALUABLE", label: "Valuable", desc: "High-value items" },
+  ],
+  vehicleCategory: [
+    { value: "BODA_BODA", label: "Boda Boda", desc: "Motorcycle — small parcels", icon: BikeIcon },
+    { value: "VAN", label: "Van / Kirikuu", desc: "Mid-size loads", icon: TruckIcon },
+    { value: "TRUCK", label: "Truck / Lori", desc: "Heavy & oversized cargo", icon: TruckIcon },
   ],
   paymentMethod: [
     { value: "MOBILE_MONEY", label: "Mobile Money", desc: "M-Pesa, Tigo Pesa, Airtel Money", icon: SmartphoneIcon },
@@ -100,12 +125,17 @@ export default function NewShipmentPage() {
   const [quoteResult, setQuoteResult] = useState<any>(null)
   const [createdShipment, setCreatedShipment] = useState<any>(null)
   const [paymentMethod, setPaymentMethod] = useState("MOBILE_MONEY")
+  const [stations, setStations] = useState<any[]>([])
 
   const [form, setForm] = useState({
     category: "DOMESTIC",
     transportMode: "ROAD",
     serviceLevel: "STANDARD",
     fulfillmentType: "DOOR_TO_DOOR",
+    vehicleCategory: "",
+    cargoType: "GENERAL",
+    originStationId: "",
+    destinationStationId: "",
 
     fromFullName: "",
     fromPhone: "",
@@ -140,9 +170,34 @@ export default function NewShipmentPage() {
     notes: "",
   })
 
+  useEffect(() => {
+    if (form.transportMode === "RAIL") {
+      api.stations.list("type=SGR_STATION&isActive=true").then(res => setStations(res.data || [])).catch(() => setStations([]))
+    } else if (form.transportMode === "AIR") {
+      api.stations.list("type=AIRPORT&isActive=true").then(res => setStations(res.data || [])).catch(() => setStations([]))
+    } else {
+      setStations([])
+    }
+  }, [form.transportMode])
+
   function updateForm(key: string, value: any) {
-    setForm(prev => ({ ...prev, [key]: value }))
+    setForm(prev => {
+      const next = { ...prev, [key]: value }
+      if (key === "transportMode") {
+        if (value === "RAIL") next.fulfillmentType = "STATION_TO_STATION"
+        else if (value === "AIR") next.fulfillmentType = "AIRPORT_TO_AIRPORT"
+        else next.fulfillmentType = "DOOR_TO_DOOR"
+        next.originStationId = ""
+        next.destinationStationId = ""
+      }
+      return next
+    })
   }
+
+  const fulfillmentOptions =
+    form.transportMode === "RAIL" ? SERVICE_OPTIONS.sgrFulfillmentType :
+    form.transportMode === "AIR" ? SERVICE_OPTIONS.airCargoFulfillmentType :
+    SERVICE_OPTIONS.roadFulfillmentType
 
   const steps = ["Service", "Package", "Sender", "Receiver", "Quote", "Payment"]
 
@@ -192,7 +247,7 @@ export default function NewShipmentPage() {
   async function createShipment() {
     setLoading(true)
     try {
-      const result = await api.shipments.create({
+      const basePayload: Record<string, any> = {
         category: form.category,
         transportMode: form.transportMode,
         serviceLevel: form.serviceLevel,
@@ -231,7 +286,27 @@ export default function NewShipmentPage() {
         quantity: parseInt(form.quantity) || 1,
         isFragile: form.isFragile,
         paymentMethod,
-      })
+      }
+
+      let result: any
+
+      if (form.transportMode === "RAIL") {
+        result = await api.sgr.createBooking({
+          ...basePayload,
+          originStationId: form.originStationId,
+          destinationStationId: form.destinationStationId,
+        })
+      } else if (form.transportMode === "AIR") {
+        result = await api.airCargo.createBooking({
+          ...basePayload,
+          originStationId: form.originStationId,
+          destinationStationId: form.destinationStationId,
+          cargoType: form.cargoType,
+        })
+      } else {
+        if (form.vehicleCategory) basePayload.vehicleCategory = form.vehicleCategory
+        result = await api.shipments.create(basePayload)
+      }
 
       setCreatedShipment(result.data)
       setStep(7)
@@ -372,11 +447,15 @@ export default function NewShipmentPage() {
                 <HugeiconsIcon icon={Home02Icon} strokeWidth={2} className="size-5 text-primary" />
                 Fulfillment Type
               </CardTitle>
-              <CardDescription>Pickup and delivery options</CardDescription>
+              <CardDescription>
+                {form.transportMode === "RAIL" ? "SGR station pickup & delivery options" :
+                 form.transportMode === "AIR" ? "Airport pickup & delivery options" :
+                 "Pickup and delivery options"}
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {SERVICE_OPTIONS.fulfillmentType.map((opt) => (
+                {fulfillmentOptions.map((opt) => (
                   <button
                     key={opt.value}
                     type="button"
@@ -395,6 +474,130 @@ export default function NewShipmentPage() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Mode-specific: SGR Station Selection */}
+          {form.transportMode === "RAIL" && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <HugeiconsIcon icon={Train01Icon} strokeWidth={2} className="size-5 text-primary" />
+                  SGR Stations
+                </CardTitle>
+                <CardDescription>Select origin and destination railway stations</CardDescription>
+              </CardHeader>
+              <CardContent className="grid gap-4 sm:grid-cols-2">
+                <div className="grid gap-2">
+                  <Label>Origin Station <span className="text-destructive">*</span></Label>
+                  <Select value={form.originStationId} onValueChange={(v) => updateForm("originStationId", v)}>
+                    <SelectTrigger><SelectValue placeholder="Select origin station" /></SelectTrigger>
+                    <SelectContent>
+                      {stations.map((st: any) => (
+                        <SelectItem key={st.id} value={st.id}>{st.name} — {st.city}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid gap-2">
+                  <Label>Destination Station <span className="text-destructive">*</span></Label>
+                  <Select value={form.destinationStationId} onValueChange={(v) => updateForm("destinationStationId", v)}>
+                    <SelectTrigger><SelectValue placeholder="Select destination station" /></SelectTrigger>
+                    <SelectContent>
+                      {stations.filter((st: any) => st.id !== form.originStationId).map((st: any) => (
+                        <SelectItem key={st.id} value={st.id}>{st.name} — {st.city}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Mode-specific: Air Cargo Fields */}
+          {form.transportMode === "AIR" && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <HugeiconsIcon icon={Airplane01Icon} strokeWidth={2} className="size-5 text-primary" />
+                  Air Cargo Details
+                </CardTitle>
+                <CardDescription>Select airports and cargo type</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="grid gap-2">
+                    <Label>Origin Airport <span className="text-destructive">*</span></Label>
+                    <Select value={form.originStationId} onValueChange={(v) => updateForm("originStationId", v)}>
+                      <SelectTrigger><SelectValue placeholder="Select origin airport" /></SelectTrigger>
+                      <SelectContent>
+                        {stations.map((st: any) => (
+                          <SelectItem key={st.id} value={st.id}>{st.name} — {st.city}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label>Destination Airport <span className="text-destructive">*</span></Label>
+                    <Select value={form.destinationStationId} onValueChange={(v) => updateForm("destinationStationId", v)}>
+                      <SelectTrigger><SelectValue placeholder="Select destination airport" /></SelectTrigger>
+                      <SelectContent>
+                        {stations.filter((st: any) => st.id !== form.originStationId).map((st: any) => (
+                          <SelectItem key={st.id} value={st.id}>{st.name} — {st.city}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="grid gap-2">
+                  <Label>Cargo Type</Label>
+                  <div className="grid gap-2 sm:grid-cols-5">
+                    {SERVICE_OPTIONS.cargoType.map((opt) => (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => updateForm("cargoType", opt.value)}
+                        className={`rounded-lg border-2 p-2 text-center text-xs font-medium transition-all ${form.cargoType === opt.value ? "border-primary bg-primary/5 text-primary" : "border-muted text-muted-foreground hover:border-primary/40"}`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Mode-specific: Road Vehicle Category */}
+          {form.transportMode === "ROAD" && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <HugeiconsIcon icon={TruckIcon} strokeWidth={2} className="size-5 text-primary" />
+                  Vehicle Type
+                </CardTitle>
+                <CardDescription>Choose the type of road vehicle</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-3 sm:grid-cols-3">
+                  {SERVICE_OPTIONS.vehicleCategory.map((opt) => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => updateForm("vehicleCategory", opt.value)}
+                      className={`flex items-center gap-3 rounded-xl border-2 p-3 text-left transition-all ${form.vehicleCategory === opt.value ? "border-primary bg-primary/5 shadow-sm" : "border-muted hover:border-primary/40"}`}
+                    >
+                      <div className={`flex size-9 items-center justify-center rounded-lg ${form.vehicleCategory === opt.value ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
+                        <HugeiconsIcon icon={opt.icon} strokeWidth={2} className="size-4" />
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium">{opt.label}</div>
+                        <div className="text-xs text-muted-foreground">{opt.desc}</div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           <div className="flex justify-end">
             <Button size="lg" onClick={() => setStep(2)}>
