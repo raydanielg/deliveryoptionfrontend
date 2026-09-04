@@ -158,9 +158,9 @@ export default function TrackingPage() {
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">
-                  {MODE_FLOWS[data.shipment.transportMode].map((step, i) => {
+                  {MODE_FLOWS[data.shipment.transportMode]!.map((step, i) => {
                     const currentStatus = data.shipment.status
-                    const flow = MODE_FLOWS[data.shipment.transportMode]
+                    const flow = MODE_FLOWS[data.shipment.transportMode]!
                     const currentIdx = flow.findIndex(s => s.key === currentStatus)
                     const isCompleted = currentIdx > i
                     const isCurrent = currentIdx === i
