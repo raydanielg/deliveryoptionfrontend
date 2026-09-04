@@ -11,7 +11,7 @@ import { Skeleton } from "@workspace/ui/components/skeleton"
 import { api } from "@/lib/api"
 import { toast } from "sonner"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { MapIcon, Package02Icon, TruckIcon, UserIcon, CoinsIcon, ClockIcon, CalendarIcon, CheckmarkCircle02Icon, CancelCircleIcon } from "@hugeicons/core-free-icons"
+import { MapIcon, Package02Icon, TruckIcon, UserIcon, CoinsIcon, ClockIcon, CalendarIcon, CheckmarkCircle02Icon, CancelCircleIcon, Train01Icon, Airplane01Icon, ConfirmationNumberIcon } from "@hugeicons/core-free-icons"
 
 export default function ShipmentDetailPage() {
   const params = useParams()
@@ -158,6 +158,82 @@ export default function ShipmentDetailPage() {
               </div>
             </CardContent>
           </Card>
+
+          {(shipment.transportMode === "RAIL" || shipment.transportMode === "AIR") && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <HugeiconsIcon icon={shipment.transportMode === "RAIL" ? Train01Icon : Airplane01Icon} strokeWidth={2} className="size-4" />
+                  {shipment.transportMode === "RAIL" ? "SGR Rail Details" : "Air Cargo Details"}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {shipment.originStation && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Origin</span>
+                    <span className="text-sm font-medium">{shipment.originStation.name} — {shipment.originStation.city}</span>
+                  </div>
+                )}
+                {shipment.destinationStation && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Destination</span>
+                    <span className="text-sm font-medium">{shipment.destinationStation.name} — {shipment.destinationStation.city}</span>
+                  </div>
+                )}
+                {shipment.trainNumber && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Train Number</span>
+                    <span className="text-sm font-medium">{shipment.trainNumber}</span>
+                  </div>
+                )}
+                {shipment.flightNumber && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Flight Number</span>
+                    <span className="text-sm font-medium">{shipment.flightNumber}</span>
+                  </div>
+                )}
+                {shipment.awbNumber && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">AWB Number</span>
+                    <span className="flex items-center gap-1 text-sm font-medium">
+                      <HugeiconsIcon icon={ConfirmationNumberIcon} strokeWidth={2} className="size-3.5 text-sky-600" />
+                      {shipment.awbNumber}
+                    </span>
+                  </div>
+                )}
+                {shipment.cargoType && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Cargo Type</span>
+                    <Badge variant="secondary">{shipment.cargoType.replace(/_/g, " ")}</Badge>
+                  </div>
+                )}
+                {shipment.sgrServiceType && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">SGR Service</span>
+                    <Badge variant="secondary">{shipment.sgrServiceType.replace(/_/g, " ")}</Badge>
+                  </div>
+                )}
+                {shipment.airCargoServiceType && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Air Cargo Service</span>
+                    <Badge variant="secondary">{shipment.airCargoServiceType.replace(/_/g, " ")}</Badge>
+                  </div>
+                )}
+                {shipment.shelfBinLocation && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Shelf/Bin</span>
+                    <span className="text-sm font-medium">{shipment.shelfBinLocation}</span>
+                  </div>
+                )}
+                {shipment.consolidationBatchId && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Consolidation Batch</span>
+                    <span className="text-sm font-medium">{shipment.consolidationBatchId}</span>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
           <Card>
             <CardHeader>

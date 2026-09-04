@@ -246,6 +246,10 @@ const data = {
           url: "/dashboard/pricing/surcharges",
         },
         {
+          title: "Mode Pricing",
+          url: "/dashboard/pricing/mode-config",
+        },
+        {
           title: "Quotes",
           url: "/dashboard/pricing/quotes",
         },

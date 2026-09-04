@@ -93,6 +93,8 @@ export const api = {
     listSurcharges: () => request("/pricing/surcharges"),
     createSurcharge: (body: Record<string, any>) => request("/pricing/surcharges", { method: "POST", body }),
     deleteSurcharge: (id: string) => request(`/pricing/surcharges/${id}`, { method: "DELETE" }),
+    getModeConfig: (transportMode: string) => request(`/pricing/mode-config/${transportMode}`),
+    updateModeConfig: (transportMode: string, body: Record<string, any>) => request(`/pricing/mode-config/${transportMode}`, { method: "PUT", body }),
   },
   drivers: {
     list: () => request("/drivers"),
