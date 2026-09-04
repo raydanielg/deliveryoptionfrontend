@@ -183,7 +183,7 @@ export default function AirCargoPage() {
                   </div>
                   <div className="grid gap-2">
                     <Label>Cargo Type</Label>
-                    <Select value={booking.cargoType} onValueChange={(v) => setBooking(prev => ({ ...prev, cargoType: v }))}>
+                    <Select value={booking.cargoType} onValueChange={(v) => setBooking(prev => ({ ...prev, cargoType: v ?? "" }))}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="GENERAL">General Cargo</SelectItem>
