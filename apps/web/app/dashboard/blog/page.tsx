@@ -285,7 +285,7 @@ export default function BlogPage() {
                 onChange={(e) => setSearch(e.target.value)}
                 className="sm:max-w-xs"
               />
-              <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v === "all" ? "" : v); setPage(1) }}>
+              <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v === "all" ? "" : (v ?? "")); setPage(1) }}>
                 <SelectTrigger className="sm:w-40">
                   <SelectValue placeholder="All statuses" />
                 </SelectTrigger>
@@ -390,7 +390,7 @@ export default function BlogPage() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label>Status</Label>
-                <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
+                <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: (v ?? "DRAFT") })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="DRAFT">Draft</SelectItem>
@@ -401,7 +401,7 @@ export default function BlogPage() {
               </div>
               <div>
                 <Label>Category</Label>
-                <Select value={form.categoryId} onValueChange={(v) => setForm({ ...form, categoryId: v === "none" ? "" : v })}>
+                <Select value={form.categoryId} onValueChange={(v) => setForm({ ...form, categoryId: v === "none" ? "" : (v ?? "") })}>
                   <SelectTrigger><SelectValue placeholder="No category" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">No category</SelectItem>

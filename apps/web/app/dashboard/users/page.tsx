@@ -233,7 +233,7 @@ export default function UsersPage() {
                       <td className="px-4 py-3">{u.email}</td>
                       <td className="px-4 py-3">{u.phone || "—"}</td>
                       <td className="px-4 py-3">
-                        <Select value={u.role} onValueChange={(v) => changeRole(u.id, v)}>
+                        <Select value={u.role} onValueChange={(v) => { if (v) changeRole(u.id, v) }}>
                           <SelectTrigger className="h-7 w-[160px] text-xs"><SelectValue /></SelectTrigger>
                           <SelectContent>
                             {ROLES.map((r) => <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>)}
