@@ -9,7 +9,7 @@ import { Badge } from "@workspace/ui/components/badge"
 import { Separator } from "@workspace/ui/components/separator"
 import { api, ApiError } from "@/lib/api"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { SearchIcon, MapIcon, Package02Icon, TruckIcon, Train01Icon, Airplane01Icon, CheckmarkCircle02Icon, ClockIcon, WarehouseIcon, PackageReceiveIcon, ContainerIcon, Send03Icon } from "@hugeicons/core-free-icons"
+import { SearchIcon, MapIcon, Package02Icon, TruckIcon, Train01Icon, Airplane01Icon, CheckmarkCircle02Icon, ClockIcon, WarehouseIcon, PackageReceiveIcon, ContainerIcon, SendIcon } from "@hugeicons/core-free-icons"
 
 const MODE_FLOWS: Record<string, { key: string; label: string; icon: any }[]> = {
   ROAD: [
@@ -17,7 +17,7 @@ const MODE_FLOWS: Record<string, { key: string; label: string; icon: any }[]> = 
     { key: "ASSIGNED", label: "Driver Assigned", icon: TruckIcon },
     { key: "PICKED_UP", label: "Picked Up", icon: PackageReceiveIcon },
     { key: "IN_TRANSIT", label: "In Transit", icon: TruckIcon },
-    { key: "OUT_FOR_DELIVERY", label: "Out for Delivery", icon: Send03Icon },
+    { key: "OUT_FOR_DELIVERY", label: "Out for Delivery", icon: SendIcon },
     { key: "DELIVERED", label: "Delivered", icon: CheckmarkCircle02Icon },
   ],
   RAIL: [
@@ -28,7 +28,7 @@ const MODE_FLOWS: Record<string, { key: string; label: string; icon: any }[]> = 
     { key: "LOADED", label: "Loaded on Train", icon: Train01Icon },
     { key: "IN_TRANSIT", label: "Rail Transit", icon: Train01Icon },
     { key: "ARRIVED_AT_DESTINATION", label: "Arrived at Destination", icon: WarehouseIcon },
-    { key: "OUT_FOR_DELIVERY", label: "Out for Delivery", icon: Send03Icon },
+    { key: "OUT_FOR_DELIVERY", label: "Out for Delivery", icon: SendIcon },
     { key: "DELIVERED", label: "Delivered", icon: CheckmarkCircle02Icon },
   ],
   AIR: [
@@ -38,7 +38,7 @@ const MODE_FLOWS: Record<string, { key: string; label: string; icon: any }[]> = 
     { key: "LOADED", label: "Loaded on Flight", icon: Airplane01Icon },
     { key: "IN_TRANSIT", label: "Air Transit", icon: Airplane01Icon },
     { key: "ARRIVED_AT_AIRPORT", label: "Arrived at Airport", icon: WarehouseIcon },
-    { key: "OUT_FOR_DELIVERY", label: "Out for Delivery", icon: Send03Icon },
+    { key: "OUT_FOR_DELIVERY", label: "Out for Delivery", icon: SendIcon },
     { key: "DELIVERED", label: "Delivered", icon: CheckmarkCircle02Icon },
   ],
 }

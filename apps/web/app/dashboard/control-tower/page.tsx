@@ -8,7 +8,7 @@ import { Button } from "@workspace/ui/components/button"
 import { Skeleton } from "@workspace/ui/components/skeleton"
 import { api } from "@/lib/api"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { Radar02Icon, TruckIcon, Train01Icon, Airplane01Icon, WarehouseIcon, AlertCircleIcon, Dollar01Icon, Clock01Icon, TrendingUp01Icon, AlertTriangleIcon, CheckmarkCircle02Icon } from "@hugeicons/core-free-icons"
+import { Radar02Icon, TruckIcon, Train01Icon, Airplane01Icon, WarehouseIcon, AlertCircleIcon, Dollar01Icon, Clock01Icon, TrendingUpIcon, AlertTriangle, CheckmarkCircle02Icon } from "@hugeicons/core-free-icons"
 import { toast } from "sonner"
 
 export default function ControlTowerPage() {
@@ -241,7 +241,7 @@ export default function ControlTowerPage() {
           <CardContent className="p-4">
             <div className="flex items-center gap-3 mb-2">
               <div className="flex size-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white">
-                <HugeiconsIcon icon={TrendingUp01Icon} className="size-5" />
+                <HugeiconsIcon icon={TrendingUpIcon} className="size-5" />
               </div>
               <div className="font-semibold">On-Time Performance</div>
             </div>
@@ -299,7 +299,7 @@ export default function ControlTowerPage() {
           <CardContent className="p-4">
             <div className="flex items-center gap-3 mb-2">
               <div className="flex size-10 items-center justify-center rounded-xl bg-gradient-to-br from-red-500 to-rose-600 text-white">
-                <HugeiconsIcon icon={AlertTriangleIcon} className="size-5" />
+                <HugeiconsIcon icon={AlertTriangle} className="size-5" />
               </div>
               <div className="font-semibold">Exceptions</div>
             </div>
@@ -329,7 +329,7 @@ export default function ControlTowerPage() {
       <Card className="mt-4">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <HugeiconsIcon icon={AlertTriangleIcon} className="size-5 text-red-500" />
+            <HugeiconsIcon icon={AlertTriangle} className="size-5 text-red-500" />
             Recent Exceptions {modeFilter !== "ALL" && `(${modeFilter})`}
           </CardTitle>
         </CardHeader>
@@ -346,7 +346,7 @@ export default function ControlTowerPage() {
                 <div key={i} className="flex items-center justify-between rounded-lg border p-3">
                   <div className="flex items-center gap-3">
                     <div className={`flex size-8 items-center justify-center rounded-lg ${exc.status === "RESOLVED" ? "bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-300" : exc.status === "ESCALATED" ? "bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-300" : "bg-amber-100 text-amber-600 dark:bg-amber-900 dark:text-amber-300"}`}>
-                      <HugeiconsIcon icon={exc.status === "RESOLVED" ? CheckmarkCircle02Icon : AlertTriangleIcon} className="size-4" />
+                      <HugeiconsIcon icon={exc.status === "RESOLVED" ? CheckmarkCircle02Icon : AlertTriangle} className="size-4" />
                     </div>
                     <div>
                       <div className="text-sm font-medium">{exc.type?.replace(/_/g, " ") || exc.description || "Exception"}</div>

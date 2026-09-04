@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@workspace/ui/components/dialog"
 import { api } from "@/lib/api"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { Train01Icon, Package02Icon, ScaleIcon, CheckmarkCircle02Icon, PlusIcon, MapPinIcon, LayersIcon, TrainStationIcon, ArrowRight01Icon, ZapIcon } from "@hugeicons/core-free-icons"
+import { Train01Icon, Package02Icon, ScaleIcon, CheckmarkCircle02Icon, PlusIcon, MapPinIcon, LayersIcon, ArrowRight01Icon, ZapIcon } from "@hugeicons/core-free-icons"
 import { toast } from "sonner"
 
 export default function SGRPage() {
@@ -230,7 +230,7 @@ export default function SGRPage() {
         <Card className="mt-4">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <HugeiconsIcon icon={TrainStationIcon} className="size-5 text-primary" />
+              <HugeiconsIcon icon={Train01Icon} className="size-5 text-primary" />
               Station Capacity
             </CardTitle>
           </CardHeader>

@@ -31,7 +31,7 @@ export default function MapSettingsPage() {
   const [testing, setTesting] = useState(false)
 
   // Form state
-  const [provider, setProvider] = useState("carto_dark")
+  const [provider, setProvider] = useState("google_maps")
   const [googleMapsApiKey, setGoogleMapsApiKey] = useState("")
   const [mapboxAccessToken, setMapboxAccessToken] = useState("")
   const [maptilerApiKey, setMaptilerApiKey] = useState("")

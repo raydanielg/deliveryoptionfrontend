@@ -11,7 +11,7 @@ import { Skeleton } from "@workspace/ui/components/skeleton"
 import { api, ApiError } from "@/lib/api"
 import { toast } from "sonner"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { PrinterIcon, QrCode01Icon, ScanIcon, CheckmarkCircle02Icon, AlertTriangleIcon, ClipboardCheckIcon, Truck01Icon, Airplane01Icon, Train01Icon } from "@hugeicons/core-free-icons"
+import { PrinterIcon, QrCode01Icon, ScanIcon, CheckmarkCircle02Icon, AlertTriangle, ClipboardCheckIcon, TruckIcon, Airplane01Icon, Train01Icon } from "@hugeicons/core-free-icons"
 
 const HANDOVER_STEPS = [
   { key: "PREPARED", label: "Prepared by Xerin" },
@@ -119,7 +119,7 @@ export default function ManifestDetailPage() {
   const isSGR = !!manifest.originStation
   const isAir = manifest.transportMode === "AIR" || !!manifest.flightNumber
   const isRoad = !isSGR && !isAir
-  const modeIcon = isSGR ? Train01Icon : isAir ? Airplane01Icon : Truck01Icon
+  const modeIcon = isSGR ? Train01Icon : isAir ? Airplane01Icon : TruckIcon
   const modeLabel = isSGR ? "SGR Parcel Manifest" : isAir ? "Air Cargo Manifest" : "Road Shipment Manifest"
   const totalWeight = Number(manifest.totalWeightKg || 0)
   const reservedSpace = Number(manifest.reservedBlockSpaceKg || 0)
@@ -342,7 +342,7 @@ export default function ManifestDetailPage() {
 
               {pendingCount > 0 && (
                 <div className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 p-3 dark:bg-amber-950/20">
-                  <HugeiconsIcon icon={AlertTriangleIcon} className="size-5 text-amber-600 shrink-0" />
+                  <HugeiconsIcon icon={AlertTriangle} className="size-5 text-amber-600 shrink-0" />
                   <div className="text-sm">
                     <p className="font-medium text-amber-900 dark:text-amber-200">Discrepancy Detected</p>
                     <p className="text-amber-700 dark:text-amber-300">{pendingCount} shipment(s) not loaded. Review missing parcels before reconciliation.</p>

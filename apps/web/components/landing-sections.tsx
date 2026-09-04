@@ -459,8 +459,10 @@ export function Coverage() {
         doubleClickZoom: true,
       })
 
-      L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
-        maxZoom: 19,
+      const gKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ""
+      L.tileLayer(`https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&key=${gKey}`, {
+        maxZoom: 20,
+        subdomains: ["0", "1", "2", "3"],
       }).addTo(map)
 
       L.control.zoom({ position: "topright" }).addTo(map)

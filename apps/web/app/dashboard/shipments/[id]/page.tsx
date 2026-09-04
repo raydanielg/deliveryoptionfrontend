@@ -11,7 +11,7 @@ import { Skeleton } from "@workspace/ui/components/skeleton"
 import { api } from "@/lib/api"
 import { toast } from "sonner"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { MapIcon, Package02Icon, TruckIcon, UserIcon, CoinsIcon, ClockIcon, CalendarIcon, CheckmarkCircle02Icon, CancelCircleIcon, Train01Icon, Airplane01Icon, ConfirmationNumberIcon } from "@hugeicons/core-free-icons"
+import { MapIcon, Package02Icon, TruckIcon, UserIcon, CoinsIcon, ClockIcon, CalendarIcon, CheckmarkCircle02Icon, CancelCircleIcon, Train01Icon, Airplane01Icon, Ticket01Icon } from "@hugeicons/core-free-icons"
 
 export default function ShipmentDetailPage() {
   const params = useParams()
@@ -196,7 +196,7 @@ export default function ShipmentDetailPage() {
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">AWB Number</span>
                     <span className="flex items-center gap-1 text-sm font-medium">
-                      <HugeiconsIcon icon={ConfirmationNumberIcon} strokeWidth={2} className="size-3.5 text-sky-600" />
+                      <HugeiconsIcon icon={Ticket01Icon} strokeWidth={2} className="size-3.5 text-sky-600" />
                       {shipment.awbNumber}
                     </span>
                   </div>

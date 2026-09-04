@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@workspace/ui/components/dialog"
 import { api } from "@/lib/api"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { Airplane01Icon, Package02Icon, CheckmarkCircle02Icon, AirplaneTakeOff01Icon, PlusIcon, ArrowRight01Icon, CheckSquareIcon, Send03Icon } from "@hugeicons/core-free-icons"
+import { Airplane01Icon, Package02Icon, CheckmarkCircle02Icon, AirplaneTakeOff01Icon, PlusIcon, ArrowRight01Icon, CheckSquare, SendIcon } from "@hugeicons/core-free-icons"
 import { toast } from "sonner"
 
 export default function AirCargoPage() {
@@ -296,13 +296,13 @@ export default function AirCargoPage() {
                         <div className="flex gap-1">
                           {s.status === "PENDING" && (
                             <Button size="sm" variant="outline" onClick={() => handleAction("accept", s)}>
-                              <HugeiconsIcon icon={CheckSquareIcon} className="size-3 mr-1" />
+                              <HugeiconsIcon icon={CheckSquare} className="size-3 mr-1" />
                               Accept
                             </Button>
                           )}
                           {s.status === "CARGO_ACCEPTED" && (
                             <Button size="sm" variant="outline" onClick={() => handleAction("dispatch", s)}>
-                              <HugeiconsIcon icon={Send03Icon} className="size-3 mr-1" />
+                              <HugeiconsIcon icon={SendIcon} className="size-3 mr-1" />
                               Dispatch
                             </Button>
                           )}

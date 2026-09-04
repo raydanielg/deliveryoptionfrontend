@@ -18,7 +18,7 @@ import {
 } from "@workspace/ui/components/sidebar"
 import { Toaster } from "@workspace/ui/components/sonner"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { Bell01Icon, Search01Icon } from "@hugeicons/core-free-icons"
+import { BellIcon, Search01Icon } from "@hugeicons/core-free-icons"
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -87,7 +87,7 @@ export function DashboardLayout({ children, breadcrumbs }: DashboardLayoutProps)
                 onClick={() => setNotifOpen((v) => !v)}
                 className="relative flex size-9 items-center justify-center rounded-lg border border-border/40 bg-white text-foreground transition-all duration-200 hover:bg-muted/40 hover:shadow-sm dark:bg-slate-900 dark:hover:bg-slate-800"
               >
-                <HugeiconsIcon icon={Bell01Icon} strokeWidth={2} className="size-4.5" />
+                <HugeiconsIcon icon={BellIcon} strokeWidth={2} className="size-4.5" />
                 <span className="absolute -right-0.5 -top-0.5 flex size-4 items-center justify-center rounded-full bg-primary text-[9px] font-bold text-primary-foreground shadow-sm">
                   3
                 </span>

@@ -12,7 +12,7 @@ import { Separator } from "@workspace/ui/components/separator"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@workspace/ui/components/dialog"
 import { api } from "@/lib/api"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { WarehouseIcon, Package02Icon, PackageReceiveIcon, ContainerIcon, CheckmarkCircle02Icon, ScaleIcon, Tag01Icon, ShelfIcon, LayersIcon, Send03Icon, Clock01Icon } from "@hugeicons/core-free-icons"
+import { WarehouseIcon, Package02Icon, PackageReceiveIcon, ContainerIcon, CheckmarkCircle02Icon, ScaleIcon, Tag01Icon, Bookshelf01Icon, LayersIcon, SendIcon, Clock01Icon } from "@hugeicons/core-free-icons"
 import { toast } from "sonner"
 
 export default function WarehousePage() {
@@ -273,13 +273,13 @@ export default function WarehousePage() {
                           )}
                           {s.status === "LABELED" && (
                             <Button size="sm" variant="outline" onClick={() => setShelfDialog(s)}>
-                              <HugeiconsIcon icon={ShelfIcon} className="size-3 mr-1" />
+                              <HugeiconsIcon icon={Bookshelf01Icon} className="size-3 mr-1" />
                               Shelve
                             </Button>
                           )}
                           {(s.status === "SHELVED" || s.status === "CONSOLIDATED") && (
                             <Button size="sm" variant="outline" onClick={() => handleAction("release", s)}>
-                              <HugeiconsIcon icon={Send03Icon} className="size-3 mr-1" />
+                              <HugeiconsIcon icon={SendIcon} className="size-3 mr-1" />
                               Release
                             </Button>
                           )}
@@ -303,7 +303,7 @@ export default function WarehousePage() {
         <DialogContent className="max-w-sm">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <HugeiconsIcon icon={ShelfIcon} className="size-5 text-primary" />
+              <HugeiconsIcon icon={Bookshelf01Icon} className="size-5 text-primary" />
               Assign Shelf & Bin
             </DialogTitle>
           </DialogHeader>

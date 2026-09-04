@@ -11,7 +11,7 @@ import { Skeleton } from "@workspace/ui/components/skeleton"
 import { api } from "@/lib/api"
 import { toast } from "sonner"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { CoinsIcon, TruckIcon, Train01Icon, Airplane01Icon, Save02Icon } from "@hugeicons/core-free-icons"
+import { CoinsIcon, TruckIcon, Train01Icon, Airplane01Icon, SaveIcon } from "@hugeicons/core-free-icons"
 
 const MODES = [
   { key: "ROAD", label: "Road", icon: TruckIcon, color: "text-blue-600", bg: "bg-blue-50", border: "border-blue-200" },
@@ -187,7 +187,7 @@ export default function ModePricingConfigPage() {
                   {saving ? (
                     <span className="flex items-center gap-2"><span className="size-4 animate-spin rounded-full border-2 border-current border-t-transparent" /> Saving...</span>
                   ) : (
-                    <span className="flex items-center gap-2"><HugeiconsIcon icon={Save02Icon} strokeWidth={2} className="size-4" /> Save Configuration</span>
+                    <span className="flex items-center gap-2"><HugeiconsIcon icon={SaveIcon} strokeWidth={2} className="size-4" /> Save Configuration</span>
                   )}
                 </Button>
               </div>

@@ -59,8 +59,9 @@ export default function TrackingMapPage() {
   const [selectedDriver, setSelectedDriver] = useState<DriverVehicle | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState<string>("ALL")
-  const [activeTileLayer, setActiveTileLayer] = useState<string>("carto_dark")
+  const [activeTileLayer, setActiveTileLayer] = useState<string>("google_roadmap")
   const [isLiveSimulating, setIsLiveSimulating] = useState(true)
+  const [googleMapsApiKey, setGoogleMapsApiKey] = useState<string>("")
 
   // Real mock vehicles with coordinates centered on Dar es Salaam & regional routes
   const [vehicles, setVehicles] = useState<DriverVehicle[]>([
@@ -203,6 +204,7 @@ export default function TrackingMapPage() {
           if (cfg.data?.defaultLatitude) defaultLat = cfg.data.defaultLatitude
           if (cfg.data?.defaultLongitude) defaultLng = cfg.data.defaultLongitude
           if (cfg.data?.defaultZoom) defaultZoom = cfg.data.defaultZoom
+          if (cfg.data?.googleMapsApiKey) setGoogleMapsApiKey(cfg.data.googleMapsApiKey)
         } catch (_) {}
 
         const map = L.map(mapContainerRef.current, {
@@ -230,7 +232,32 @@ export default function TrackingMapPage() {
 
   function getTileLayer(layerKey: string) {
     if (!L) return null
+    const gKey = googleMapsApiKey || process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ""
     switch (layerKey) {
+      case "google_roadmap":
+        return L.tileLayer(`https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&key=${gKey}`, {
+          attribution: "&copy; Google Maps",
+          maxZoom: 20,
+          subdomains: ["0", "1", "2", "3"],
+        })
+      case "google_satellite":
+        return L.tileLayer(`https://mt{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}&key=${gKey}`, {
+          attribution: "&copy; Google Maps",
+          maxZoom: 20,
+          subdomains: ["0", "1", "2", "3"],
+        })
+      case "google_hybrid":
+        return L.tileLayer(`https://mt{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}&key=${gKey}`, {
+          attribution: "&copy; Google Maps",
+          maxZoom: 20,
+          subdomains: ["0", "1", "2", "3"],
+        })
+      case "google_terrain":
+        return L.tileLayer(`https://mt{s}.google.com/vt/lyrs=p&x={x}&y={y}&z={z}&key=${gKey}`, {
+          attribution: "&copy; Google Maps",
+          maxZoom: 20,
+          subdomains: ["0", "1", "2", "3"],
+        })
       case "carto_dark":
         return L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
           attribution: "&copy; CartoDB &copy; OpenStreetMap",
@@ -255,7 +282,11 @@ export default function TrackingMapPage() {
           }
         )
       default:
-        return L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", { maxZoom: 19 })
+        return L.tileLayer(`https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&key=${gKey}`, {
+          attribution: "&copy; Google Maps",
+          maxZoom: 20,
+          subdomains: ["0", "1", "2", "3"],
+        })
     }
   }
 
@@ -430,10 +461,12 @@ export default function TrackingMapPage() {
         <div className="absolute top-4 left-4 z-10 flex flex-wrap items-center gap-2">
           <div className="flex items-center rounded-xl bg-slate-900/90 backdrop-blur-md border border-slate-800 p-1 shadow-xl">
             {[
-              { id: "carto_dark", label: "🌙 Dark 2025" },
-              { id: "carto_voyager", label: "☀️ Clean Light" },
-              { id: "satellite", label: "🛰️ Satellite" },
-              { id: "osm", label: "🗺️ Streets" },
+              { id: "google_roadmap", label: "🗺️ Google Maps" },
+              { id: "google_satellite", label: "🛰️ Google Satellite" },
+              { id: "google_hybrid", label: "🌍 Google Hybrid" },
+              { id: "google_terrain", label: "⛰️ Google Terrain" },
+              { id: "carto_dark", label: "🌙 Dark" },
+              { id: "osm", label: "🗺️ OSM" },
             ].map((tile) => (
               <button
                 key={tile.id}
