@@ -13,64 +13,28 @@ import { Badge } from "@workspace/ui/components/badge"
 import { Separator } from "@workspace/ui/components/separator"
 import { Toaster } from "@workspace/ui/components/sonner"
 import { toast } from "sonner"
-import { HugeiconsIcon } from "@hugeicons/react"
-import {
-  Package02Icon,
-  CoinsIcon,
-  TruckIcon,
-  MapIcon,
-  CheckmarkCircle02Icon,
-  ArrowRight01Icon,
-  ArrowLeft01Icon,
-  UserCircleIcon,
-  Mail01Icon,
-  LockPasswordIcon,
-  Airplane01Icon,
-  Train01Icon,
-  ShipIcon,
-  Rocket01Icon,
-  FlashIcon,
-  Clock01Icon,
-  Shield01Icon,
-  PackageProcess01Icon,
-  Alert01Icon,
-  Cash01Icon,
-  CreditCardIcon,
-  Wallet01Icon,
-  SmartphoneIcon,
-  Building03Icon,
-  Home02Icon,
-  Store01Icon,
-  Location01Icon,
-  CallIcon,
-  ViewIcon,
-  ScaleIcon,
-  RulerIcon,
-  InformationSquareIcon,
-  SparklesIcon,
-} from "@hugeicons/core-free-icons"
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://swg.xerinexpress.com/api/v1"
 
 const SERVICE_OPTIONS = {
   serviceType: [
-    { value: "BODA_BODA", label: "Boda Boda", desc: "Small goods, documents, quick city delivery", icon: TruckIcon, color: "from-orange-500 to-amber-500", transportMode: "ROAD", vehicleCategory: "MOTORCYCLE" },
-    { value: "VAN", label: "Kirikuu / Van", desc: "Medium cargo, business, shops, intra-city", icon: TruckIcon, color: "from-blue-500 to-cyan-500", transportMode: "ROAD", vehicleCategory: "VAN" },
-    { value: "TRUCK", label: "Lori", desc: "Large & heavy cargo, long distance freight", icon: TruckIcon, color: "from-slate-600 to-slate-800", transportMode: "ROAD", vehicleCategory: "TRUCK" },
-    { value: "SGR", label: "SGR Parcel Service", desc: "Rail transport between cities & stations", icon: Train01Icon, color: "from-green-500 to-emerald-600", transportMode: "RAIL", vehicleCategory: null },
-    { value: "AIR_CARGO", label: "Air Cargo", desc: "Domestic & international air freight", icon: Airplane01Icon, color: "from-purple-500 to-pink-500", transportMode: "AIR", vehicleCategory: null },
+    { value: "BODA_BODA", label: "Boda Boda", desc: "Small goods, documents, quick city delivery", transportMode: "ROAD", vehicleCategory: "MOTORCYCLE" },
+    { value: "VAN", label: "Kirikuu / Van", desc: "Medium cargo, business, shops, intra-city", transportMode: "ROAD", vehicleCategory: "VAN" },
+    { value: "TRUCK", label: "Lori", desc: "Large & heavy cargo, long distance freight", transportMode: "ROAD", vehicleCategory: "TRUCK" },
+    { value: "SGR", label: "SGR Parcel Service", desc: "Rail transport between cities & stations", transportMode: "RAIL", vehicleCategory: null },
+    { value: "AIR_CARGO", label: "Air Cargo", desc: "Domestic & international air freight", transportMode: "AIR", vehicleCategory: null },
   ],
   sgrServiceType: [
-    { value: "STATION_TO_STATION", label: "Station to Station", desc: "Drop at station, collect at destination station", icon: Store01Icon },
-    { value: "DOOR_TO_STATION", label: "Door to Station", desc: "We pick up from you, drop at station", icon: Home02Icon },
-    { value: "STATION_TO_DOOR", label: "Station to Door", desc: "Drop at station, we deliver to door", icon: Building03Icon },
-    { value: "DOOR_TO_DOOR", label: "Door to Door", desc: "We handle pickup & delivery end-to-end", icon: Home02Icon },
+    { value: "STATION_TO_STATION", label: "Station to Station", desc: "Drop at station, collect at destination station" },
+    { value: "DOOR_TO_STATION", label: "Door to Station", desc: "We pick up from you, drop at station" },
+    { value: "STATION_TO_DOOR", label: "Station to Door", desc: "Drop at station, we deliver to door" },
+    { value: "DOOR_TO_DOOR", label: "Door to Door", desc: "We handle pickup & delivery end-to-end" },
   ],
   airCargoServiceType: [
-    { value: "AIRPORT_TO_AIRPORT", label: "Airport to Airport", desc: "Drop at airport, collect at destination airport", icon: Airplane01Icon },
-    { value: "DOOR_TO_AIRPORT", label: "Door to Airport", desc: "We pick up, you collect at airport", icon: Home02Icon },
-    { value: "AIRPORT_TO_DOOR", label: "Airport to Door", desc: "Drop at airport, we deliver to door", icon: Building03Icon },
-    { value: "DOOR_TO_DOOR", label: "Door to Door", desc: "Full service end-to-end", icon: Home02Icon },
+    { value: "AIRPORT_TO_AIRPORT", label: "Airport to Airport", desc: "Drop at airport, collect at destination airport" },
+    { value: "DOOR_TO_AIRPORT", label: "Door to Airport", desc: "We pick up, you collect at airport" },
+    { value: "AIRPORT_TO_DOOR", label: "Airport to Door", desc: "Drop at airport, we deliver to door" },
+    { value: "DOOR_TO_DOOR", label: "Door to Door", desc: "Full service end-to-end" },
   ],
   cargoType: [
     { value: "GENERAL", label: "General Cargo", desc: "Standard goods" },
@@ -80,46 +44,46 @@ const SERVICE_OPTIONS = {
     { value: "VALUABLE", label: "Valuable", desc: "High-value items" },
   ],
   category: [
-    { value: "DOMESTIC", label: "Domestic", desc: "Within the country", icon: TruckIcon, color: "from-blue-500 to-cyan-500" },
-    { value: "INTERNATIONAL", label: "International", desc: "Cross-border delivery", icon: Airplane01Icon, color: "from-purple-500 to-pink-500" },
-    { value: "SPECIAL_TRANSPORT", label: "Special Transport", desc: "Heavy & oversized items", icon: PackageProcess01Icon, color: "from-orange-500 to-red-500" },
+    { value: "DOMESTIC", label: "Domestic", desc: "Within the country" },
+    { value: "INTERNATIONAL", label: "International", desc: "Cross-border delivery" },
+    { value: "SPECIAL_TRANSPORT", label: "Special Transport", desc: "Heavy & oversized items" },
   ],
   transportMode: [
-    { value: "ROAD", label: "Road", desc: "Ground transport", icon: TruckIcon },
-    { value: "AIR", label: "Air", desc: "Fastest option", icon: Airplane01Icon },
-    { value: "SEA", label: "Sea", desc: "Cost-effective bulk", icon: ShipIcon },
-    { value: "COURIER", label: "Courier", desc: "Express delivery", icon: Rocket01Icon },
-    { value: "RAIL", label: "Rail", desc: "Eco-friendly freight", icon: Train01Icon },
+    { value: "ROAD", label: "Road", desc: "Ground transport" },
+    { value: "AIR", label: "Air", desc: "Fastest option" },
+    { value: "SEA", label: "Sea", desc: "Cost-effective bulk" },
+    { value: "COURIER", label: "Courier", desc: "Express delivery" },
+    { value: "RAIL", label: "Rail", desc: "Eco-friendly freight" },
   ],
   serviceLevel: [
-    { value: "STANDARD", label: "Standard", desc: "3-5 days", icon: Clock01Icon, badge: "Popular" },
-    { value: "EXPRESS", label: "Express", desc: "1-2 days", icon: FlashIcon, badge: "Fast" },
-    { value: "SAME_DAY", label: "Same Day", desc: "Within hours", icon: Rocket01Icon, badge: "Fastest" },
-    { value: "NEXT_DAY", label: "Next Day", desc: "Overnight delivery", icon: FlashIcon },
-    { value: "ECONOMY", label: "Economy", desc: "5-7 days, best price", icon: CoinsIcon },
-    { value: "PRIORITY", label: "Priority", desc: "Top priority handling", icon: SparklesIcon, badge: "Premium" },
+    { value: "STANDARD", label: "Standard", desc: "3-5 days", badge: "Popular" },
+    { value: "EXPRESS", label: "Express", desc: "1-2 days", badge: "Fast" },
+    { value: "SAME_DAY", label: "Same Day", desc: "Within hours", badge: "Fastest" },
+    { value: "NEXT_DAY", label: "Next Day", desc: "Overnight delivery" },
+    { value: "ECONOMY", label: "Economy", desc: "5-7 days, best price" },
+    { value: "PRIORITY", label: "Priority", desc: "Top priority handling", badge: "Premium" },
   ],
   fulfillmentType: [
-    { value: "DOOR_TO_DOOR", label: "Door to Door", desc: "Pickup & deliver to addresses", icon: Home02Icon },
-    { value: "DOOR_TO_PICKUP", label: "Door to Pickup", desc: "Deliver to pickup point", icon: Store01Icon },
-    { value: "PICKUP_TO_DOOR", label: "Pickup to Door", desc: "Drop at station, deliver to door", icon: Building03Icon },
-    { value: "PICKUP_TO_PICKUP", label: "Pickup to Pickup", desc: "Station to station", icon: Store01Icon },
-    { value: "WAREHOUSE_TO_DOOR", label: "Warehouse to Door", desc: "From warehouse to address", icon: Building03Icon },
-    { value: "WAREHOUSE_TO_PICKUP", label: "Warehouse to Pickup", desc: "From warehouse to pickup point", icon: Building03Icon },
+    { value: "DOOR_TO_DOOR", label: "Door to Door", desc: "Pickup & deliver to addresses" },
+    { value: "DOOR_TO_PICKUP", label: "Door to Pickup", desc: "Deliver to pickup point" },
+    { value: "PICKUP_TO_DOOR", label: "Pickup to Door", desc: "Drop at station, deliver to door" },
+    { value: "PICKUP_TO_PICKUP", label: "Pickup to Pickup", desc: "Station to station" },
+    { value: "WAREHOUSE_TO_DOOR", label: "Warehouse to Door", desc: "From warehouse to address" },
+    { value: "WAREHOUSE_TO_PICKUP", label: "Warehouse to Pickup", desc: "From warehouse to pickup point" },
   ],
   packageType: [
-    { value: "BOX", label: "Box", icon: Package02Icon },
-    { value: "ENVELOPE", label: "Envelope", icon: Mail01Icon },
-    { value: "BAG", label: "Bag/Sack", icon: Package02Icon },
-    { value: "PALLET", label: "Pallet", icon: Package02Icon },
-    { value: "Cylinder", label: "Cylinder/Tube", icon: Package02Icon },
-    { value: "OTHER", label: "Other", icon: Package02Icon },
+    { value: "BOX", label: "Box" },
+    { value: "ENVELOPE", label: "Envelope" },
+    { value: "BAG", label: "Bag/Sack" },
+    { value: "PALLET", label: "Pallet" },
+    { value: "Cylinder", label: "Cylinder/Tube" },
+    { value: "OTHER", label: "Other" },
   ],
   paymentMethod: [
-    { value: "MOBILE_MONEY", label: "Mobile Money", desc: "M-Pesa, Tigo Pesa, Airtel Money", icon: SmartphoneIcon },
-    { value: "CARD", label: "Credit/Debit Card", desc: "Visa, Mastercard", icon: CreditCardIcon },
-    { value: "BANK_TRANSFER", label: "Bank Transfer", desc: "Direct bank transfer", icon: Building03Icon },
-    { value: "CASH_ON_DELIVERY", label: "Cash on Delivery", desc: "Pay when you receive", icon: Cash01Icon },
+    { value: "MOBILE_MONEY", label: "Mobile Money", desc: "M-Pesa, Tigo Pesa, Airtel Money" },
+    { value: "CARD", label: "Credit/Debit Card", desc: "Visa, Mastercard" },
+    { value: "BANK_TRANSFER", label: "Bank Transfer", desc: "Direct bank transfer" },
+    { value: "CASH_ON_DELIVERY", label: "Cash on Delivery", desc: "Pay when you receive" },
   ],
 }
 
@@ -430,7 +394,7 @@ export default function ShipPage() {
           {steps.map((label, i) => (
             <div key={i} className="flex items-center gap-1.5 sm:gap-2">
               <div className={`flex size-8 items-center justify-center rounded-full text-xs font-medium transition-all sm:size-9 sm:text-sm ${step > i + 1 ? "bg-primary text-primary-foreground" : step === i + 1 ? "bg-white/20 text-white ring-2 ring-primary" : "bg-white/10 text-white/40"}`}>
-                {step > i + 1 ? <HugeiconsIcon icon={CheckmarkCircle02Icon} strokeWidth={2} className="size-4" /> : i + 1}
+                {step > i + 1 ? "✓" : i + 1}
               </div>
               <span className={`hidden text-xs font-medium sm:block sm:text-sm ${step === i + 1 ? "text-white" : "text-white/40"}`}>{label}</span>
               {i < steps.length - 1 && <Separator orientation="vertical" className="h-5 mx-0.5 bg-white/20 sm:h-6 sm:mx-1" />}
@@ -443,10 +407,7 @@ export default function ShipPage() {
           <div className="space-y-4">
             <Card className="border-border bg-card/95 backdrop-blur-xl">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <HugeiconsIcon icon={TruckIcon} strokeWidth={2} className="size-5 text-primary" />
-                  Select Service
-                </CardTitle>
+                <CardTitle>Select Service</CardTitle>
                 <CardDescription>Choose your preferred delivery service</CardDescription>
               </CardHeader>
               <CardContent>
@@ -458,16 +419,13 @@ export default function ShipPage() {
                       onClick={() => handleServiceTypeChange(opt.value)}
                       className={`relative flex flex-col items-start gap-2 rounded-xl border-2 p-4 text-left transition-all ${form.serviceType === opt.value ? "border-primary bg-primary/5 shadow-sm" : "border-muted hover:border-primary/40"}`}
                     >
-                      <div className={`flex size-10 items-center justify-center rounded-lg bg-gradient-to-br ${opt.color} text-white`}>
-                        <HugeiconsIcon icon={opt.icon} strokeWidth={2} className="size-5" />
-                      </div>
                       <div>
                         <div className="font-medium">{opt.label}</div>
                         <div className="text-xs text-muted-foreground">{opt.desc}</div>
                       </div>
                       {form.serviceType === opt.value && (
-                        <div className="absolute top-2 right-2 flex size-5 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                          <HugeiconsIcon icon={CheckmarkCircle02Icon} strokeWidth={2} className="size-3" />
+                        <div className="absolute top-2 right-2 flex size-5 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs">
+                          ✓
                         </div>
                       )}
                     </button>
@@ -481,10 +439,7 @@ export default function ShipPage() {
               <>
                 <Card className="border-border bg-card/95 backdrop-blur-xl">
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <HugeiconsIcon icon={Train01Icon} strokeWidth={2} className="size-5 text-primary" />
-                      SGR Service Type
-                    </CardTitle>
+                    <CardTitle>SGR Service Type</CardTitle>
                     <CardDescription>Choose pickup and delivery options</CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -496,9 +451,6 @@ export default function ShipPage() {
                           onClick={() => updateForm("sgrServiceType", opt.value)}
                           className={`flex flex-col items-start gap-2 rounded-xl border-2 p-3 text-left transition-all ${form.sgrServiceType === opt.value ? "border-primary bg-primary/5 shadow-sm" : "border-muted hover:border-primary/40"}`}
                         >
-                          <div className={`flex size-9 items-center justify-center rounded-lg ${form.sgrServiceType === opt.value ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
-                            <HugeiconsIcon icon={opt.icon} strokeWidth={2} className="size-4" />
-                          </div>
                           <div>
                             <div className="text-sm font-medium">{opt.label}</div>
                             <div className="text-xs text-muted-foreground">{opt.desc}</div>
@@ -511,16 +463,12 @@ export default function ShipPage() {
 
                 <Card className="border-border bg-card/95 backdrop-blur-xl">
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <HugeiconsIcon icon={Store01Icon} strokeWidth={2} className="size-5 text-primary" />
-                      Select Stations
-                    </CardTitle>
+                    <CardTitle>Select Stations</CardTitle>
                     <CardDescription>Choose origin and destination SGR stations</CardDescription>
                   </CardHeader>
                   <CardContent className="grid gap-4 sm:grid-cols-2">
                     <div className="grid gap-2">
-                      <Label className="flex items-center gap-2 text-xs font-medium text-blue-500 dark:text-blue-400">
-                        <HugeiconsIcon icon={MapIcon} strokeWidth={2} className="size-3" />
+                      <Label className="text-xs font-medium text-blue-500 dark:text-blue-400">
                         FROM STATION
                       </Label>
                       <Select value={form.originStationId} onValueChange={(v) => updateForm("originStationId", v)}>
@@ -533,8 +481,7 @@ export default function ShipPage() {
                       </Select>
                     </div>
                     <div className="grid gap-2">
-                      <Label className="flex items-center gap-2 text-xs font-medium text-purple-500 dark:text-purple-400">
-                        <HugeiconsIcon icon={MapIcon} strokeWidth={2} className="size-3" />
+                      <Label className="text-xs font-medium text-purple-500 dark:text-purple-400">
                         TO STATION
                       </Label>
                       <Select value={form.destinationStationId} onValueChange={(v) => updateForm("destinationStationId", v)}>
@@ -556,10 +503,7 @@ export default function ShipPage() {
               <>
                 <Card className="border-border bg-card/95 backdrop-blur-xl">
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <HugeiconsIcon icon={Airplane01Icon} strokeWidth={2} className="size-5 text-primary" />
-                      Air Cargo Service Type
-                    </CardTitle>
+                    <CardTitle>Air Cargo Service Type</CardTitle>
                     <CardDescription>Choose pickup and delivery options</CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -571,9 +515,6 @@ export default function ShipPage() {
                           onClick={() => updateForm("airCargoServiceType", opt.value)}
                           className={`flex flex-col items-start gap-2 rounded-xl border-2 p-3 text-left transition-all ${form.airCargoServiceType === opt.value ? "border-primary bg-primary/5 shadow-sm" : "border-muted hover:border-primary/40"}`}
                         >
-                          <div className={`flex size-9 items-center justify-center rounded-lg ${form.airCargoServiceType === opt.value ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
-                            <HugeiconsIcon icon={opt.icon} strokeWidth={2} className="size-4" />
-                          </div>
                           <div>
                             <div className="text-sm font-medium">{opt.label}</div>
                             <div className="text-xs text-muted-foreground">{opt.desc}</div>
@@ -586,10 +527,7 @@ export default function ShipPage() {
 
                 <Card className="border-border bg-card/95 backdrop-blur-xl">
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <HugeiconsIcon icon={Airplane01Icon} strokeWidth={2} className="size-5 text-primary" />
-                      Cargo Type
-                    </CardTitle>
+                    <CardTitle>Cargo Type</CardTitle>
                     <CardDescription>Select the type of cargo</CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -611,16 +549,12 @@ export default function ShipPage() {
 
                 <Card className="border-border bg-card/95 backdrop-blur-xl">
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <HugeiconsIcon icon={Location01Icon} strokeWidth={2} className="size-5 text-primary" />
-                      Airports
-                    </CardTitle>
+                    <CardTitle>Airports</CardTitle>
                     <CardDescription>Choose origin and destination airports</CardDescription>
                   </CardHeader>
                   <CardContent className="grid gap-4 sm:grid-cols-2">
                     <div className="grid gap-2">
-                      <Label className="flex items-center gap-2 text-xs font-medium text-blue-500 dark:text-blue-400">
-                        <HugeiconsIcon icon={MapIcon} strokeWidth={2} className="size-3" />
+                      <Label className="text-xs font-medium text-blue-500 dark:text-blue-400">
                         FROM AIRPORT / CITY
                       </Label>
                       <Select value={form.airportOrigin} onValueChange={(v) => updateForm("airportOrigin", v)}>
@@ -633,8 +567,7 @@ export default function ShipPage() {
                       </Select>
                     </div>
                     <div className="grid gap-2">
-                      <Label className="flex items-center gap-2 text-xs font-medium text-purple-500 dark:text-purple-400">
-                        <HugeiconsIcon icon={MapIcon} strokeWidth={2} className="size-3" />
+                      <Label className="text-xs font-medium text-purple-500 dark:text-purple-400">
                         TO AIRPORT / CITY
                       </Label>
                       <Select value={form.airportDestination} onValueChange={(v) => updateForm("airportDestination", v)}>
@@ -655,10 +588,7 @@ export default function ShipPage() {
             {form.serviceType !== "SGR" && form.serviceType !== "AIR_CARGO" && (
               <Card className="border-border bg-card/95 backdrop-blur-xl">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <HugeiconsIcon icon={TruckIcon} strokeWidth={2} className="size-5 text-primary" />
-                    Shipment Category
-                  </CardTitle>
+                  <CardTitle>Shipment Category</CardTitle>
                   <CardDescription>Choose your shipment type</CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -670,16 +600,13 @@ export default function ShipPage() {
                         onClick={() => updateForm("category", opt.value)}
                         className={`relative flex flex-col items-start gap-2 rounded-xl border-2 p-4 text-left transition-all ${form.category === opt.value ? "border-primary bg-primary/5 shadow-sm" : "border-muted hover:border-primary/40"}`}
                       >
-                        <div className={`flex size-10 items-center justify-center rounded-lg bg-gradient-to-br ${opt.color} text-white`}>
-                          <HugeiconsIcon icon={opt.icon} strokeWidth={2} className="size-5" />
-                        </div>
                         <div>
                           <div className="font-medium">{opt.label}</div>
                           <div className="text-xs text-muted-foreground">{opt.desc}</div>
                         </div>
                         {form.category === opt.value && (
-                          <div className="absolute top-2 right-2 flex size-5 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                            <HugeiconsIcon icon={CheckmarkCircle02Icon} strokeWidth={2} className="size-3" />
+                          <div className="absolute top-2 right-2 flex size-5 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs">
+                            ✓
                           </div>
                         )}
                       </button>
@@ -691,10 +618,7 @@ export default function ShipPage() {
 
             <Card className="border-border bg-card/95 backdrop-blur-xl">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <HugeiconsIcon icon={FlashIcon} strokeWidth={2} className="size-5 text-primary" />
-                  Service Level
-                </CardTitle>
+                <CardTitle>Service Level</CardTitle>
                 <CardDescription>Choose delivery speed</CardDescription>
               </CardHeader>
               <CardContent>
@@ -709,9 +633,6 @@ export default function ShipPage() {
                       {(opt as any).badge && (
                         <Badge variant="secondary" className="absolute top-2 right-2 text-xs">{(opt as any).badge}</Badge>
                       )}
-                      <div className={`flex size-10 items-center justify-center rounded-lg ${form.serviceLevel === opt.value ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
-                        <HugeiconsIcon icon={opt.icon} strokeWidth={2} className="size-5" />
-                      </div>
                       <div>
                         <div className="font-medium">{opt.label}</div>
                         <div className="text-xs text-muted-foreground">{opt.desc}</div>
@@ -726,10 +647,7 @@ export default function ShipPage() {
             {form.serviceType !== "SGR" && form.serviceType !== "AIR_CARGO" && (
               <Card className="border-border bg-card/95 backdrop-blur-xl">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <HugeiconsIcon icon={Home02Icon} strokeWidth={2} className="size-5 text-primary" />
-                    Fulfillment Type
-                  </CardTitle>
+                  <CardTitle>Fulfillment Type</CardTitle>
                   <CardDescription>Pickup and delivery options</CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -741,9 +659,6 @@ export default function ShipPage() {
                         onClick={() => updateForm("fulfillmentType", opt.value)}
                         className={`flex items-center gap-3 rounded-xl border-2 p-3 text-left transition-all ${form.fulfillmentType === opt.value ? "border-primary bg-primary/5 shadow-sm" : "border-muted hover:border-primary/40"}`}
                       >
-                        <div className={`flex size-9 items-center justify-center rounded-lg ${form.fulfillmentType === opt.value ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
-                          <HugeiconsIcon icon={opt.icon} strokeWidth={2} className="size-4" />
-                        </div>
                         <div>
                           <div className="text-sm font-medium">{opt.label}</div>
                           <div className="text-xs text-muted-foreground">{opt.desc}</div>
@@ -758,7 +673,6 @@ export default function ShipPage() {
             <div className="flex justify-end">
               <Button size="lg" onClick={() => setStep(2)}>
                 Continue to Package
-                <HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={2} className="size-4" />
               </Button>
             </div>
           </div>
@@ -769,10 +683,7 @@ export default function ShipPage() {
           <div className="space-y-4">
             <Card className="border-border bg-card/95 backdrop-blur-xl">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <HugeiconsIcon icon={Package02Icon} strokeWidth={2} className="size-5 text-primary" />
-                  Package Type
-                </CardTitle>
+                <CardTitle>Package Type</CardTitle>
                 <CardDescription>What kind of package are you sending?</CardDescription>
               </CardHeader>
               <CardContent>
@@ -784,9 +695,6 @@ export default function ShipPage() {
                       onClick={() => updateForm("packageType", opt.value)}
                       className={`flex flex-col items-center gap-2 rounded-xl border-2 p-3 text-center transition-all ${form.packageType === opt.value ? "border-primary bg-primary/5 shadow-sm" : "border-muted hover:border-primary/40"}`}
                     >
-                      <div className={`flex size-10 items-center justify-center rounded-lg ${form.packageType === opt.value ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
-                        <HugeiconsIcon icon={opt.icon} strokeWidth={2} className="size-5" />
-                      </div>
                       <span className="text-xs font-medium">{opt.label}</span>
                     </button>
                   ))}
@@ -796,10 +704,7 @@ export default function ShipPage() {
 
             <Card className="border-border bg-card/95 backdrop-blur-xl">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <HugeiconsIcon icon={ScaleIcon} strokeWidth={2} className="size-5 text-primary" />
-                  Weight & Dimensions
-                </CardTitle>
+                <CardTitle>Weight & Dimensions</CardTitle>
                 <CardDescription>Enter package weight and size</CardDescription>
               </CardHeader>
               <CardContent className="grid gap-4 sm:grid-cols-2">
@@ -816,10 +721,7 @@ export default function ShipPage() {
 
             <Card className="border-border bg-card/95 backdrop-blur-xl">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <HugeiconsIcon icon={RulerIcon} strokeWidth={2} className="size-5 text-primary" />
-                  Dimensions (cm)
-                </CardTitle>
+                <CardTitle>Dimensions (cm)</CardTitle>
                 <CardDescription>Optional — helps calculate volumetric weight</CardDescription>
               </CardHeader>
               <CardContent>
@@ -842,10 +744,7 @@ export default function ShipPage() {
 
             <Card className="border-border bg-card/95 backdrop-blur-xl">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <HugeiconsIcon icon={Shield01Icon} strokeWidth={2} className="size-5 text-primary" />
-                  Insurance & Value
-                </CardTitle>
+                <CardTitle>Insurance & Value</CardTitle>
                 <CardDescription>Protect your shipment</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -859,20 +758,14 @@ export default function ShipPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <input type="checkbox" id="fragile" checked={form.isFragile} onChange={(e) => updateForm("isFragile", e.target.checked)} className="size-4 rounded accent-primary" />
-                  <Label htmlFor="fragile" className="flex items-center gap-1">
-                    <HugeiconsIcon icon={Alert01Icon} strokeWidth={2} className="size-4 text-orange-500" />
-                    Mark as fragile
-                  </Label>
+                  <Label htmlFor="fragile">Mark as fragile</Label>
                 </div>
               </CardContent>
             </Card>
 
             <Card className="border-border bg-card/95 backdrop-blur-xl">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <HugeiconsIcon icon={InformationSquareIcon} strokeWidth={2} className="size-5 text-primary" />
-                  Description & Notes
-                </CardTitle>
+                <CardTitle>Description & Notes</CardTitle>
                 <CardDescription>Tell us what's inside</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -889,12 +782,10 @@ export default function ShipPage() {
 
             <div className="flex justify-between">
               <Button variant="outline" onClick={() => setStep(1)}>
-                <HugeiconsIcon icon={ArrowLeft01Icon} strokeWidth={2} className="size-4" />
                 Back
               </Button>
               <Button size="lg" onClick={() => setStep(3)}>
                 Continue to Sender
-                <HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={2} className="size-4" />
               </Button>
             </div>
           </div>
@@ -905,44 +796,27 @@ export default function ShipPage() {
           <div className="space-y-4">
             <Card className="border-border bg-card/95 backdrop-blur-xl">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <div className="flex size-9 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 text-white">
-                    <HugeiconsIcon icon={MapIcon} strokeWidth={2} className="size-5" />
-                  </div>
-                  Sender Information
-                </CardTitle>
+                <CardTitle>Sender Information</CardTitle>
                 <CardDescription>Where is the package being picked up from?</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="grid gap-2">
                     <Label>Full Name <span className="text-destructive">*</span></Label>
-                    <div className="relative">
-                      <HugeiconsIcon icon={UserCircleIcon} className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-                      <Input value={form.fromFullName} onChange={(e) => updateForm("fromFullName", e.target.value)} placeholder="Sender name" className="ps-9" />
-                    </div>
+                    <Input value={form.fromFullName} onChange={(e) => updateForm("fromFullName", e.target.value)} placeholder="Sender name" />
                   </div>
                   <div className="grid gap-2">
                     <Label>Phone <span className="text-destructive">*</span></Label>
-                    <div className="relative">
-                      <HugeiconsIcon icon={CallIcon} className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-                      <Input value={form.fromPhone} onChange={(e) => updateForm("fromPhone", e.target.value)} placeholder="+255..." className="ps-9" />
-                    </div>
+                    <Input value={form.fromPhone} onChange={(e) => updateForm("fromPhone", e.target.value)} placeholder="+255..." />
                   </div>
                 </div>
                 <div className="grid gap-2">
                   <Label>Email (optional)</Label>
-                  <div className="relative">
-                    <HugeiconsIcon icon={Mail01Icon} className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-                    <Input type="email" value={form.fromEmail} onChange={(e) => updateForm("fromEmail", e.target.value)} placeholder="sender@example.com" className="ps-9" />
-                  </div>
+                  <Input type="email" value={form.fromEmail} onChange={(e) => updateForm("fromEmail", e.target.value)} placeholder="sender@example.com" />
                 </div>
                 <div className="grid gap-2">
                   <Label>Address Line</Label>
-                  <div className="relative">
-                    <HugeiconsIcon icon={Location01Icon} className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-                    <Input value={form.fromLine1} onChange={(e) => updateForm("fromLine1", e.target.value)} placeholder="Street address, building, etc." className="ps-9" />
-                  </div>
+                  <Input value={form.fromLine1} onChange={(e) => updateForm("fromLine1", e.target.value)} placeholder="Street address, building, etc." />
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="grid gap-2">
@@ -973,12 +847,10 @@ export default function ShipPage() {
 
             <div className="flex justify-between">
               <Button variant="outline" onClick={() => setStep(2)}>
-                <HugeiconsIcon icon={ArrowLeft01Icon} strokeWidth={2} className="size-4" />
                 Back
               </Button>
               <Button size="lg" onClick={() => setStep(4)}>
                 Continue to Receiver
-                <HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={2} className="size-4" />
               </Button>
             </div>
           </div>
@@ -989,44 +861,27 @@ export default function ShipPage() {
           <div className="space-y-4">
             <Card className="border-border bg-card/95 backdrop-blur-xl">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <div className="flex size-9 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 text-white">
-                    <HugeiconsIcon icon={MapIcon} strokeWidth={2} className="size-5" />
-                  </div>
-                  Recipient Information
-                </CardTitle>
+                <CardTitle>Recipient Information</CardTitle>
                 <CardDescription>Where is the package being delivered to?</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="grid gap-2">
                     <Label>Full Name <span className="text-destructive">*</span></Label>
-                    <div className="relative">
-                      <HugeiconsIcon icon={UserCircleIcon} className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-                      <Input value={form.toFullName} onChange={(e) => updateForm("toFullName", e.target.value)} placeholder="Recipient name" className="ps-9" />
-                    </div>
+                    <Input value={form.toFullName} onChange={(e) => updateForm("toFullName", e.target.value)} placeholder="Recipient name" />
                   </div>
                   <div className="grid gap-2">
                     <Label>Phone <span className="text-destructive">*</span></Label>
-                    <div className="relative">
-                      <HugeiconsIcon icon={CallIcon} className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-                      <Input value={form.toPhone} onChange={(e) => updateForm("toPhone", e.target.value)} placeholder="+255..." className="ps-9" />
-                    </div>
+                    <Input value={form.toPhone} onChange={(e) => updateForm("toPhone", e.target.value)} placeholder="+255..." />
                   </div>
                 </div>
                 <div className="grid gap-2">
                   <Label>Email (optional)</Label>
-                  <div className="relative">
-                    <HugeiconsIcon icon={Mail01Icon} className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-                    <Input type="email" value={form.toEmail} onChange={(e) => updateForm("toEmail", e.target.value)} placeholder="recipient@example.com" className="ps-9" />
-                  </div>
+                  <Input type="email" value={form.toEmail} onChange={(e) => updateForm("toEmail", e.target.value)} placeholder="recipient@example.com" />
                 </div>
                 <div className="grid gap-2">
                   <Label>Address Line</Label>
-                  <div className="relative">
-                    <HugeiconsIcon icon={Location01Icon} className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-                    <Input value={form.toLine1} onChange={(e) => updateForm("toLine1", e.target.value)} placeholder="Street address, building, etc." className="ps-9" />
-                  </div>
+                  <Input value={form.toLine1} onChange={(e) => updateForm("toLine1", e.target.value)} placeholder="Street address, building, etc." />
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="grid gap-2">
@@ -1057,11 +912,9 @@ export default function ShipPage() {
 
             <div className="flex justify-between">
               <Button variant="outline" onClick={() => setStep(3)}>
-                <HugeiconsIcon icon={ArrowLeft01Icon} strokeWidth={2} className="size-4" />
                 Back
               </Button>
               <Button size="lg" onClick={calculateQuote} disabled={loading}>
-                <HugeiconsIcon icon={CoinsIcon} strokeWidth={2} className="size-4" />
                 {loading ? "Calculating..." : "Calculate Quote"}
               </Button>
             </div>
@@ -1074,10 +927,7 @@ export default function ShipPage() {
             <div className="grid gap-4 lg:grid-cols-2">
               <Card className="border-border bg-card/95 backdrop-blur-xl">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <HugeiconsIcon icon={CoinsIcon} strokeWidth={2} className="size-5 text-primary" />
-                    Quote Breakdown
-                  </CardTitle>
+                  <CardTitle>Quote Breakdown</CardTitle>
                   <CardDescription>Detailed pricing for your shipment</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -1113,8 +963,7 @@ export default function ShipPage() {
                     <span className="text-lg font-bold">Total</span>
                     <span className="text-lg font-bold text-primary">{quoteResult.currency} {Number(quoteResult.total).toLocaleString()}</span>
                   </div>
-                  <div className="flex items-center gap-2 rounded-lg bg-primary/5 p-3 text-sm text-muted-foreground">
-                    <HugeiconsIcon icon={TruckIcon} strokeWidth={2} className="size-4 text-primary" />
+                  <div className="rounded-lg bg-primary/5 p-3 text-sm text-muted-foreground">
                     Estimated delivery: {quoteResult.etaMin}–{quoteResult.etaMax} days
                   </div>
                 </CardContent>
@@ -1122,10 +971,7 @@ export default function ShipPage() {
 
               <Card className="border-border bg-card/95 backdrop-blur-xl">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <HugeiconsIcon icon={ViewIcon} strokeWidth={2} className="size-5 text-primary" />
-                    Shipment Summary
-                  </CardTitle>
+                  <CardTitle>Shipment Summary</CardTitle>
                   <CardDescription>Review all details</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
@@ -1137,8 +983,7 @@ export default function ShipPage() {
                   </div>
                   <Separator />
                   <div className="rounded-lg border p-3 space-y-1">
-                    <div className="flex items-center gap-2 text-xs font-medium text-blue-500 dark:text-blue-400">
-                      <HugeiconsIcon icon={MapIcon} strokeWidth={2} className="size-3" />
+                    <div className="text-xs font-medium text-blue-500 dark:text-blue-400">
                       FROM
                     </div>
                     <div className="text-sm font-medium">{form.fromFullName}</div>
@@ -1146,8 +991,7 @@ export default function ShipPage() {
                     <div className="text-sm text-muted-foreground">{form.fromPhone}</div>
                   </div>
                   <div className="rounded-lg border p-3 space-y-1">
-                    <div className="flex items-center gap-2 text-xs font-medium text-purple-500 dark:text-purple-400">
-                      <HugeiconsIcon icon={MapIcon} strokeWidth={2} className="size-3" />
+                    <div className="text-xs font-medium text-purple-500 dark:text-purple-400">
                       TO
                     </div>
                     <div className="text-sm font-medium">{form.toFullName}</div>
@@ -1170,12 +1014,10 @@ export default function ShipPage() {
 
             <div className="flex justify-between">
               <Button variant="outline" onClick={() => setStep(4)}>
-                <HugeiconsIcon icon={ArrowLeft01Icon} strokeWidth={2} className="size-4" />
                 Back
               </Button>
               <Button size="lg" onClick={() => setStep(6)}>
                 Continue to Payment
-                <HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={2} className="size-4" />
               </Button>
             </div>
           </div>
@@ -1186,10 +1028,7 @@ export default function ShipPage() {
           <div className="space-y-4">
             <Card className="border-border bg-card/95 backdrop-blur-xl">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <HugeiconsIcon icon={Wallet01Icon} strokeWidth={2} className="size-5 text-primary" />
-                  Payment Method
-                </CardTitle>
+                <CardTitle>Payment Method</CardTitle>
                 <CardDescription>How would you like to pay?</CardDescription>
               </CardHeader>
               <CardContent>
@@ -1201,16 +1040,13 @@ export default function ShipPage() {
                       onClick={() => setPaymentMethod(opt.value)}
                       className={`flex items-center gap-3 rounded-xl border-2 p-4 text-left transition-all ${paymentMethod === opt.value ? "border-primary bg-primary/5 shadow-sm" : "border-muted hover:border-primary/40"}`}
                     >
-                      <div className={`flex size-10 items-center justify-center rounded-lg ${paymentMethod === opt.value ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
-                        <HugeiconsIcon icon={opt.icon} strokeWidth={2} className="size-5" />
-                      </div>
                       <div>
                         <div className="font-medium">{opt.label}</div>
                         <div className="text-xs text-muted-foreground">{opt.desc}</div>
                       </div>
                       {paymentMethod === opt.value && (
-                        <div className="ml-auto flex size-5 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                          <HugeiconsIcon icon={CheckmarkCircle02Icon} strokeWidth={2} className="size-3" />
+                        <div className="ml-auto flex size-5 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs">
+                          ✓
                         </div>
                       )}
                     </button>
@@ -1221,10 +1057,7 @@ export default function ShipPage() {
 
             <Card className="border-border bg-card/95 backdrop-blur-xl">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <HugeiconsIcon icon={UserCircleIcon} strokeWidth={2} className="size-5 text-primary" />
-                  {authMode === "signup" ? "Create Your Account" : "Sign In"}
-                </CardTitle>
+                <CardTitle>{authMode === "signup" ? "Create Your Account" : "Sign In"}</CardTitle>
                 <CardDescription>
                   {authMode === "signup"
                     ? "Create an account to confirm your shipment. Your details are saved."
@@ -1267,36 +1100,24 @@ export default function ShipPage() {
                   {authMode === "signup" && (
                     <div className="grid gap-2">
                       <Label htmlFor="name">Full Name</Label>
-                      <div className="relative">
-                        <HugeiconsIcon icon={UserCircleIcon} className="pointer-events-none absolute top-1/2 left-3 size-5 -translate-y-1/2 text-muted-foreground" />
-                        <Input id="name" type="text" placeholder="John Doe" required className="h-12 ps-10 text-base" />
-                      </div>
+                      <Input id="name" type="text" placeholder="John Doe" required className="h-12 text-base" />
                     </div>
                   )}
 
                   <div className="grid gap-2">
                     <Label htmlFor="email">Email</Label>
-                    <div className="relative">
-                      <HugeiconsIcon icon={Mail01Icon} className="pointer-events-none absolute top-1/2 left-3 size-5 -translate-y-1/2 text-muted-foreground" />
-                      <Input id="email" type="email" placeholder="you@example.com" required className="h-12 ps-10 text-base" />
-                    </div>
+                    <Input id="email" type="email" placeholder="you@example.com" required className="h-12 text-base" />
                   </div>
 
                   <div className="grid gap-2">
                     <Label htmlFor="password">Password</Label>
-                    <div className="relative">
-                      <HugeiconsIcon icon={LockPasswordIcon} className="pointer-events-none absolute top-1/2 left-3 size-5 -translate-y-1/2 text-muted-foreground" />
-                      <Input id="password" type="password" placeholder={authMode === "signup" ? "Create a strong password" : "Your password"} required className="h-12 ps-10 text-base" />
-                    </div>
+                    <Input id="password" type="password" placeholder={authMode === "signup" ? "Create a strong password" : "Your password"} required className="h-12 text-base" />
                   </div>
 
                   {authMode === "signup" && (
                     <div className="grid gap-2">
                       <Label htmlFor="confirm-password">Confirm Password</Label>
-                      <div className="relative">
-                        <HugeiconsIcon icon={LockPasswordIcon} className="pointer-events-none absolute top-1/2 left-3 size-5 -translate-y-1/2 text-muted-foreground" />
-                        <Input id="confirm-password" type="password" placeholder="Re-enter your password" required className="h-12 ps-10 text-base" />
-                      </div>
+                      <Input id="confirm-password" type="password" placeholder="Re-enter your password" required className="h-12 text-base" />
                     </div>
                   )}
 
@@ -1309,7 +1130,6 @@ export default function ShipPage() {
 
             <div className="flex justify-between">
               <Button variant="ghost" className="text-white/60 hover:text-white" onClick={() => setStep(5)}>
-                <HugeiconsIcon icon={ArrowLeft01Icon} strokeWidth={2} className="size-4" />
                 Back to Quote
               </Button>
             </div>
@@ -1319,8 +1139,8 @@ export default function ShipPage() {
         {/* Step 7: Confirmation */}
         {step === 7 && createdShipment && (
           <div className="flex flex-col items-center justify-center gap-6 py-12">
-            <div className="flex size-20 items-center justify-center rounded-full bg-primary/10">
-              <HugeiconsIcon icon={CheckmarkCircle02Icon} strokeWidth={2} className="size-10 text-primary" />
+            <div className="flex size-20 items-center justify-center rounded-full bg-primary/10 text-3xl text-primary">
+              ✓
             </div>
             <div className="text-center space-y-2">
               <h2 className="text-2xl font-bold text-white">Shipment Created!</h2>
