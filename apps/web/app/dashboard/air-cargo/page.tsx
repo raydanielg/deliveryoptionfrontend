@@ -8,7 +8,7 @@ import { Button } from "@workspace/ui/components/button"
 import { Skeleton } from "@workspace/ui/components/skeleton"
 import { api } from "@/lib/api"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { Airplane01Icon, Package02Icon, CheckmarkCircle02Icon, FlightTakeoff01Icon } from "@hugeicons/core-free-icons"
+import { Airplane01Icon, Package02Icon, CheckmarkCircle02Icon, AirplaneTakeOff01Icon } from "@hugeicons/core-free-icons"
 import { toast } from "sonner"
 
 export default function AirCargoPage() {
@@ -62,7 +62,7 @@ export default function AirCargoPage() {
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {[
           { label: "Total Shipments", value: stats?.total ?? 0, icon: Package02Icon, color: "from-purple-500 to-pink-500" },
-          { label: "In Transit", value: stats?.inTransit ?? 0, icon: FlightTakeoff01Icon, color: "from-orange-500 to-amber-500" },
+          { label: "In Transit", value: stats?.inTransit ?? 0, icon: AirplaneTakeOff01Icon, color: "from-orange-500 to-amber-500" },
           { label: "Accepted", value: stats?.accepted ?? 0, icon: Airplane01Icon, color: "from-blue-500 to-cyan-500" },
           { label: "Delivered", value: stats?.delivered ?? 0, icon: CheckmarkCircle02Icon, color: "from-green-500 to-emerald-500" },
         ].map((stat, i) => (

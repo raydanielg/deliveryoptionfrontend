@@ -10,7 +10,7 @@ import { Label } from "@workspace/ui/components/label"
 import { Skeleton } from "@workspace/ui/components/skeleton"
 import { api } from "@/lib/api"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { WarehouseIcon, Package02Icon, PackageReceiveIcon, Container01Icon, CheckmarkCircle02Icon } from "@hugeicons/core-free-icons"
+import { WarehouseIcon, Package02Icon, PackageReceiveIcon, ContainerIcon, CheckmarkCircle02Icon } from "@hugeicons/core-free-icons"
 import { toast } from "sonner"
 
 export default function WarehousePage() {
@@ -71,7 +71,7 @@ export default function WarehousePage() {
         {[
           { label: "Total in Warehouse", value: stats?.total ?? 0, icon: Package02Icon, color: "from-blue-500 to-cyan-500" },
           { label: "Received Today", value: stats?.receivedToday ?? 0, icon: PackageReceiveIcon, color: "from-orange-500 to-amber-500" },
-          { label: "Consolidated", value: stats?.consolidated ?? 0, icon: Container01Icon, color: "from-purple-500 to-pink-500" },
+          { label: "Consolidated", value: stats?.consolidated ?? 0, icon: ContainerIcon, color: "from-purple-500 to-pink-500" },
           { label: "Released", value: stats?.released ?? 0, icon: CheckmarkCircle02Icon, color: "from-green-500 to-emerald-500" },
         ].map((stat, i) => (
           <Card key={i}>

@@ -17,7 +17,7 @@ import {
   CallIcon,
   Location02Icon,
   SmartphoneIcon,
-  CreditCard01Icon,
+  CreditCardIcon,
 } from "@hugeicons/core-free-icons"
 import { Badge } from "@workspace/ui/components/badge"
 
@@ -43,7 +43,7 @@ const serviceLevels = [
 
 const paymentMethods = [
   { icon: SmartphoneIcon, title: "Mobile Money", desc: "M-Pesa, Tigo Pesa, Airtel Money" },
-  { icon: CreditCard01Icon, title: "Card Payment", desc: "Visa, Mastercard" },
+  { icon: CreditCardIcon, title: "Card Payment", desc: "Visa, Mastercard" },
   { icon: Wallet01Icon, title: "Cash on Delivery", desc: "Pay when you receive" },
 ]
 
