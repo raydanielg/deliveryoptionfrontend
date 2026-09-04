@@ -9,7 +9,7 @@ import {
   Globe02Icon,
   Shield01Icon,
   MapIcon,
-  Zap01Icon,
+  FlashIcon,
   Route02Icon,
   CheckmarkCircle02Icon,
   ArrowRight01Icon,
@@ -38,7 +38,7 @@ const steps = [
 
 const transportModes = [
   { icon: Airplane01Icon, title: "Air Freight", desc: "Fastest international option — 3-7 days to most destinations.", badge: "Fastest" },
-  { icon: Ship01Icon, title: "Sea Freight", desc: "Cost-effective for heavy and bulk shipments — 15-45 days.", badge: "Best Value" },
+  { icon: FlashIcon, title: "Sea Freight", desc: "Cost-effective for heavy and bulk shipments — 15-45 days.", badge: "Best Value" },
   { icon: Route02Icon, title: "Courier Express", desc: "Door-to-door express courier for urgent international packages — 2-5 days.", badge: "Premium" },
 ]
 

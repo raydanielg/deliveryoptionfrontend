@@ -6,7 +6,7 @@ import { HugeiconsIcon } from "@hugeicons/react"
 import {
   Rocket01Icon,
   Package02Icon,
-  Zap01Icon,
+  FlashIcon,
   Shield01Icon,
   MapIcon,
   Clock01Icon,
@@ -22,7 +22,7 @@ import {
 import { Badge } from "@workspace/ui/components/badge"
 
 const features = [
-  { icon: Zap01Icon, title: "Lightning Fast", desc: "Same-day delivery in Dar es Salaam and next-day to major cities across Tanzania." },
+  { icon: FlashIcon, title: "Lightning Fast", desc: "Same-day delivery in Dar es Salaam and next-day to major cities across Tanzania." },
   { icon: Rocket01Icon, title: "Express Priority", desc: "Your parcel gets top priority handling, jumping ahead of standard shipments." },
   { icon: Shield01Icon, title: "Secure & Tracked", desc: "Real-time GPS tracking, OTP verification, and proof of delivery on every parcel." },
   { icon: Wallet01Icon, title: "Transparent Pricing", desc: "Know your price upfront. No surge fees, no hidden charges. Pay your way." },
@@ -30,14 +30,14 @@ const features = [
 
 const steps = [
   { icon: Package02Icon, title: "Book in Seconds", desc: "Enter pickup and delivery details. Get an instant express quote." },
-  { icon: Zap01Icon, title: "Priority Pickup", desc: "Our nearest driver is dispatched immediately to collect your parcel." },
+  { icon: FlashIcon, title: "Priority Pickup", desc: "Our nearest driver is dispatched immediately to collect your parcel." },
   { icon: Rocket01Icon, title: "Express Delivery", desc: "Your parcel is delivered fast — same day within the city, next day nationwide." },
   { icon: CheckmarkCircle02Icon, title: "Delivered & Confirmed", desc: "Recipient confirms with OTP. You get instant proof of delivery." },
 ]
 
 const serviceLevels = [
   { icon: Rocket01Icon, title: "Same Day", desc: "Within hours in Dar es Salaam", badge: "Fastest", color: "from-red-500 to-orange-500" },
-  { icon: Zap01Icon, title: "Next Day", desc: "Overnight delivery nationwide", badge: "Fast", color: "from-orange-500 to-yellow-500" },
+  { icon: FlashIcon, title: "Next Day", desc: "Overnight delivery nationwide", badge: "Fast", color: "from-orange-500 to-yellow-500" },
   { icon: Clock01Icon, title: "Express", desc: "1-2 day priority delivery", badge: "Popular", color: "from-yellow-500 to-amber-500" },
 ]
 

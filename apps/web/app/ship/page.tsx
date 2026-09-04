@@ -29,7 +29,7 @@ import {
   Train01Icon,
   Ship01Icon,
   Rocket01Icon,
-  Zap01Icon,
+  FlashIcon,
   Clock01Icon,
   Shield01Icon,
   PackageLock01Icon,
@@ -93,9 +93,9 @@ const SERVICE_OPTIONS = {
   ],
   serviceLevel: [
     { value: "STANDARD", label: "Standard", desc: "3-5 days", icon: Clock01Icon, badge: "Popular" },
-    { value: "EXPRESS", label: "Express", desc: "1-2 days", icon: Zap01Icon, badge: "Fast" },
+    { value: "EXPRESS", label: "Express", desc: "1-2 days", icon: FlashIcon, badge: "Fast" },
     { value: "SAME_DAY", label: "Same Day", desc: "Within hours", icon: Rocket01Icon, badge: "Fastest" },
-    { value: "NEXT_DAY", label: "Next Day", desc: "Overnight delivery", icon: Zap01Icon },
+    { value: "NEXT_DAY", label: "Next Day", desc: "Overnight delivery", icon: FlashIcon },
     { value: "ECONOMY", label: "Economy", desc: "5-7 days, best price", icon: CoinsIcon },
     { value: "PRIORITY", label: "Priority", desc: "Top priority handling", icon: SparklesIcon, badge: "Premium" },
   ],
@@ -692,7 +692,7 @@ export default function ShipPage() {
             <Card className="border-border bg-card/95 backdrop-blur-xl">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <HugeiconsIcon icon={Zap01Icon} strokeWidth={2} className="size-5 text-primary" />
+                  <HugeiconsIcon icon={FlashIcon} strokeWidth={2} className="size-5 text-primary" />
                   Service Level
                 </CardTitle>
                 <CardDescription>Choose delivery speed</CardDescription>

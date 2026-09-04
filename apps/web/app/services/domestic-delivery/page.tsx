@@ -9,7 +9,7 @@ import {
   Clock01Icon,
   Shield01Icon,
   MapIcon,
-  Zap01Icon,
+  FlashIcon,
   Route02Icon,
   CheckmarkCircle02Icon,
   ArrowRight01Icon,
@@ -23,7 +23,7 @@ import {
 import { Badge } from "@workspace/ui/components/badge"
 
 const features = [
-  { icon: Zap01Icon, title: "Same-Day & Next-Day", desc: "Urgent deliveries within Dar es Salaam and major cities delivered the same day or next morning." },
+  { icon: FlashIcon, title: "Same-Day & Next-Day", desc: "Urgent deliveries within Dar es Salaam and major cities delivered the same day or next morning." },
   { icon: Route02Icon, title: "Nationwide Coverage", desc: "From Dar es Salaam to Mwanza, Arusha, Mbeya, and every region in between — we reach all of Tanzania." },
   { icon: Shield01Icon, title: "Safe & Insured", desc: "Every domestic shipment is handled with care. Optional insurance for high-value items." },
   { icon: Wallet01Icon, title: "Affordable Pricing", desc: "Transparent, competitive rates with no hidden fees. Pay via mobile money, card, or cash on delivery." },

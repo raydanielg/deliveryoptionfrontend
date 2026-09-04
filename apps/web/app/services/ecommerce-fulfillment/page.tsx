@@ -18,7 +18,7 @@ import {
   BoxIcon,
   Globe02Icon,
   Building03Icon,
-  Zap01Icon,
+  FlashIcon,
 } from "@hugeicons/core-free-icons"
 import { Badge } from "@workspace/ui/components/badge"
 
@@ -39,7 +39,7 @@ const steps = [
 const integrations = [
   { icon: Globe02Icon, title: "Online Stores", desc: "Shopify, WooCommerce, custom websites" },
   { icon: Building03Icon, title: "Marketplaces", desc: "Jumia, Kilimall, social media shops" },
-  { icon: Zap01Icon, title: "API Integration", desc: "Automated order sync via our REST API" },
+  { icon: FlashIcon, title: "API Integration", desc: "Automated order sync via our REST API" },
   { icon: Wallet01Icon, title: "Payment Sync", desc: "Automatic payment confirmation & invoicing" },
 ]
 
