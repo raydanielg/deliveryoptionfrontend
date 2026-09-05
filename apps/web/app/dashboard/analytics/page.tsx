@@ -7,24 +7,13 @@ import { Card } from "@workspace/ui/components/card"
 import { Badge } from "@workspace/ui/components/badge"
 import { buttonVariants } from "@workspace/ui/components/button"
 import { HugeiconsIcon } from "@hugeicons/react"
-import {
-  Package02Icon,
-  TruckIcon,
-  CheckmarkCircle02Icon,
-  Cancel01Icon,
-  Clock01Icon,
-  ArrowRight01Icon,
-  UserGroupIcon,
-  Globe02Icon,
-  CoinsIcon,
-  AlertCircleIcon,
-  ReceiptIcon,
-} from "@hugeicons/core-free-icons"
+import { ArrowRight01Icon } from "@hugeicons/core-free-icons"
 import { PageHeader } from "@/components/shared/page-header"
-import { MetricCard } from "@/components/shared/metric-card"
 import { ShipmentVolumeChart, type Range } from "@/components/charts/shipment-volume-chart"
 import { RoutePerformanceChart } from "@/components/charts/route-performance-chart"
 import { StatusBreakdownDonut } from "@/components/charts/status-breakdown-donut"
+import { OrdersOverviewChart } from "@/components/charts/orders-overview-chart"
+import { UserDistributionDonut } from "@/components/charts/user-distribution-donut"
 import {
   useShipmentStats,
   useShipmentVolume,
@@ -34,7 +23,7 @@ import {
   useExceptionStats,
   useCapacityOverview,
 } from "@/lib/use-dashboard"
-import { formatMoney, formatNumber, formatPercent } from "@/lib/format"
+import { formatNumber } from "@/lib/format"
 
 export default function AnalyticsPage() {
   const [range, setRange] = React.useState<Range>("30d")
@@ -57,13 +46,6 @@ export default function AnalyticsPage() {
     ].filter((d) => d.count > 0)
   }, [stats.data])
 
-  const successRate = stats.data && stats.data.total > 0
-    ? (stats.data.delivered / stats.data.total) * 100
-    : 0
-  const cancellationRate = stats.data && stats.data.total > 0
-    ? (stats.data.cancelled / stats.data.total) * 100
-    : 0
-
   return (
     <DashboardLayout breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Analytics" }]}>
       <div className="flex flex-col gap-6 p-4 lg:p-6">
@@ -78,69 +60,7 @@ export default function AnalyticsPage() {
           }
         />
 
-        {/* Primary KPI cards */}
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <MetricCard
-            label="Total shipments"
-            value={formatNumber(stats.data?.total)}
-            icon={Package02Icon}
-            loading={stats.isLoading}
-          />
-          <MetricCard
-            label="Success rate"
-            value={formatPercent(successRate)}
-            icon={CheckmarkCircle02Icon}
-            loading={stats.isLoading}
-            hint="Delivered / total"
-          />
-          <MetricCard
-            label="Cancellation rate"
-            value={formatPercent(cancellationRate)}
-            icon={Cancel01Icon}
-            loading={stats.isLoading}
-            positiveIsGood={false}
-          />
-          <MetricCard
-            label="Active now"
-            value={formatNumber(stats.data?.active)}
-            icon={TruckIcon}
-            loading={stats.isLoading}
-            hint="In transit and processing"
-          />
-        </div>
-
-        {/* Revenue + exceptions KPIs */}
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <MetricCard
-            label="Total revenue"
-            value={formatMoney(orderStats.data?.totalRevenue, "TZS", { compact: true })}
-            icon={CoinsIcon}
-            loading={orderStats.isLoading}
-            hint="From paid orders"
-          />
-          <MetricCard
-            label="Pending orders"
-            value={formatNumber(orderStats.data?.pending)}
-            icon={ReceiptIcon}
-            loading={orderStats.isLoading}
-            hint="Awaiting confirmation"
-          />
-          <MetricCard
-            label="Open exceptions"
-            value={formatNumber(exceptionStats.data?.open)}
-            icon={AlertCircleIcon}
-            loading={exceptionStats.isLoading}
-            hint="Needs attention"
-          />
-          <MetricCard
-            label="Resolved exceptions"
-            value={formatNumber(exceptionStats.data?.resolved)}
-            icon={CheckmarkCircle02Icon}
-            loading={exceptionStats.isLoading}
-          />
-        </div>
-
-        {/* Volume chart */}
+        {/* Hero chart — shipment volume */}
         <ShipmentVolumeChart
           data={volume.data}
           isLoading={volume.isLoading}
@@ -151,85 +71,58 @@ export default function AnalyticsPage() {
           description="Shipments created and delivered over time."
         />
 
-        {/* Status donut + Route performance */}
-        <div className="grid gap-4 xl:grid-cols-[2fr_3fr]">
-          <StatusBreakdownDonut
-            data={statusData}
-            isLoading={stats.isLoading}
-          />
-          <RoutePerformanceChart
-            data={routes.data}
-            isLoading={routes.isLoading}
-          />
+        {/* Status donut + Orders bar chart */}
+        <div className="grid gap-4 xl:grid-cols-2">
+          <StatusBreakdownDonut data={statusData} isLoading={stats.isLoading} />
+          <OrdersOverviewChart data={orderStats.data} isLoading={orderStats.isLoading} />
         </div>
 
-        {/* Shipment status breakdown KPIs */}
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <MetricCard
-            label="Delivered"
-            value={formatNumber(stats.data?.delivered)}
-            icon={CheckmarkCircle02Icon}
-            loading={stats.isLoading}
-            hint="Successfully completed"
-          />
-          <MetricCard
-            label="In transit"
-            value={formatNumber(stats.data?.inTransit)}
-            icon={Clock01Icon}
-            loading={stats.isLoading}
-            hint="Currently on the move"
-          />
-          <MetricCard
-            label="Scheduled"
-            value={formatNumber(stats.data?.scheduled)}
-            icon={Clock01Icon}
-            loading={stats.isLoading}
-            hint="Awaiting pickup"
-          />
-          <MetricCard
-            label="Cancelled"
-            value={formatNumber(stats.data?.cancelled)}
-            icon={Cancel01Icon}
-            loading={stats.isLoading}
-            positiveIsGood={false}
-          />
+        {/* Route performance + User distribution */}
+        <div className="grid gap-4 xl:grid-cols-[3fr_2fr]">
+          <RoutePerformanceChart data={routes.data} isLoading={routes.isLoading} />
+          <UserDistributionDonut data={userStats.data} isLoading={userStats.isLoading} />
         </div>
 
-        {/* User stats + Capacity overview */}
+        {/* Exceptions summary + Capacity overview */}
         <div className="grid gap-4 xl:grid-cols-2">
           <Card className="gap-0 p-5">
-            <h2 className="text-base font-semibold tracking-tight">User breakdown</h2>
-            <p className="mt-0.5 text-sm text-muted-foreground">Platform users by role</p>
-            <div className="mt-5 space-y-3 text-sm">
-              <div className="flex items-center justify-between border-b border-border/60 pb-3">
-                <div className="flex items-center gap-2">
-                  <HugeiconsIcon icon={UserGroupIcon} className="size-4 text-primary" />
-                  <span className="font-medium">Total users</span>
-                </div>
-                <span className="font-semibold tabular-nums">{formatNumber(userStats.data?.total)}</span>
+            <h2 className="text-base font-semibold tracking-tight">Exceptions summary</h2>
+            <p className="mt-0.5 text-sm text-muted-foreground">Open and resolved exception counts</p>
+            {exceptionStats.isLoading ? (
+              <div className="mt-5 space-y-3">
+                {Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-10 animate-pulse rounded bg-muted/30" />)}
               </div>
-              <div className="flex items-center justify-between border-b border-border/60 pb-3">
-                <div className="flex items-center gap-2">
-                  <HugeiconsIcon icon={CheckmarkCircle02Icon} className="size-4 text-emerald-600" />
-                  <span className="font-medium">Active</span>
+            ) : exceptionStats.data ? (
+              <div className="mt-5 space-y-4">
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="rounded-lg border border-border/60 p-3">
+                    <p className="text-xs text-muted-foreground">Total</p>
+                    <p className="mt-1 text-xl font-semibold tabular-nums">{formatNumber(exceptionStats.data.total)}</p>
+                  </div>
+                  <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-3">
+                    <p className="text-xs text-muted-foreground">Open</p>
+                    <p className="mt-1 text-xl font-semibold tabular-nums text-amber-600 dark:text-amber-400">{formatNumber(exceptionStats.data.open)}</p>
+                  </div>
+                  <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-3">
+                    <p className="text-xs text-muted-foreground">Resolved</p>
+                    <p className="mt-1 text-xl font-semibold tabular-nums text-emerald-600 dark:text-emerald-400">{formatNumber(exceptionStats.data.resolved)}</p>
+                  </div>
                 </div>
-                <span className="font-semibold tabular-nums">{formatNumber(userStats.data?.active)}</span>
+                {exceptionStats.data.byType && exceptionStats.data.byType.length > 0 && (
+                  <div className="space-y-2 border-t border-border/60 pt-4">
+                    <p className="text-xs font-medium text-muted-foreground">By type</p>
+                    {exceptionStats.data.byType.slice(0, 5).map((item) => (
+                      <div key={item.type} className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">{item.type.replace(/_/g, " ").toLowerCase()}</span>
+                        <span className="font-medium tabular-nums">{item._count.type}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-              <div className="flex items-center justify-between border-b border-border/60 pb-3">
-                <div className="flex items-center gap-2">
-                  <HugeiconsIcon icon={TruckIcon} className="size-4 text-blue-600" />
-                  <span className="font-medium">Drivers</span>
-                </div>
-                <span className="font-semibold tabular-nums">{formatNumber(userStats.data?.drivers)}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <HugeiconsIcon icon={Globe02Icon} className="size-4 text-purple-600" />
-                  <span className="font-medium">Customers</span>
-                </div>
-                <span className="font-semibold tabular-nums">{formatNumber(userStats.data?.customers)}</span>
-              </div>
-            </div>
+            ) : (
+              <p className="mt-5 text-sm text-muted-foreground">No exception data</p>
+            )}
           </Card>
 
           <Card className="gap-0 p-5">
@@ -277,7 +170,7 @@ export default function AnalyticsPage() {
           </Card>
         </div>
 
-        {/* Route performance table */}
+        {/* Route breakdown table */}
         {!routes.isLoading && routes.data.length > 0 && (
           <Card className="gap-0 overflow-hidden p-0">
             <div className="flex items-center justify-between gap-3 border-b border-border/60 px-5 py-4">
