@@ -1,8 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import * as React from "react"
 import { DashboardLayout } from "@/components/dashboard-layout"
-import { Card, CardContent } from "@workspace/ui/components/card"
 import { Badge } from "@workspace/ui/components/badge"
 import { Button } from "@workspace/ui/components/button"
 import { Input } from "@workspace/ui/components/input"
@@ -15,27 +14,33 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@workspace/ui/components/dialog"
+import { PageHeader } from "@/components/shared/page-header"
+import { MetricCard } from "@/components/shared/metric-card"
 import { api } from "@/lib/api"
 import { toast } from "sonner"
+import { formatNumber } from "@/lib/format"
+import { exportToPDF } from "@/lib/pdf-export"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { PlusIcon, Search01Icon, Download01Icon, CheckmarkCircle02Icon, AlertCircleIcon, TrendingUpIcon } from "@hugeicons/core-free-icons"
 
 export default function SurgePricingPage() {
-  const [surges, setSurges] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [editing, setEditing] = useState<any>(null)
-  const [form, setForm] = useState({
+  const [surges, setSurges] = React.useState<any[]>([])
+  const [loading, setLoading] = React.useState(true)
+  const [dialogOpen, setDialogOpen] = React.useState(false)
+  const [editing, setEditing] = React.useState<any>(null)
+  const [search, setSearch] = React.useState("")
+  const [form, setForm] = React.useState({
     name: "", surgePercentage: 0, isActive: true,
     startDate: "", endDate: "",
   })
 
-  useEffect(() => { loadSurges() }, [])
+  React.useEffect(() => { loadSurges() }, [])
 
   async function loadSurges() {
     try {
       const result = await api.surgePricing.list()
       setSurges(result.data || [])
-    } catch (err) {
-      console.error(err)
+    } catch {
     } finally {
       setLoading(false)
     }
@@ -101,66 +106,126 @@ export default function SurgePricingPage() {
     }
   }
 
+  const filtered = surges.filter((s) => {
+    if (!search) return true
+    const q = search.toLowerCase()
+    return s.name?.toLowerCase().includes(q) || String(s.surgePercentage).includes(q)
+  })
+
+  const activeCount = surges.filter((s) => s.isActive).length
+  const avgSurge = surges.length > 0 ? surges.reduce((s, x) => s + Number(x.surgePercentage || 0), 0) / surges.length : 0
+  const totalTimeSlots = surges.reduce((s, x) => s + (x.timeSlots?.length || 0), 0)
+
+  function handleExportPDF() {
+    exportToPDF({
+      title: "Surge Pricing Report",
+      subtitle: "Time-based surge pricing rules for peak hours",
+      columns: [
+        { header: "Name", key: "name" },
+        { header: "Surge %", key: "surge" },
+        { header: "Start Date", key: "start" },
+        { header: "End Date", key: "end" },
+        { header: "Time Slots", key: "slots" },
+        { header: "Status", key: "status" },
+      ],
+      rows: filtered.map((s) => ({
+        name: s.name || "—",
+        surge: `${s.surgePercentage}%`,
+        start: s.startDate ? new Date(s.startDate).toLocaleDateString("en-GB") : "—",
+        end: s.endDate ? new Date(s.endDate).toLocaleDateString("en-GB") : "—",
+        slots: String(s.timeSlots?.length || 0),
+        status: s.isActive ? "Active" : "Inactive",
+      })),
+      meta: [
+        { label: "Total Rules", value: String(surges.length) },
+        { label: "Active", value: String(activeCount) },
+        { label: "Avg Surge", value: `${avgSurge.toFixed(1)}%` },
+      ],
+    })
+  }
+
   return (
     <DashboardLayout breadcrumbs={[
       { label: "Dashboard", href: "/dashboard" },
       { label: "Surge Pricing" },
     ]}>
-      <div className="flex items-center justify-between gap-2 mb-6">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Surge Pricing</h1>
-          <p className="text-sm text-muted-foreground">Manage time-based surge pricing for peak hours</p>
-        </div>
-        <Button onClick={openCreate}>Add Surge</Button>
-      </div>
+      <div className="flex flex-col gap-6 p-4 lg:p-6">
+        <PageHeader
+          title="📈 Surge Pricing"
+          description="Manage time-based surge pricing for peak hours, holidays, and high-demand periods."
+          actions={
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={handleExportPDF}>
+                <HugeiconsIcon icon={Download01Icon} className="size-4" />
+                Export PDF
+              </Button>
+              <Button size="sm" onClick={openCreate}>
+                <HugeiconsIcon icon={PlusIcon} className="size-4" />
+                Add Surge
+              </Button>
+            </div>
+          }
+        />
 
-      <Card>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b text-left">
-                  <th className="px-4 py-3 font-medium text-muted-foreground">Name</th>
-                  <th className="px-4 py-3 font-medium text-muted-foreground">Surge %</th>
-                  <th className="px-4 py-3 font-medium text-muted-foreground">Start Date</th>
-                  <th className="px-4 py-3 font-medium text-muted-foreground">End Date</th>
-                  <th className="px-4 py-3 font-medium text-muted-foreground">Time Slots</th>
-                  <th className="px-4 py-3 font-medium text-muted-foreground">Active</th>
-                  <th className="px-4 py-3 font-medium text-muted-foreground">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {loading ? (
-                  Array.from({ length: 3 }).map((_, i) => (
-                    <tr key={i} className="border-b last:border-0">
-                      {Array.from({ length: 7 }).map((_, j) => <td key={j} className="px-4 py-3"><Skeleton className="h-5 w-20" /></td>)}
-                    </tr>
-                  ))
-                ) : surges.length === 0 ? (
-                  <tr><td colSpan={7} className="px-4 py-12 text-center text-muted-foreground">No surge pricing rules found</td></tr>
-                ) : (
-                  surges.map((s) => (
-                    <tr key={s.id} className="border-b last:border-0 hover:bg-muted/50">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <MetricCard label="Total Rules" value={formatNumber(surges.length)} icon={TrendingUpIcon} hint="All configured" />
+          <MetricCard label="Active" value={formatNumber(activeCount)} icon={CheckmarkCircle02Icon} hint="Currently active" />
+          <MetricCard label="Avg Surge" value={`${avgSurge.toFixed(1)}%`} icon={TrendingUpIcon} hint="Across rules" />
+          <MetricCard label="Time Slots" value={formatNumber(totalTimeSlots)} icon={TrendingUpIcon} hint="Peak time windows" />
+        </div>
+
+        <div className="relative max-w-xs">
+          <HugeiconsIcon icon={Search01Icon} className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input placeholder="Search by name or percentage..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+        </div>
+
+        {loading ? (
+          <div className="space-y-3">
+            {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-14 w-full rounded-lg" />)}
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="rounded-lg border bg-card py-12 text-center">
+            <HugeiconsIcon icon={AlertCircleIcon} className="mx-auto size-8 text-muted-foreground/40" />
+            <p className="mt-2 text-sm text-muted-foreground">No surge pricing rules found</p>
+          </div>
+        ) : (
+          <div className="overflow-hidden rounded-lg border">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-muted/30 text-left">
+                    <th className="px-4 py-3 font-medium text-muted-foreground">Name</th>
+                    <th className="px-4 py-3 font-medium text-muted-foreground">Surge %</th>
+                    <th className="px-4 py-3 font-medium text-muted-foreground">Start Date</th>
+                    <th className="px-4 py-3 font-medium text-muted-foreground">End Date</th>
+                    <th className="px-4 py-3 font-medium text-muted-foreground text-right">Time Slots</th>
+                    <th className="px-4 py-3 font-medium text-muted-foreground">Active</th>
+                    <th className="px-4 py-3 font-medium text-muted-foreground">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filtered.map((s) => (
+                    <tr key={s.id} className="transition-colors hover:bg-muted/20">
                       <td className="px-4 py-3 font-medium">{s.name}</td>
-                      <td className="px-4 py-3"><Badge variant="default">{s.surgePercentage}%</Badge></td>
-                      <td className="px-4 py-3 text-muted-foreground">{s.startDate ? new Date(s.startDate).toLocaleDateString() : "—"}</td>
-                      <td className="px-4 py-3 text-muted-foreground">{s.endDate ? new Date(s.endDate).toLocaleDateString() : "—"}</td>
-                      <td className="px-4 py-3 text-muted-foreground">{s.timeSlots?.length || 0}</td>
+                      <td className="px-4 py-3"><Badge variant="default" className="text-xs">{s.surgePercentage}%</Badge></td>
+                      <td className="px-4 py-3 text-muted-foreground">{s.startDate ? new Date(s.startDate).toLocaleDateString("en-GB") : "—"}</td>
+                      <td className="px-4 py-3 text-muted-foreground">{s.endDate ? new Date(s.endDate).toLocaleDateString("en-GB") : "—"}</td>
+                      <td className="px-4 py-3 text-right tabular-nums text-muted-foreground">{s.timeSlots?.length || 0}</td>
                       <td className="px-4 py-3"><Switch checked={s.isActive} onCheckedChange={() => toggleSurge(s.id)} /></td>
                       <td className="px-4 py-3">
                         <div className="flex gap-2">
-                          <Button variant="outline" size="sm" onClick={() => openEdit(s)}>Edit</Button>
-                          <Button variant="ghost" size="sm" className="text-destructive" onClick={() => deleteSurge(s.id)}>Delete</Button>
+                          <Button variant="outline" size="sm" className="text-xs" onClick={() => openEdit(s)}>Edit</Button>
+                          <Button variant="ghost" size="sm" className="text-xs text-destructive" onClick={() => deleteSurge(s.id)}>Delete</Button>
                         </div>
                       </td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </CardContent>
-      </Card>
+        )}
+      </div>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent>

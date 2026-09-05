@@ -1,45 +1,61 @@
 "use client"
 
 import * as React from "react"
-import Link from "next/link"
 import { DashboardLayout } from "@/components/dashboard-layout"
-import { Card } from "@workspace/ui/components/card"
 import { Badge } from "@workspace/ui/components/badge"
 import { Button } from "@workspace/ui/components/button"
-import { buttonVariants } from "@workspace/ui/components/button"
+import { Input } from "@workspace/ui/components/input"
+import { Skeleton } from "@workspace/ui/components/skeleton"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
-  ArrowRight01Icon,
-  Download01Icon,
   Package02Icon,
   CoinsIcon,
-  Route02Icon,
-  UserGroupIcon,
+  TruckIcon,
+  Train01Icon,
+  Airplane01Icon,
+  BikeIcon,
   AlertCircleIcon,
+  CheckmarkCircle02Icon,
+  Cancel01Icon,
+  Clock01Icon,
+  Download01Icon,
+  Search01Icon,
+  TrendingUpIcon,
+  Route02Icon,
+  Globe02Icon,
+  CancelCircleIcon,
+  ArrowRight01Icon,
 } from "@hugeicons/core-free-icons"
 import { PageHeader } from "@/components/shared/page-header"
+import { MetricCard } from "@/components/shared/metric-card"
 import { StatusBadge } from "@/components/shared/status-badge"
 import { api } from "@/lib/api"
 import { exportToCSV } from "@/lib/csv-export"
 import { formatMoney, formatNumber, formatPercent, formatDate } from "@/lib/format"
 
-type ReportTab = "shipments" | "revenue" | "routes" | "users" | "exceptions"
+type ReportTab = "overview" | "modes" | "exceptions"
 
 const TABS: { id: ReportTab; label: string; icon: any }[] = [
-  { id: "shipments", label: "Shipments", icon: Package02Icon },
-  { id: "revenue", label: "Revenue", icon: CoinsIcon },
-  { id: "routes", label: "Routes", icon: Route02Icon },
-  { id: "users", label: "Users", icon: UserGroupIcon },
+  { id: "overview", label: "Overview", icon: Package02Icon },
+  { id: "modes", label: "By Mode", icon: TruckIcon },
   { id: "exceptions", label: "Exceptions", icon: AlertCircleIcon },
 ]
 
+const MODE_META: Record<string, { label: string; icon: any; color: string }> = {
+  ROAD: { label: "Road", icon: TruckIcon, color: "text-blue-600" },
+  RAIL: { label: "SGR Rail", icon: Train01Icon, color: "text-green-600" },
+  AIR: { label: "Air Cargo", icon: Airplane01Icon, color: "text-sky-600" },
+  COURIER: { label: "Courier", icon: BikeIcon, color: "text-orange-600" },
+}
+
 export default function ReportsPage() {
-  const [tab, setTab] = React.useState<ReportTab>("shipments")
+  const [tab, setTab] = React.useState<ReportTab>("overview")
   const [shipments, setShipments] = React.useState<any[]>([])
   const [orders, setOrders] = React.useState<any[]>([])
-  const [routes, setRoutes] = React.useState<any[]>([])
-  const [users, setUsers] = React.useState<any[]>([])
   const [exceptions, setExceptions] = React.useState<any[]>([])
+  const [shipStats, setShipStats] = React.useState<any>(null)
+  const [orderStats, setOrderStats] = React.useState<any>(null)
+  const [excStats, setExcStats] = React.useState<any>(null)
   const [loading, setLoading] = React.useState(true)
 
   React.useEffect(() => {
@@ -47,12 +63,13 @@ export default function ReportsPage() {
     async function fetchAll() {
       setLoading(true)
       try {
-        const [shipRes, orderRes, routeRes, userRes, excRes] = await Promise.allSettled([
-          api.shipments.list("?page=1&limit=100"),
-          api.orders.list("?page=1&limit=100"),
-          api.shipments.list("?page=1&limit=500"),
-          api.users.list("?page=1&limit=100"),
-          api.exceptions.list("?page=1&limit=100"),
+        const [shipRes, orderRes, excRes, shipStatsRes, orderStatsRes, excStatsRes] = await Promise.allSettled([
+          api.shipments.list("?page=1&limit=200"),
+          api.orders.list("?page=1&limit=200"),
+          api.exceptions.list("?page=1&limit=200"),
+          api.shipments.stats(),
+          api.orders.stats(),
+          api.exceptions.stats(),
         ])
 
         if (cancelled) return
@@ -65,34 +82,13 @@ export default function ReportsPage() {
           const data = orderRes.value.data?.orders || orderRes.value.data || []
           setOrders(Array.isArray(data) ? data : [])
         }
-        if (routeRes.status === "fulfilled") {
-          const data = routeRes.value.data?.shipments || routeRes.value.data || []
-          const routeMap: Record<string, { total: number; delivered: number; revenue: number }> = {}
-          for (const s of data) {
-            const from = s.fromAddress?.city || s.fromAddress?.address || "Unknown"
-            const to = s.toAddress?.city || s.toAddress?.address || "Unknown"
-            const route = `${from} → ${to}`
-            if (!routeMap[route]) routeMap[route] = { total: 0, delivered: 0, revenue: 0 }
-            routeMap[route].total++
-            if (s.status === "DELIVERED") routeMap[route].delivered++
-            routeMap[route].revenue += Number(s.totalAmount || 0)
-          }
-          setRoutes(Object.entries(routeMap).map(([route, v]) => ({
-            route,
-            shipments: v.total,
-            delivered: v.delivered,
-            successRate: v.total > 0 ? (v.delivered / v.total) * 100 : 0,
-            revenue: v.revenue,
-          })).sort((a, b) => b.shipments - a.shipments))
-        }
-        if (userRes.status === "fulfilled") {
-          const data = userRes.value.data?.users || userRes.value.data || []
-          setUsers(Array.isArray(data) ? data : [])
-        }
         if (excRes.status === "fulfilled") {
           const data = excRes.value.data?.exceptions || excRes.value.data || []
           setExceptions(Array.isArray(data) ? data : [])
         }
+        if (shipStatsRes.status === "fulfilled") setShipStats(shipStatsRes.value.data)
+        if (orderStatsRes.status === "fulfilled") setOrderStats(orderStatsRes.value.data)
+        if (excStatsRes.status === "fulfilled") setExcStats(excStatsRes.value.data)
       } catch {
       } finally {
         if (!cancelled) setLoading(false)
@@ -105,50 +101,31 @@ export default function ReportsPage() {
   function handleExport() {
     const date = new Date().toISOString().slice(0, 10)
 
-    if (tab === "shipments") {
-      exportToCSV(`shipments-report-${date}`, [
-        "Tracking Number", "Status", "From", "To", "Customer", "Amount", "Currency", "Created At",
+    if (tab === "overview") {
+      exportToCSV(`overview-report-${date}`, [
+        "Tracking Number", "Status", "Transport Mode", "From", "To", "Customer", "Amount", "Created At",
       ], shipments.map((s) => [
         s.trackingNumber || "—",
         s.status || "—",
+        s.transportMode || "—",
         s.fromAddress?.city || "—",
         s.toAddress?.city || "—",
         s.customer?.name || s.customer?.user?.name || "—",
         s.totalAmount || 0,
-        s.currency || "TZS",
         s.createdAt ? formatDate(s.createdAt) : "—",
       ]))
-    } else if (tab === "revenue") {
-      exportToCSV(`revenue-report-${date}`, [
-        "Order ID", "Status", "Customer", "Amount", "Currency", "Created At",
-      ], orders.map((o) => [
-        o.id || o.orderNumber || "—",
-        o.status || "—",
-        o.customer?.name || o.customer?.user?.name || "—",
-        o.totalAmount || o.amount || 0,
-        o.currency || "TZS",
-        o.createdAt ? formatDate(o.createdAt) : "—",
-      ]))
-    } else if (tab === "routes") {
-      exportToCSV(`routes-report-${date}`, [
-        "Route", "Shipments", "Delivered", "Success Rate (%)", "Revenue",
-      ], routes.map((r) => [
-        r.route,
-        r.shipments,
-        r.delivered,
-        r.successRate.toFixed(1),
-        r.revenue,
-      ]))
-    } else if (tab === "users") {
-      exportToCSV(`users-report-${date}`, [
-        "Name", "Email", "Phone", "Role", "Active", "Created At",
-      ], users.map((u) => [
-        u.name || "—",
-        u.email || "—",
-        u.phone || "—",
-        u.role || "—",
-        u.isActive ? "Yes" : "No",
-        u.createdAt ? formatDate(u.createdAt) : "—",
+    } else if (tab === "modes") {
+      const modeData = computeModeBreakdown(shipments)
+      exportToCSV(`mode-report-${date}`, [
+        "Mode", "Shipments", "Delivered", "In Transit", "Cancelled", "Revenue", "Success Rate (%)",
+      ], modeData.map((m) => [
+        m.mode,
+        m.total,
+        m.delivered,
+        m.inTransit,
+        m.cancelled,
+        m.revenue,
+        m.successRate.toFixed(1),
       ]))
     } else if (tab === "exceptions") {
       exportToCSV(`exceptions-report-${date}`, [
@@ -164,68 +141,70 @@ export default function ReportsPage() {
     }
   }
 
-  const tabCount = tab === "shipments" ? shipments.length : tab === "revenue" ? orders.length : tab === "routes" ? routes.length : tab === "users" ? users.length : exceptions.length
-
   return (
     <DashboardLayout breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Reports" }]}>
       <div className="flex flex-col gap-6 p-4 lg:p-6">
         <PageHeader
           title="Reports"
-          description="Generate and export operational reports — shipments, revenue, routes, users, and exceptions."
+          description="Comprehensive operational insights — overview, transport mode breakdown, and exception tracking."
           actions={
-            <>
-              <Button variant="outline" size="sm" onClick={handleExport} disabled={loading || tabCount === 0}>
-                <HugeiconsIcon icon={Download01Icon} className="size-4" />
-                Export CSV
-              </Button>
-              <Link href="/dashboard/analytics" className={buttonVariants({ variant: "outline", size: "sm" })}>
-                <HugeiconsIcon icon={ArrowRight01Icon} className="size-4" />
-                Analytics
-              </Link>
-            </>
+            <Button variant="outline" size="sm" onClick={handleExport} disabled={loading}>
+              <HugeiconsIcon icon={Download01Icon} className="size-4" />
+              Export CSV
+            </Button>
           }
         />
 
         {/* Tab bar */}
-        <div className="flex flex-wrap gap-1 rounded-xl border border-border/60 bg-muted/30 p-1">
-          {TABS.map((t) => {
-            const count = t.id === "shipments" ? shipments.length : t.id === "revenue" ? orders.length : t.id === "routes" ? routes.length : t.id === "users" ? users.length : exceptions.length
-            return (
-              <button
-                key={t.id}
-                onClick={() => setTab(t.id)}
-                className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all ${
-                  tab === t.id
-                    ? "bg-white text-foreground shadow-sm dark:bg-slate-800"
-                    : "text-muted-foreground hover:text-foreground hover:bg-white/50 dark:hover:bg-slate-800/50"
-                }`}
-              >
-                <HugeiconsIcon icon={t.icon} className="size-4" />
-                {t.label}
-                <span className="ml-1 rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-semibold tabular-nums text-muted-foreground">
-                  {count}
-                </span>
-              </button>
-            )
-          })}
+        <div className="flex flex-wrap gap-1 rounded-xl border border-border/60 bg-muted/30 p-1 w-fit">
+          {TABS.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setTab(t.id)}
+              className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all ${
+                tab === t.id
+                  ? "bg-white text-foreground shadow-sm dark:bg-slate-800"
+                  : "text-muted-foreground hover:text-foreground hover:bg-white/50 dark:hover:bg-slate-800/50"
+              }`}
+            >
+              <HugeiconsIcon icon={t.icon} className="size-4" />
+              {t.label}
+            </button>
+          ))}
         </div>
 
-        {/* Report content */}
+        {/* Content */}
         {loading ? (
-          <Card className="p-6">
-            <div className="space-y-3">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="h-12 animate-pulse rounded-lg bg-muted/30" />
+          <div className="flex flex-col gap-6">
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="rounded-lg border bg-card p-4">
+                  <Skeleton className="h-4 w-20" />
+                  <Skeleton className="mt-2 h-7 w-28" />
+                  <Skeleton className="mt-2 h-3 w-24" />
+                </div>
               ))}
             </div>
-          </Card>
+            <div className="space-y-3">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <Skeleton key={i} className="h-12 w-full rounded-lg" />
+              ))}
+            </div>
+          </div>
         ) : (
           <>
-            {tab === "shipments" && <ShipmentsReport shipments={shipments} />}
-            {tab === "revenue" && <RevenueReport orders={orders} />}
-            {tab === "routes" && <RoutesReport routes={routes} />}
-            {tab === "users" && <UsersReport users={users} />}
-            {tab === "exceptions" && <ExceptionsReport exceptions={exceptions} />}
+            {tab === "overview" && (
+              <OverviewTab
+                shipments={shipments}
+                orders={orders}
+                shipStats={shipStats}
+                orderStats={orderStats}
+              />
+            )}
+            {tab === "modes" && <ModesTab shipments={shipments} />}
+            {tab === "exceptions" && (
+              <ExceptionsTab exceptions={exceptions} excStats={excStats} />
+            )}
           </>
         )}
       </div>
@@ -233,32 +212,64 @@ export default function ReportsPage() {
   )
 }
 
-/* ---------- Shipments Report ---------- */
-function ShipmentsReport({ shipments }: { shipments: any[] }) {
-  if (shipments.length === 0) {
-    return <EmptyReport icon={Package02Icon} title="No shipments found" description="Shipment data will appear here once available." />
-  }
+/* ====================== OVERVIEW TAB ====================== */
+function OverviewTab({ shipments, orders, shipStats, orderStats }: {
+  shipments: any[]
+  orders: any[]
+  shipStats: any
+  orderStats: any
+}) {
+  const [search, setSearch] = React.useState("")
 
   const delivered = shipments.filter((s) => s.status === "DELIVERED").length
   const cancelled = shipments.filter((s) => s.status === "CANCELLED").length
-  const inTransit = shipments.filter((s) => ["IN_TRANSIT", "OUT_FOR_DELIVERY", "PICKED_UP", "ONGOING"].includes(s.status)).length
+  const inTransit = shipments.filter((s) => ["IN_TRANSIT", "OUT_FOR_DELIVERY", "PICKED_UP", "ONGOING", "ACCEPTED", "OUT_FOR_PICKUP"].includes(s.status)).length
+  const totalRevenue = orders.reduce((sum, o) => sum + Number(o.totalAmount || o.amount || 0), 0)
+  const avgValue = shipments.length > 0 ? totalRevenue / shipments.length : 0
+
+  const filtered = shipments.filter((s) => {
+    if (!search) return true
+    const q = search.toLowerCase()
+    return s.trackingNumber?.toLowerCase().includes(q) ||
+      s.fromAddress?.city?.toLowerCase().includes(q) ||
+      s.toAddress?.city?.toLowerCase().includes(q) ||
+      s.customer?.name?.toLowerCase().includes(q) ||
+      s.customer?.user?.name?.toLowerCase().includes(q)
+  })
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <SummaryStat label="Total" value={formatNumber(shipments.length)} />
-        <SummaryStat label="Delivered" value={formatNumber(delivered)} tone="good" />
-        <SummaryStat label="In Transit" value={formatNumber(inTransit)} tone="info" />
-        <SummaryStat label="Cancelled" value={formatNumber(cancelled)} tone="critical" />
+    <div className="flex flex-col gap-6">
+      {/* Metric Cards */}
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <MetricCard label="Total Shipments" value={formatNumber(shipments.length)} icon={Package02Icon} hint={`${delivered} delivered`} />
+        <MetricCard label="Total Revenue" value={formatMoney(totalRevenue, "TZS", { compact: true })} icon={CoinsIcon} hint="From all orders" />
+        <MetricCard label="In Transit" value={formatNumber(inTransit)} icon={Clock01Icon} hint="Active deliveries" />
+        <MetricCard label="Avg Shipment Value" value={formatMoney(avgValue, "TZS", { compact: true })} icon={TrendingUpIcon} hint="Per shipment" />
       </div>
 
-      <Card className="overflow-hidden p-0">
+      {/* Status Breakdown */}
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <MetricCard label="Delivered" value={formatNumber(delivered)} icon={CheckmarkCircle02Icon} hint={`${shipments.length > 0 ? ((delivered / shipments.length) * 100).toFixed(1) : 0}% success rate`} />
+        <MetricCard label="Cancelled" value={formatNumber(cancelled)} icon={CancelCircleIcon} positiveIsGood={false} hint={`${shipments.length > 0 ? ((cancelled / shipments.length) * 100).toFixed(1) : 0}% cancellation`} />
+        <MetricCard label="Total Orders" value={formatNumber(orders.length)} icon={CoinsIcon} hint="All orders" />
+        <MetricCard label="Pending Payment" value={formatNumber(orders.filter((o) => o.paymentStatus === "PENDING").length)} icon={Clock01Icon} hint="Awaiting payment" />
+      </div>
+
+      {/* Search */}
+      <div className="relative w-full sm:max-w-xs">
+        <HugeiconsIcon icon={Search01Icon} className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+        <Input placeholder="Search tracking #, route, customer..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+      </div>
+
+      {/* Shipments Table */}
+      <div className="overflow-hidden rounded-lg border">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b bg-muted/30 text-left">
+              <tr className="bg-muted/30 text-left">
                 <th className="px-4 py-3 font-medium text-muted-foreground">Tracking #</th>
                 <th className="px-4 py-3 font-medium text-muted-foreground">Status</th>
+                <th className="px-4 py-3 font-medium text-muted-foreground">Mode</th>
                 <th className="px-4 py-3 font-medium text-muted-foreground">Route</th>
                 <th className="px-4 py-3 font-medium text-muted-foreground">Customer</th>
                 <th className="px-4 py-3 font-medium text-muted-foreground text-right">Amount</th>
@@ -266,281 +277,368 @@ function ShipmentsReport({ shipments }: { shipments: any[] }) {
               </tr>
             </thead>
             <tbody>
-              {shipments.slice(0, 50).map((s) => (
-                <tr key={s.id} className="border-b last:border-0 transition-colors hover:bg-muted/20">
-                  <td className="px-4 py-3 font-medium">{s.trackingNumber || "—"}</td>
-                  <td className="px-4 py-3"><StatusBadge status={s.status} size="sm" /></td>
-                  <td className="px-4 py-3 text-muted-foreground">{s.fromAddress?.city || "—"} → {s.toAddress?.city || "—"}</td>
-                  <td className="px-4 py-3 text-muted-foreground">{s.customer?.name || s.customer?.user?.name || "—"}</td>
-                  <td className="px-4 py-3 text-right font-medium tabular-nums">{formatMoney(s.totalAmount, s.currency || "TZS", { compact: true })}</td>
-                  <td className="px-4 py-3 text-muted-foreground">{s.createdAt ? formatDate(s.createdAt) : "—"}</td>
+              {filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="px-4 py-12 text-center">
+                    <HugeiconsIcon icon={Package02Icon} className="mx-auto size-8 text-muted-foreground/40" />
+                    <p className="mt-2 text-sm text-muted-foreground">No shipments found</p>
+                  </td>
                 </tr>
-              ))}
+              ) : (
+                filtered.slice(0, 50).map((s) => {
+                  const mode = MODE_META[s.transportMode] || { label: s.transportMode || "—", icon: TruckIcon, color: "" }
+                  return (
+                    <tr key={s.id} className="transition-colors hover:bg-muted/20">
+                      <td className="px-4 py-3 font-medium">{s.trackingNumber || "—"}</td>
+                      <td className="px-4 py-3"><StatusBadge status={s.status} size="sm" /></td>
+                      <td className="px-4 py-3">
+                        <span className="flex items-center gap-1.5 text-muted-foreground">
+                          <HugeiconsIcon icon={mode.icon} className={`size-3.5 ${mode.color}`} />
+                          {mode.label}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-muted-foreground">{s.fromAddress?.city || "—"} → {s.toAddress?.city || "—"}</td>
+                      <td className="px-4 py-3 text-muted-foreground">{s.customer?.name || s.customer?.user?.name || "—"}</td>
+                      <td className="px-4 py-3 text-right font-medium tabular-nums">{formatMoney(Number(s.totalAmount || 0), "TZS", { compact: true })}</td>
+                      <td className="px-4 py-3 text-muted-foreground">{s.createdAt ? formatDate(s.createdAt) : "—"}</td>
+                    </tr>
+                  )
+                })
+              )}
             </tbody>
           </table>
         </div>
-        {shipments.length > 50 && (
+        {filtered.length > 50 && (
           <div className="border-t px-4 py-3 text-center text-xs text-muted-foreground">
-            Showing 50 of {shipments.length} records — export CSV for full data
+            Showing 50 of {filtered.length} records — export CSV for full data
           </div>
         )}
-      </Card>
+      </div>
     </div>
   )
 }
 
-/* ---------- Revenue Report ---------- */
-function RevenueReport({ orders }: { orders: any[] }) {
-  if (orders.length === 0) {
-    return <EmptyReport icon={CoinsIcon} title="No orders found" description="Revenue data will appear here once orders are created." />
+/* ====================== BY MODE TAB ====================== */
+function computeModeBreakdown(shipments: any[]) {
+  const modes: Record<string, { total: number; delivered: number; inTransit: number; cancelled: number; revenue: number }> = {}
+
+  for (const s of shipments) {
+    const mode = s.transportMode || "ROAD"
+    if (!modes[mode]) modes[mode] = { total: 0, delivered: 0, inTransit: 0, cancelled: 0, revenue: 0 }
+    modes[mode].total++
+    if (s.status === "DELIVERED") modes[mode].delivered++
+    if (["IN_TRANSIT", "OUT_FOR_DELIVERY", "PICKED_UP", "ONGOING", "ACCEPTED", "OUT_FOR_PICKUP"].includes(s.status)) modes[mode].inTransit++
+    if (s.status === "CANCELLED") modes[mode].cancelled++
+    modes[mode].revenue += Number(s.totalAmount || 0)
   }
 
-  const totalRevenue = orders.reduce((sum, o) => sum + Number(o.totalAmount || o.amount || 0), 0)
-  const paid = orders.filter((o) => o.status === "PAID" || o.status === "CONFIRMED" || o.status === "COMPLETED").length
-  const pending = orders.filter((o) => o.status === "PENDING" || o.status === "PENDING_PAYMENT").length
-  const cancelled = orders.filter((o) => o.status === "CANCELLED").length
-
-  return (
-    <div className="flex flex-col gap-4">
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <SummaryStat label="Total Revenue" value={formatMoney(totalRevenue, "TZS", { compact: true })} />
-        <SummaryStat label="Paid" value={formatNumber(paid)} tone="good" />
-        <SummaryStat label="Pending" value={formatNumber(pending)} tone="warning" />
-        <SummaryStat label="Cancelled" value={formatNumber(cancelled)} tone="critical" />
-      </div>
-
-      <Card className="overflow-hidden p-0">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b bg-muted/30 text-left">
-                <th className="px-4 py-3 font-medium text-muted-foreground">Order ID</th>
-                <th className="px-4 py-3 font-medium text-muted-foreground">Status</th>
-                <th className="px-4 py-3 font-medium text-muted-foreground">Customer</th>
-                <th className="px-4 py-3 font-medium text-muted-foreground text-right">Amount</th>
-                <th className="px-4 py-3 font-medium text-muted-foreground">Date</th>
-              </tr>
-            </thead>
-            <tbody>
-              {orders.slice(0, 50).map((o) => (
-                <tr key={o.id} className="border-b last:border-0 transition-colors hover:bg-muted/20">
-                  <td className="px-4 py-3 font-medium">{o.orderNumber || o.id?.slice(0, 8) || "—"}</td>
-                  <td className="px-4 py-3"><StatusBadge status={o.status} size="sm" /></td>
-                  <td className="px-4 py-3 text-muted-foreground">{o.customer?.name || o.customer?.user?.name || "—"}</td>
-                  <td className="px-4 py-3 text-right font-medium tabular-nums">{formatMoney(o.totalAmount || o.amount, o.currency || "TZS", { compact: true })}</td>
-                  <td className="px-4 py-3 text-muted-foreground">{o.createdAt ? formatDate(o.createdAt) : "—"}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        {orders.length > 50 && (
-          <div className="border-t px-4 py-3 text-center text-xs text-muted-foreground">
-            Showing 50 of {orders.length} records — export CSV for full data
-          </div>
-        )}
-      </Card>
-    </div>
-  )
+  return Object.entries(modes).map(([mode, v]) => ({
+    mode,
+    ...v,
+    successRate: v.total > 0 ? (v.delivered / v.total) * 100 : 0,
+  })).sort((a, b) => b.total - a.total)
 }
 
-/* ---------- Routes Report ---------- */
-function RoutesReport({ routes }: { routes: any[] }) {
-  if (routes.length === 0) {
-    return <EmptyReport icon={Route02Icon} title="No route data" description="Route performance will appear here once shipments are created." />
-  }
+function ModesTab({ shipments }: { shipments: any[] }) {
+  const [search, setSearch] = React.useState("")
+  const modeData = React.useMemo(() => computeModeBreakdown(shipments), [shipments])
 
-  const totalShipments = routes.reduce((sum, r) => sum + r.shipments, 0)
-  const totalDelivered = routes.reduce((sum, r) => sum + r.delivered, 0)
-  const totalRevenue = routes.reduce((sum, r) => sum + r.revenue, 0)
-  const avgSuccess = totalShipments > 0 ? (totalDelivered / totalShipments) * 100 : 0
+  const totalShipments = modeData.reduce((s, m) => s + m.total, 0)
+  const totalRevenue = modeData.reduce((s, m) => s + m.revenue, 0)
+  const totalDelivered = modeData.reduce((s, m) => s + m.delivered, 0)
+  const overallSuccess = totalShipments > 0 ? (totalDelivered / totalShipments) * 100 : 0
+
+  const filteredShipments = shipments.filter((s) => {
+    if (!search) return true
+    const q = search.toLowerCase()
+    return s.trackingNumber?.toLowerCase().includes(q) ||
+      s.fromAddress?.city?.toLowerCase().includes(q) ||
+      s.toAddress?.city?.toLowerCase().includes(q)
+  })
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <SummaryStat label="Total Routes" value={formatNumber(routes.length)} />
-        <SummaryStat label="Total Shipments" value={formatNumber(totalShipments)} />
-        <SummaryStat label="Avg Success" value={formatPercent(avgSuccess)} tone="good" />
-        <SummaryStat label="Total Revenue" value={formatMoney(totalRevenue, "TZS", { compact: true })} />
+    <div className="flex flex-col gap-6">
+      {/* Summary Metrics */}
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <MetricCard label="Transport Modes" value={formatNumber(modeData.length)} icon={Route02Icon} hint="Active modes" />
+        <MetricCard label="Total Shipments" value={formatNumber(totalShipments)} icon={Package02Icon} hint="Across all modes" />
+        <MetricCard label="Overall Success Rate" value={formatPercent(overallSuccess)} icon={CheckmarkCircle02Icon} hint={`${totalDelivered} delivered`} />
+        <MetricCard label="Total Revenue" value={formatMoney(totalRevenue, "TZS", { compact: true })} icon={CoinsIcon} hint="All modes combined" />
       </div>
 
-      <Card className="overflow-hidden p-0">
+      {/* Mode Cards */}
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {modeData.map((m) => {
+          const meta = MODE_META[m.mode] || { label: m.mode, icon: TruckIcon, color: "" }
+          return (
+            <div key={m.mode} className="rounded-lg border bg-card p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="flex size-8 items-center justify-center rounded-lg bg-muted/40">
+                    <HugeiconsIcon icon={meta.icon} className={`size-4 ${meta.color}`} />
+                  </div>
+                  <span className="text-sm font-semibold">{meta.label}</span>
+                </div>
+                <Badge variant="secondary" className="tabular-nums">{m.total}</Badge>
+              </div>
+              <div className="mt-3 space-y-1.5 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Delivered</span>
+                  <span className="font-medium text-emerald-600 tabular-nums">{m.delivered}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">In Transit</span>
+                  <span className="font-medium text-sky-600 tabular-nums">{m.inTransit}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Cancelled</span>
+                  <span className="font-medium text-red-600 tabular-nums">{m.cancelled}</span>
+                </div>
+                <div className="flex items-center justify-between border-t pt-1.5">
+                  <span className="text-muted-foreground">Revenue</span>
+                  <span className="font-semibold tabular-nums">{formatMoney(m.revenue, "TZS", { compact: true })}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Success</span>
+                  <span className={`font-semibold tabular-nums ${m.successRate >= 95 ? "text-emerald-600" : m.successRate >= 85 ? "text-amber-600" : "text-red-600"}`}>
+                    {m.successRate.toFixed(1)}%
+                  </span>
+                </div>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+
+      {/* Mode Breakdown Table */}
+      <div className="overflow-hidden rounded-lg border">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b bg-muted/30 text-left">
-                <th className="px-4 py-3 font-medium text-muted-foreground">Route</th>
+              <tr className="bg-muted/30 text-left">
+                <th className="px-4 py-3 font-medium text-muted-foreground">Mode</th>
                 <th className="px-4 py-3 font-medium text-muted-foreground text-right">Shipments</th>
                 <th className="px-4 py-3 font-medium text-muted-foreground text-right">Delivered</th>
+                <th className="px-4 py-3 font-medium text-muted-foreground text-right">In Transit</th>
+                <th className="px-4 py-3 font-medium text-muted-foreground text-right">Cancelled</th>
                 <th className="px-4 py-3 font-medium text-muted-foreground text-right">Success Rate</th>
                 <th className="px-4 py-3 font-medium text-muted-foreground text-right">Revenue</th>
               </tr>
             </thead>
             <tbody>
-              {routes.map((r) => (
-                <tr key={r.route} className="border-b last:border-0 transition-colors hover:bg-muted/20">
-                  <td className="px-4 py-3 font-medium">{r.route}</td>
-                  <td className="px-4 py-3 text-right tabular-nums">{r.shipments}</td>
-                  <td className="px-4 py-3 text-right tabular-nums">{r.delivered}</td>
-                  <td className="px-4 py-3 text-right">
-                    <span className={
-                      r.successRate >= 95
-                        ? "font-medium text-emerald-600 tabular-nums"
-                        : r.successRate >= 85
-                          ? "font-medium text-amber-600 tabular-nums"
-                          : "font-medium text-red-600 tabular-nums"
-                    }>
-                      {r.successRate.toFixed(1)}%
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-right font-medium tabular-nums">{formatMoney(r.revenue, "TZS", { compact: true })}</td>
-                </tr>
-              ))}
+              {modeData.map((m) => {
+                const meta = MODE_META[m.mode] || { label: m.mode, icon: TruckIcon, color: "" }
+                return (
+                  <tr key={m.mode} className="transition-colors hover:bg-muted/20">
+                    <td className="px-4 py-3">
+                      <span className="flex items-center gap-2 font-medium">
+                        <HugeiconsIcon icon={meta.icon} className={`size-4 ${meta.color}`} />
+                        {meta.label}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-right tabular-nums">{m.total}</td>
+                    <td className="px-4 py-3 text-right tabular-nums text-emerald-600">{m.delivered}</td>
+                    <td className="px-4 py-3 text-right tabular-nums text-sky-600">{m.inTransit}</td>
+                    <td className="px-4 py-3 text-right tabular-nums text-red-600">{m.cancelled}</td>
+                    <td className="px-4 py-3 text-right">
+                      <span className={m.successRate >= 95 ? "font-medium text-emerald-600 tabular-nums" : m.successRate >= 85 ? "font-medium text-amber-600 tabular-nums" : "font-medium text-red-600 tabular-nums"}>
+                        {m.successRate.toFixed(1)}%
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-right font-medium tabular-nums">{formatMoney(m.revenue, "TZS", { compact: true })}</td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         </div>
-      </Card>
-    </div>
-  )
-}
-
-/* ---------- Users Report ---------- */
-function UsersReport({ users }: { users: any[] }) {
-  if (users.length === 0) {
-    return <EmptyReport icon={UserGroupIcon} title="No users found" description="User data will appear here once users are registered." />
-  }
-
-  const active = users.filter((u) => u.isActive).length
-  const drivers = users.filter((u) => u.role === "DRIVER").length
-  const customers = users.filter((u) => u.role === "CUSTOMER").length
-
-  return (
-    <div className="flex flex-col gap-4">
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <SummaryStat label="Total Users" value={formatNumber(users.length)} />
-        <SummaryStat label="Active" value={formatNumber(active)} tone="good" />
-        <SummaryStat label="Drivers" value={formatNumber(drivers)} tone="info" />
-        <SummaryStat label="Customers" value={formatNumber(customers)} />
       </div>
 
-      <Card className="overflow-hidden p-0">
+      {/* Search */}
+      <div className="relative w-full sm:max-w-xs">
+        <HugeiconsIcon icon={Search01Icon} className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+        <Input placeholder="Search tracking #, route..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+      </div>
+
+      {/* Shipments by Mode Table */}
+      <div className="overflow-hidden rounded-lg border">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b bg-muted/30 text-left">
-                <th className="px-4 py-3 font-medium text-muted-foreground">Name</th>
-                <th className="px-4 py-3 font-medium text-muted-foreground">Email</th>
-                <th className="px-4 py-3 font-medium text-muted-foreground">Role</th>
+              <tr className="bg-muted/30 text-left">
+                <th className="px-4 py-3 font-medium text-muted-foreground">Tracking #</th>
+                <th className="px-4 py-3 font-medium text-muted-foreground">Mode</th>
                 <th className="px-4 py-3 font-medium text-muted-foreground">Status</th>
-                <th className="px-4 py-3 font-medium text-muted-foreground">Joined</th>
+                <th className="px-4 py-3 font-medium text-muted-foreground">Route</th>
+                <th className="px-4 py-3 font-medium text-muted-foreground text-right">Amount</th>
+                <th className="px-4 py-3 font-medium text-muted-foreground">Date</th>
               </tr>
             </thead>
             <tbody>
-              {users.slice(0, 50).map((u) => (
-                <tr key={u.id} className="border-b last:border-0 transition-colors hover:bg-muted/20">
-                  <td className="px-4 py-3 font-medium">{u.name || "—"}</td>
-                  <td className="px-4 py-3 text-muted-foreground">{u.email || "—"}</td>
-                  <td className="px-4 py-3">
-                    <Badge variant="outline" className="font-medium">{u.role || "—"}</Badge>
+              {filteredShipments.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-4 py-12 text-center">
+                    <HugeiconsIcon icon={TruckIcon} className="mx-auto size-8 text-muted-foreground/40" />
+                    <p className="mt-2 text-sm text-muted-foreground">No shipments found</p>
                   </td>
-                  <td className="px-4 py-3">
-                    <StatusBadge status={u.isActive ? "ACTIVE" : "INACTIVE"} size="sm" />
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground">{u.createdAt ? formatDate(u.createdAt) : "—"}</td>
                 </tr>
-              ))}
+              ) : (
+                filteredShipments.slice(0, 50).map((s) => {
+                  const meta = MODE_META[s.transportMode] || { label: s.transportMode || "—", icon: TruckIcon, color: "" }
+                  return (
+                    <tr key={s.id} className="transition-colors hover:bg-muted/20">
+                      <td className="px-4 py-3 font-medium">{s.trackingNumber || "—"}</td>
+                      <td className="px-4 py-3">
+                        <span className="flex items-center gap-1.5 text-muted-foreground">
+                          <HugeiconsIcon icon={meta.icon} className={`size-3.5 ${meta.color}`} />
+                          {meta.label}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3"><StatusBadge status={s.status} size="sm" /></td>
+                      <td className="px-4 py-3 text-muted-foreground">{s.fromAddress?.city || "—"} → {s.toAddress?.city || "—"}</td>
+                      <td className="px-4 py-3 text-right font-medium tabular-nums">{formatMoney(Number(s.totalAmount || 0), "TZS", { compact: true })}</td>
+                      <td className="px-4 py-3 text-muted-foreground">{s.createdAt ? formatDate(s.createdAt) : "—"}</td>
+                    </tr>
+                  )
+                })
+              )}
             </tbody>
           </table>
         </div>
-        {users.length > 50 && (
+        {filteredShipments.length > 50 && (
           <div className="border-t px-4 py-3 text-center text-xs text-muted-foreground">
-            Showing 50 of {users.length} records — export CSV for full data
+            Showing 50 of {filteredShipments.length} records — export CSV for full data
           </div>
         )}
-      </Card>
+      </div>
     </div>
   )
 }
 
-/* ---------- Exceptions Report ---------- */
-function ExceptionsReport({ exceptions }: { exceptions: any[] }) {
-  if (exceptions.length === 0) {
-    return <EmptyReport icon={AlertCircleIcon} title="No exceptions found" description="Exception data will appear here once issues are logged." />
-  }
+/* ====================== EXCEPTIONS TAB ====================== */
+function ExceptionsTab({ exceptions, excStats }: { exceptions: any[]; excStats: any }) {
+  const [search, setSearch] = React.useState("")
+  const [statusFilter, setStatusFilter] = React.useState("ALL")
 
   const open = exceptions.filter((e) => e.status === "OPEN" || e.status === "PENDING").length
   const resolved = exceptions.filter((e) => e.status === "RESOLVED" || e.status === "CLOSED").length
+  const escalated = exceptions.filter((e) => e.status === "ESCALATED").length
+  const resolutionRate = exceptions.length > 0 ? (resolved / exceptions.length) * 100 : 0
+
+  const filtered = exceptions.filter((e) => {
+    if (statusFilter !== "ALL" && e.status !== statusFilter) return false
+    if (!search) return true
+    const q = search.toLowerCase()
+    return e.type?.toLowerCase().includes(q) ||
+      e.description?.toLowerCase().includes(q) ||
+      e.shipment?.trackingNumber?.toLowerCase().includes(q)
+  })
+
+  const STATUS_FILTERS = [
+    { value: "ALL", label: "All" },
+    { value: "OPEN", label: "Open" },
+    { value: "PENDING", label: "Pending" },
+    { value: "ESCALATED", label: "Escalated" },
+    { value: "RESOLVED", label: "Resolved" },
+    { value: "CLOSED", label: "Closed" },
+  ]
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <SummaryStat label="Total" value={formatNumber(exceptions.length)} />
-        <SummaryStat label="Open" value={formatNumber(open)} tone="warning" />
-        <SummaryStat label="Resolved" value={formatNumber(resolved)} tone="good" />
-        <SummaryStat label="Rate" value={formatPercent(exceptions.length > 0 ? (resolved / exceptions.length) * 100 : 0)} />
+    <div className="flex flex-col gap-6">
+      {/* Metric Cards */}
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <MetricCard label="Total Exceptions" value={formatNumber(exceptions.length)} icon={AlertCircleIcon} hint="All time" />
+        <MetricCard label="Open" value={formatNumber(open)} icon={Clock01Icon} positiveIsGood={false} hint="Needs attention" />
+        <MetricCard label="Escalated" value={formatNumber(escalated)} icon={TrendingUpIcon} positiveIsGood={false} hint="High priority" />
+        <MetricCard label="Resolution Rate" value={formatPercent(resolutionRate)} icon={CheckmarkCircle02Icon} hint={`${resolved} resolved`} />
       </div>
 
-      <Card className="overflow-hidden p-0">
+      {/* Exception Type Breakdown */}
+      {excStats?.byType && excStats.byType.length > 0 && (
+        <div className="rounded-lg border bg-card p-4">
+          <h3 className="text-sm font-semibold mb-3">By Type</h3>
+          <div className="flex flex-wrap gap-2">
+            {excStats.byType.map((t: any) => (
+              <div key={t.type} className="flex items-center gap-2 rounded-lg border bg-muted/30 px-3 py-1.5">
+                <HugeiconsIcon icon={AlertCircleIcon} className="size-3.5 text-muted-foreground" />
+                <span className="text-xs font-medium">{t.type?.replace(/_/g, " ").toLowerCase()}</span>
+                <Badge variant="secondary" className="tabular-nums text-xs">{t._count?.type || t.count || 0}</Badge>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Filters */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <div className="relative flex-1 sm:max-w-xs">
+          <HugeiconsIcon icon={Search01Icon} className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input placeholder="Search type, description, tracking..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+        </div>
+        <div className="flex flex-wrap gap-1">
+          {STATUS_FILTERS.map((f) => (
+            <button
+              key={f.value}
+              onClick={() => setStatusFilter(f.value)}
+              className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
+                statusFilter === f.value ? "bg-primary text-primary-foreground" : "bg-muted/30 text-muted-foreground hover:bg-muted/50"
+              }`}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Exceptions Table */}
+      <div className="overflow-hidden rounded-lg border">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b bg-muted/30 text-left">
+              <tr className="bg-muted/30 text-left">
                 <th className="px-4 py-3 font-medium text-muted-foreground">ID</th>
                 <th className="px-4 py-3 font-medium text-muted-foreground">Type</th>
                 <th className="px-4 py-3 font-medium text-muted-foreground">Status</th>
                 <th className="px-4 py-3 font-medium text-muted-foreground">Shipment</th>
+                <th className="px-4 py-3 font-medium text-muted-foreground">Sender</th>
+                <th className="px-4 py-3 font-medium text-muted-foreground">Receiver</th>
                 <th className="px-4 py-3 font-medium text-muted-foreground">Description</th>
                 <th className="px-4 py-3 font-medium text-muted-foreground">Date</th>
               </tr>
             </thead>
             <tbody>
-              {exceptions.slice(0, 50).map((e) => (
-                <tr key={e.id} className="border-b last:border-0 transition-colors hover:bg-muted/20">
-                  <td className="px-4 py-3 font-medium">{e.id?.slice(0, 8) || "—"}</td>
-                  <td className="px-4 py-3">
-                    <Badge variant="outline" className="font-medium">{e.type?.replace(/_/g, " ").toLowerCase() || "—"}</Badge>
+              {filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="px-4 py-12 text-center">
+                    <HugeiconsIcon icon={AlertCircleIcon} className="mx-auto size-8 text-muted-foreground/40" />
+                    <p className="mt-2 text-sm text-muted-foreground">No exceptions found</p>
                   </td>
-                  <td className="px-4 py-3"><StatusBadge status={e.status} size="sm" /></td>
-                  <td className="px-4 py-3 text-muted-foreground">{e.shipment?.trackingNumber || e.shipmentId?.slice(0, 8) || "—"}</td>
-                  <td className="px-4 py-3 text-muted-foreground max-w-xs truncate">{e.description || e.note || "—"}</td>
-                  <td className="px-4 py-3 text-muted-foreground">{e.createdAt ? formatDate(e.createdAt) : "—"}</td>
                 </tr>
-              ))}
+              ) : (
+                filtered.slice(0, 50).map((e) => (
+                  <tr key={e.id} className="transition-colors hover:bg-muted/20">
+                    <td className="px-4 py-3 font-medium">{e.id?.slice(0, 8) || "—"}</td>
+                    <td className="px-4 py-3">
+                      <Badge variant="outline" className="font-medium">{e.type?.replace(/_/g, " ").toLowerCase() || "—"}</Badge>
+                    </td>
+                    <td className="px-4 py-3"><StatusBadge status={e.status} size="sm" /></td>
+                    <td className="px-4 py-3 text-muted-foreground">{e.shipment?.trackingNumber || e.shipmentId?.slice(0, 8) || "—"}</td>
+                    <td className="px-4 py-3 text-muted-foreground">{e.shipment?.fromAddress?.fullName || "—"}</td>
+                    <td className="px-4 py-3 text-muted-foreground">{e.shipment?.toAddress?.fullName || "—"}</td>
+                    <td className="px-4 py-3 text-muted-foreground max-w-xs truncate">{e.description || e.note || "—"}</td>
+                    <td className="px-4 py-3 text-muted-foreground">{e.createdAt ? formatDate(e.createdAt) : "—"}</td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
-        {exceptions.length > 50 && (
+        {filtered.length > 50 && (
           <div className="border-t px-4 py-3 text-center text-xs text-muted-foreground">
-            Showing 50 of {exceptions.length} records — export CSV for full data
+            Showing 50 of {filtered.length} records — export CSV for full data
           </div>
         )}
-      </Card>
+      </div>
     </div>
-  )
-}
-
-/* ---------- Shared components ---------- */
-function SummaryStat({ label, value, tone }: { label: string; value: string; tone?: "good" | "warning" | "critical" | "info" }) {
-  const toneClass = {
-    good: "text-emerald-600 dark:text-emerald-400",
-    warning: "text-amber-600 dark:text-amber-400",
-    critical: "text-red-600 dark:text-red-400",
-    info: "text-sky-600 dark:text-sky-400",
-  }
-  return (
-    <Card className="p-4">
-      <p className="text-xs text-muted-foreground">{label}</p>
-      <p className={`mt-1 text-xl font-semibold tabular-nums ${tone ? toneClass[tone] : ""}`}>{value}</p>
-    </Card>
-  )
-}
-
-function EmptyReport({ icon, title, description }: { icon: any; title: string; description: string }) {
-  return (
-    <Card className="py-16 text-center">
-      <HugeiconsIcon icon={icon} className="mx-auto size-10 text-muted-foreground/40" />
-      <p className="mt-3 text-sm font-medium text-muted-foreground">{title}</p>
-      <p className="mt-1 text-xs text-muted-foreground/70">{description}</p>
-    </Card>
   )
 }

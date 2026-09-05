@@ -2,30 +2,23 @@
 
 import { useState, useEffect, useRef } from "react"
 import { DashboardLayout } from "@/components/dashboard-layout"
-import { Card, CardContent } from "@workspace/ui/components/card"
 import { Button } from "@workspace/ui/components/button"
-import { Input } from "@workspace/ui/components/input"
 import { Badge } from "@workspace/ui/components/badge"
+import { Skeleton } from "@workspace/ui/components/skeleton"
 import { toast } from "sonner"
 import { api } from "@/lib/api"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
-  MapIcon,
   SearchIcon,
   TruckIcon,
-  BikeIcon,
-  ClockIcon,
   CallIcon,
-  BubbleChatIcon,
-  ViewIcon,
-  ArrowRight01Icon,
-  RefreshIcon,
   PlayIcon,
   PauseIcon,
   PinLocation02Icon,
-  Layers01Icon,
-  CheckmarkCircle02Icon,
 } from "@hugeicons/core-free-icons"
+import { PageHeader } from "@/components/shared/page-header"
+import { MetricCard } from "@/components/shared/metric-card"
+import { formatNumber } from "@/lib/format"
 
 // Dynamic Leaflet import for SSR compatibility
 let L: any = null
@@ -419,43 +412,35 @@ export default function TrackingMapPage() {
       breadcrumbs={[
         { label: "Dashboard", href: "/dashboard" },
         { label: "Tracking", href: "/dashboard/tracking" },
-        { label: "Live Dispatch Map" },
+        { label: "Live Map" },
       ]}
     >
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Live Dispatch Map</h1>
-          <p className="text-sm text-muted-foreground">
-            Real-time multi-carrier fleet tracking, telemetry & active delivery routes
-          </p>
+      <div className="flex flex-col gap-6 p-4 lg:p-6">
+        <PageHeader
+          title="📍 Live Dispatch Map"
+          description="Real-time multi-carrier fleet tracking, telemetry & active delivery routes"
+          actions={
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsLiveSimulating(!isLiveSimulating)}
+            >
+              <HugeiconsIcon icon={isLiveSimulating ? PauseIcon : PlayIcon} className="size-4" />
+              {isLiveSimulating ? "Live Streaming" : "Paused"}
+            </Button>
+          }
+        />
+
+        {/* Metric Cards */}
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <MetricCard label="Total Fleet" value={formatNumber(stats.total)} icon={TruckIcon} hint="All vehicles" />
+          <MetricCard label="In Transit" value={formatNumber(stats.inTransit)} icon={TruckIcon} hint="Moving now" />
+          <MetricCard label="Delivering" value={formatNumber(stats.delivering)} icon={TruckIcon} hint="Final mile" />
+          <MetricCard label="Available" value={formatNumber(stats.idle)} icon={TruckIcon} hint="Ready for dispatch" />
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="flex items-center gap-1.5 rounded-lg border bg-card px-3 py-1.5 text-xs font-semibold shadow-sm">
-            <span className="size-2 rounded-full bg-blue-500 animate-pulse" />
-            <span>{stats.inTransit} In Transit</span>
-          </div>
-          <div className="flex items-center gap-1.5 rounded-lg border bg-card px-3 py-1.5 text-xs font-semibold shadow-sm">
-            <span className="size-2 rounded-full bg-emerald-500" />
-            <span>{stats.delivering} Delivering</span>
-          </div>
-          <div className="flex items-center gap-1.5 rounded-lg border bg-card px-3 py-1.5 text-xs font-semibold shadow-sm">
-            <span className="size-2 rounded-full bg-slate-400" />
-            <span>{stats.idle} Available</span>
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsLiveSimulating(!isLiveSimulating)}
-            className="h-8 gap-1 text-xs"
-          >
-            <HugeiconsIcon icon={isLiveSimulating ? PauseIcon : PlayIcon} strokeWidth={2} className="size-3.5" />
-            {isLiveSimulating ? "Live Streaming" : "Paused"}
-          </Button>
-        </div>
-      </div>
-
-      <div className="relative h-[calc(100vh-210px)] min-h-[580px] w-full overflow-hidden rounded-2xl border border-border bg-slate-950 shadow-2xl">
+        {/* Map Container */}
+        <div className="relative h-[calc(100vh-380px)] min-h-[500px] w-full overflow-hidden rounded-2xl border border-border bg-slate-950 shadow-2xl">
         <div ref={mapContainerRef} className="absolute inset-0 size-full z-0" />
 
         <div className="absolute top-4 left-4 z-10 flex flex-wrap items-center gap-2">
@@ -666,6 +651,7 @@ export default function TrackingMapPage() {
             </div>
           </div>
         )}
+      </div>
       </div>
     </DashboardLayout>
   )
