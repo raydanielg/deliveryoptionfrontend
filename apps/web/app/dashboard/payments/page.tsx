@@ -98,7 +98,8 @@ export default function PaymentsPage() {
     ]}>
       <div className="flex flex-col gap-6 p-4 lg:p-6">
         <PageHeader
-          title="💰 Payments"
+          title="Payments"
+          icon={<HugeiconsIcon icon={CoinsIcon} className="size-6 text-primary" />}
           description="Manage transactions, invoices, refunds, and payment gateway configurations."
         />
 

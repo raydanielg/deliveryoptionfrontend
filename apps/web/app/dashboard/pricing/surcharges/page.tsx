@@ -95,7 +95,8 @@ export default function SurchargesPage() {
     <DashboardLayout breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Pricing", href: "/dashboard/pricing" }, { label: "Surcharges" }]}>
       <div className="flex flex-col gap-6 p-4 lg:p-6">
         <PageHeader
-          title="💸 Surcharges"
+          title="Surcharges"
+          icon={<HugeiconsIcon icon={CoinsIcon} className="size-6 text-primary" />}
           description="Additional fees and surcharges applied to shipments — fuel, handling, insurance, etc."
           actions={
             <Button variant="outline" size="sm" onClick={handleExportPDF}>

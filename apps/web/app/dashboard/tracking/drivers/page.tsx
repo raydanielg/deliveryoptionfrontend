@@ -11,11 +11,14 @@ import {
   Search01Icon,
   TruckIcon,
   BikeIcon,
+  VanIcon,
+  Car01Icon,
   CheckmarkCircle02Icon,
   Clock01Icon,
   MapIcon,
   CallIcon,
   AlertCircleIcon,
+  UserIcon,
 } from "@hugeicons/core-free-icons"
 import { PageHeader } from "@/components/shared/page-header"
 import { MetricCard } from "@/components/shared/metric-card"
@@ -23,11 +26,11 @@ import { StatusBadge } from "@/components/shared/status-badge"
 import { api } from "@/lib/api"
 import { formatNumber, formatDate } from "@/lib/format"
 
-const VEHICLE_EMOJI: Record<string, string> = {
-  MOTORCYCLE: "🏍️",
-  VAN: "🚐",
-  TRUCK: "🚛",
-  CAR: "🚗",
+const VEHICLE_ICON: Record<string, any> = {
+  MOTORCYCLE: BikeIcon,
+  VAN: VanIcon,
+  TRUCK: TruckIcon,
+  CAR: Car01Icon,
 }
 
 export default function DriverLocationsPage() {
@@ -67,15 +70,16 @@ export default function DriverLocationsPage() {
 
   const STATUS_FILTERS = [
     { value: "ALL", label: "All Drivers" },
-    { value: "ACTIVE", label: "🟢 Active" },
-    { value: "INACTIVE", label: "🔴 Offline" },
+    { value: "ACTIVE", label: "Active" },
+    { value: "INACTIVE", label: "Offline" },
   ]
 
   return (
     <DashboardLayout breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Tracking", href: "/dashboard/tracking" }, { label: "Driver Locations" }]}>
       <div className="flex flex-col gap-6 p-4 lg:p-6">
         <PageHeader
-          title="🚗 Driver Locations"
+          title="Driver Locations"
+          icon={<HugeiconsIcon icon={MapIcon} className="size-6 text-primary" />}
           description="Live GPS tracking and status of all delivery drivers in the fleet."
         />
 
@@ -137,8 +141,8 @@ export default function DriverLocationsPage() {
                 <div key={d.id} className="rounded-lg border bg-card p-4 transition-shadow hover:shadow-md">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="flex size-10 items-center justify-center rounded-full bg-muted/40 text-lg">
-                        {d.vehicleType ? VEHICLE_EMOJI[d.vehicleType] || "🚗" : "👤"}
+                      <div className="flex size-10 items-center justify-center rounded-full bg-muted/40">
+                        <HugeiconsIcon icon={d.vehicleType ? VEHICLE_ICON[d.vehicleType] || Car01Icon : UserIcon} className="size-5 text-muted-foreground" />
                       </div>
                       <div>
                         <p className="text-sm font-semibold">{d.name || "—"}</p>
@@ -158,7 +162,7 @@ export default function DriverLocationsPage() {
                     {d.vehicleType && (
                       <div className="flex items-center justify-between">
                         <span className="text-muted-foreground">Vehicle</span>
-                        <span className="font-medium">{VEHICLE_EMOJI[d.vehicleType] || "🚗"} {d.vehicleType?.replace(/_/g, " ").toLowerCase()}</span>
+                        <span className="flex items-center gap-1.5 font-medium"><HugeiconsIcon icon={VEHICLE_ICON[d.vehicleType] || Car01Icon} className="size-3.5" /> {d.vehicleType?.replace(/_/g, " ").toLowerCase()}</span>
                       </div>
                     )}
                     {d.plateNumber && (
@@ -204,7 +208,7 @@ export default function DriverLocationsPage() {
                       <tr key={d.id} className="transition-colors hover:bg-muted/20">
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2">
-                            <span className="text-base">{d.vehicleType ? VEHICLE_EMOJI[d.vehicleType] || "🚗" : "👤"}</span>
+                            <HugeiconsIcon icon={d.vehicleType ? VEHICLE_ICON[d.vehicleType] || Car01Icon : UserIcon} className="size-4 text-muted-foreground" />
                             <div>
                               <p className="font-medium">{d.name || "—"}</p>
                               <p className="text-xs text-muted-foreground">{d.email || "—"}</p>
@@ -213,7 +217,7 @@ export default function DriverLocationsPage() {
                         </td>
                         <td className="px-4 py-3 text-muted-foreground">{d.phone || "—"}</td>
                         <td className="px-4 py-3 text-muted-foreground">
-                          {d.vehicleType ? `${VEHICLE_EMOJI[d.vehicleType] || "🚗"} ${d.vehicleType?.replace(/_/g, " ").toLowerCase()}` : "—"}
+                          {d.vehicleType ? <span className="flex items-center gap-1.5"><HugeiconsIcon icon={VEHICLE_ICON[d.vehicleType] || Car01Icon} className="size-3.5" /> {d.vehicleType?.replace(/_/g, " ").toLowerCase()}</span> : "—"}
                         </td>
                         <td className="px-4 py-3"><StatusBadge status={d.isActive ? "ACTIVE" : "INACTIVE"} size="sm" /></td>
                         <td className="px-4 py-3 text-muted-foreground">{d.createdAt ? formatDate(d.createdAt) : "—"}</td>

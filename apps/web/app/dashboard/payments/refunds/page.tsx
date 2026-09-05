@@ -113,7 +113,8 @@ export default function RefundsPage() {
     ]}>
       <div className="flex flex-col gap-6 p-4 lg:p-6">
         <PageHeader
-          title="↩️ Refunds"
+          title="Refunds"
+          icon={<HugeiconsIcon icon={ArrowDownRight02Icon} className="size-6 text-primary" />}
           description="Process and track refund requests — approve, reject, and monitor refund status."
           actions={
             <Button variant="outline" size="sm" onClick={handleExportPDF}>

@@ -93,7 +93,8 @@ export default function IntlShipmentsPage() {
     ]}>
       <div className="flex flex-col gap-6 p-4 lg:p-6">
         <PageHeader
-          title="🌍 Int'l Shipments"
+          title="Int'l Shipments"
+          icon={<HugeiconsIcon icon={Globe02Icon} className="size-6 text-primary" />}
           description="Cross-border deliveries — air cargo, sea freight, and international road transport."
           actions={
             <Button variant="outline" size="sm" onClick={handleExportPDF}>

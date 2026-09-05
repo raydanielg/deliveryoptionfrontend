@@ -75,9 +75,9 @@ export default function PricingRulesPage() {
 
   const MODE_FILTERS = [
     { value: "ALL", label: "All Modes" },
-    { value: "ROAD", label: "🚚 Road" },
-    { value: "RAIL", label: "🚆 SGR Rail" },
-    { value: "AIR", label: "✈️ Air Cargo" },
+    { value: "ROAD", label: "Road" },
+    { value: "RAIL", label: "SGR Rail" },
+    { value: "AIR", label: "Air Cargo" },
   ]
 
   function handleExportPDF() {
@@ -116,7 +116,8 @@ export default function PricingRulesPage() {
     <DashboardLayout breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Pricing", href: "/dashboard/pricing" }, { label: "Rules" }]}>
       <div className="flex flex-col gap-6 p-4 lg:p-6">
         <PageHeader
-          title="💰 Pricing Rules"
+          title="Pricing Rules"
+          icon={<HugeiconsIcon icon={CoinsIcon} className="size-6 text-primary" />}
           description="Manage pricing rules, base fares, surcharges, and transport mode configurations."
           actions={
             <Button variant="outline" size="sm" onClick={handleExportPDF}>

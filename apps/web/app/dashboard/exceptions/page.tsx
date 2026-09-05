@@ -23,7 +23,7 @@ import { exportToPDF } from "@/lib/pdf-export"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
   AlertCircleIcon, Search01Icon, Download01Icon, CheckmarkCircle02Icon,
-  PlusIcon, AlertTriangleIcon, ArrowUpIcon, EyeIcon,
+  PlusIcon, ArrowUpIcon, EyeIcon,
 } from "@hugeicons/core-free-icons"
 
 export default function ExceptionsPage() {
@@ -163,7 +163,8 @@ export default function ExceptionsPage() {
     ]}>
       <div className="flex flex-col gap-6 p-4 lg:p-6">
         <PageHeader
-          title="⚠️ All Exceptions"
+          title="All Exceptions"
+          icon={<HugeiconsIcon icon={AlertCircleIcon} className="size-6 text-primary" />}
           description="Shipment exceptions, issues, and anomalies — track, resolve, and escalate problems."
           actions={
             <div className="flex gap-2">
@@ -287,7 +288,7 @@ export default function ExceptionsPage() {
             <>
               <SheetHeader>
                 <SheetTitle className="flex items-center gap-2">
-                  <HugeiconsIcon icon={AlertTriangleIcon} className="size-5 text-primary" />
+                  <HugeiconsIcon icon={AlertCircleIcon} className="size-5 text-primary" />
                   {selected.shipment?.trackingNumber || "Exception"}
                 </SheetTitle>
                 <SheetDescription>

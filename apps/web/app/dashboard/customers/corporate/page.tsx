@@ -165,7 +165,8 @@ export default function CorporateAccountsPage() {
     ]}>
       <div className="flex flex-col gap-6 p-4 lg:p-6">
         <PageHeader
-          title="🏢 Corporate Accounts"
+          title="Corporate Accounts"
+          icon={<HugeiconsIcon icon={Building03Icon} className="size-6 text-primary" />}
           description="Business and corporate customer accounts — manage credit limits, contacts, and billing."
           actions={
             <div className="flex gap-2">

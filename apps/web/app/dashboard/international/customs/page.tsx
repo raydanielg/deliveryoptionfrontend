@@ -115,7 +115,8 @@ export default function CustomsPage() {
     ]}>
       <div className="flex flex-col gap-6 p-4 lg:p-6">
         <PageHeader
-          title="🛃 Customs"
+          title="Customs"
+          icon={<HugeiconsIcon icon={Globe02Icon} className="size-6 text-primary" />}
           description="Customs declarations, clearance status, and duty calculations for international shipments."
           actions={
             <Button variant="outline" size="sm" onClick={handleExportPDF}>

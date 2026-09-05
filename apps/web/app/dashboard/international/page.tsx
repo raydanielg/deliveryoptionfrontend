@@ -89,7 +89,8 @@ export default function InternationalPage() {
     ]}>
       <div className="flex flex-col gap-6 p-4 lg:p-6">
         <PageHeader
-          title="🌍 International"
+          title="International"
+          icon={<HugeiconsIcon icon={Globe02Icon} className="size-6 text-primary" />}
           description="Cross-border logistics — customs declarations, shipping documents, and international shipment tracking."
         />
 

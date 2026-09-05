@@ -17,9 +17,9 @@ import { PageHeader } from "@/components/shared/page-header"
 import { MetricCard } from "@/components/shared/metric-card"
 
 const MODES = [
-  { key: "ROAD", label: "Road", icon: TruckIcon, color: "text-blue-600", bg: "bg-blue-50", border: "border-blue-200", emoji: "🚚" },
-  { key: "RAIL", label: "SGR Rail", icon: Train01Icon, color: "text-green-600", bg: "bg-green-50", border: "border-green-200", emoji: "🚆" },
-  { key: "AIR", label: "Air Cargo", icon: Airplane01Icon, color: "text-sky-600", bg: "bg-sky-50", border: "border-sky-200", emoji: "✈️" },
+  { key: "ROAD", label: "Road", icon: TruckIcon, color: "text-blue-600", bg: "bg-blue-50", border: "border-blue-200" },
+  { key: "RAIL", label: "SGR Rail", icon: Train01Icon, color: "text-green-600", bg: "bg-green-50", border: "border-green-200" },
+  { key: "AIR", label: "Air Cargo", icon: Airplane01Icon, color: "text-sky-600", bg: "bg-sky-50", border: "border-sky-200" },
 ]
 
 interface ModeConfig {
@@ -89,7 +89,8 @@ export default function ModePricingConfigPage() {
     <DashboardLayout breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Pricing", href: "/dashboard/pricing" }, { label: "Mode Pricing" }]}>
       <div className="flex flex-col gap-6 p-4 lg:p-6">
         <PageHeader
-          title="⚙️ Mode Pricing"
+          title="Mode Pricing"
+          icon={<HugeiconsIcon icon={CoinsIcon} className="size-6 text-primary" />}
           description="Configure base rates, per-kg rates, insurance and tax for each transport mode."
         />
 

@@ -73,7 +73,8 @@ export default function SettingsPage() {
     ]}>
       <div className="flex flex-col gap-6 p-4 lg:p-6">
         <PageHeader
-          title="⚙️ General Settings"
+          title="General Settings"
+          icon={<HugeiconsIcon icon={Settings02Icon} className="size-6 text-primary" />}
           description="Business configuration, system management, security, and operational settings."
           actions={
             <div className="flex gap-2">

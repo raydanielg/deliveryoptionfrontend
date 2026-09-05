@@ -104,7 +104,8 @@ export default function PricingZonesPage() {
     <DashboardLayout breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Pricing", href: "/dashboard/pricing" }, { label: "Zones" }]}>
       <div className="flex flex-col gap-6 p-4 lg:p-6">
         <PageHeader
-          title="🗺️ Zones"
+          title="Zones"
+          icon={<HugeiconsIcon icon={MapIcon} className="size-6 text-primary" />}
           description="Manage delivery zones, coverage areas, and zone-based pricing."
           actions={
             <Button variant="outline" size="sm" onClick={handleExportPDF}>
@@ -150,7 +151,9 @@ export default function PricingZonesPage() {
                 <div key={z.id} className="rounded-lg border bg-card p-4 transition-shadow hover:shadow-md">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="flex size-10 items-center justify-center rounded-lg bg-muted/40 text-lg">🗺️</div>
+                      <div className="flex size-10 items-center justify-center rounded-lg bg-muted/40">
+                        <HugeiconsIcon icon={MapIcon} className="size-5 text-muted-foreground" />
+                      </div>
                       <div>
                         <p className="text-sm font-semibold">{z.name || "—"}</p>
                         <p className="text-xs text-muted-foreground font-mono">{z.code || "—"}</p>

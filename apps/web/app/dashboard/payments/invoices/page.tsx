@@ -113,7 +113,8 @@ export default function InvoicesPage() {
     ]}>
       <div className="flex flex-col gap-6 p-4 lg:p-6">
         <PageHeader
-          title="🧾 Invoices"
+          title="Invoices"
+          icon={<HugeiconsIcon icon={File02Icon} className="size-6 text-primary" />}
           description="Customer invoices — generate, track, and manage payment status."
           actions={
             <Button variant="outline" size="sm" onClick={handleExportPDF}>

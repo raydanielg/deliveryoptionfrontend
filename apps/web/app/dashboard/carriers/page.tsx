@@ -22,6 +22,8 @@ import {
   Refresh01Icon,
   Mail01Icon,
   PhoneIcon,
+  HandshakeIcon,
+  Package02Icon,
 } from "@hugeicons/core-free-icons"
 import { PageHeader } from "@/components/shared/page-header"
 import { MetricCard } from "@/components/shared/metric-card"
@@ -30,10 +32,10 @@ import { api } from "@/lib/api"
 import { formatNumber } from "@/lib/format"
 import { toast } from "sonner"
 
-const CARRIER_EMOJI: Record<string, string> = {
-  XERIN: "🚚",
-  PARTNER: "🤝",
-  THIRD_PARTY: "📦",
+const CARRIER_ICON: Record<string, any> = {
+  XERIN: TruckIcon,
+  PARTNER: HandshakeIcon,
+  THIRD_PARTY: Package02Icon,
 }
 
 export default function CarriersPage() {
@@ -74,7 +76,7 @@ export default function CarriersPage() {
   const types = Array.from(new Set(carriers.map((c) => c.type).filter(Boolean)))
   const TYPE_FILTERS = [
     { value: "ALL", label: "All Carriers" },
-    ...types.map((t) => ({ value: t, label: `${CARRIER_EMOJI[t] || "📦"} ${t?.replace(/_/g, " ").toLowerCase()}` })),
+    ...types.map((t) => ({ value: t, label: t?.replace(/_/g, " ").toLowerCase() })),
   ]
 
   async function handleAddCarrier(e: React.FormEvent) {
@@ -101,7 +103,8 @@ export default function CarriersPage() {
     <DashboardLayout breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Fleet", href: "/dashboard/fleet" }, { label: "Carriers" }]}>
       <div className="flex flex-col gap-6 p-4 lg:p-6">
         <PageHeader
-          title="🤝 Carriers"
+          title="Carriers"
+          icon={<HugeiconsIcon icon={HandshakeIcon} className="size-6 text-primary" />}
           description="Xerin and partner carriers — manage relationships, driver counts, and vehicle assignments."
           actions={
             <div className="flex gap-2">
@@ -175,8 +178,8 @@ export default function CarriersPage() {
                 <div key={c.id} className="cursor-pointer rounded-lg border bg-card p-4 transition-shadow hover:shadow-md" onClick={() => setSelected(c)}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="flex size-10 items-center justify-center rounded-lg bg-muted/40 text-lg">
-                        {CARRIER_EMOJI[c.type] || "📦"}
+                      <div className="flex size-10 items-center justify-center rounded-lg bg-muted/40">
+                        <HugeiconsIcon icon={CARRIER_ICON[c.type] || Package02Icon} className="size-5 text-muted-foreground" />
                       </div>
                       <div>
                         <p className="text-sm font-semibold">{c.name || "—"}</p>
@@ -244,7 +247,7 @@ export default function CarriersPage() {
                       <tr key={c.id} className="cursor-pointer transition-colors hover:bg-muted/20" onClick={() => setSelected(c)}>
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2">
-                            <span className="text-base">{CARRIER_EMOJI[c.type] || "📦"}</span>
+                            <HugeiconsIcon icon={CARRIER_ICON[c.type] || Package02Icon} className="size-4 text-muted-foreground" />
                             <span className="font-medium">{c.name || "—"}</span>
                           </div>
                         </td>
@@ -277,8 +280,8 @@ export default function CarriersPage() {
             <>
               <SheetHeader>
                 <SheetTitle className="flex items-center gap-2">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-lg">
-                    {CARRIER_EMOJI[selected.type] || "📦"}
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                    <HugeiconsIcon icon={CARRIER_ICON[selected.type] || Package02Icon} className="size-5 text-primary" />
                   </div>
                   {selected.name || "Carrier"}
                 </SheetTitle>

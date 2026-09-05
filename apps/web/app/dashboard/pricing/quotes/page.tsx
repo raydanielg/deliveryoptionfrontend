@@ -126,7 +126,8 @@ export default function QuotesPage() {
     <DashboardLayout breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Pricing", href: "/dashboard/pricing" }, { label: "Quotes" }]}>
       <div className="flex flex-col gap-6 p-4 lg:p-6">
         <PageHeader
-          title="📋 Quotes"
+          title="Quotes"
+          icon={<HugeiconsIcon icon={CoinsIcon} className="size-6 text-primary" />}
           description="Saved quotes and quote requests — view details, download PDFs, and scan QR codes."
           actions={
             <Button variant="outline" size="sm" onClick={handleExportPDF}>

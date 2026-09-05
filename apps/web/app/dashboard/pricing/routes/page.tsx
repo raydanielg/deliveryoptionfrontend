@@ -96,7 +96,8 @@ export default function PricingRoutesPage() {
     <DashboardLayout breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Pricing", href: "/dashboard/pricing" }, { label: "Routes" }]}>
       <div className="flex flex-col gap-6 p-4 lg:p-6">
         <PageHeader
-          title="🛣️ Routes"
+          title="Routes"
+          icon={<HugeiconsIcon icon={Route02Icon} className="size-6 text-primary" />}
           description="Manage delivery routes, distances, and transport mode assignments."
           actions={
             <Button variant="outline" size="sm" onClick={handleExportPDF}>

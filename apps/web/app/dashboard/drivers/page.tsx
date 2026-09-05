@@ -75,9 +75,9 @@ export default function DriversPage() {
 
   const STATUS_FILTERS = [
     { value: "ALL", label: "All Drivers" },
-    { value: "AVAILABLE", label: "🟢 Available" },
-    { value: "ON_TRIP", label: "🚚 On Trip" },
-    { value: "OFFLINE", label: "🔴 Offline" },
+    { value: "AVAILABLE", label: "Available" },
+    { value: "ON_TRIP", label: "On Trip" },
+    { value: "OFFLINE", label: "Offline" },
   ]
 
   async function handleAddDriver(e: React.FormEvent) {
@@ -116,7 +116,8 @@ export default function DriversPage() {
     <DashboardLayout breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Fleet", href: "/dashboard/fleet" }, { label: "Drivers" }]}>
       <div className="flex flex-col gap-6 p-4 lg:p-6">
         <PageHeader
-          title="🧑‍✈️ Drivers"
+          title="Drivers"
+          icon={<HugeiconsIcon icon={UserGroupIcon} className="size-6 text-primary" />}
           description="Manage all registered drivers — status, assignments, license info, and performance."
           actions={
             <div className="flex gap-2">
@@ -190,8 +191,8 @@ export default function DriversPage() {
                 <div key={d.id} className="cursor-pointer rounded-lg border bg-card p-4 transition-shadow hover:shadow-md" onClick={() => setSelected(d)}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="flex size-10 items-center justify-center rounded-full bg-muted/40 text-lg">
-                        🧑‍✈️
+                      <div className="flex size-10 items-center justify-center rounded-full bg-muted/40">
+                        <HugeiconsIcon icon={UserGroupIcon} className="size-5 text-muted-foreground" />
                       </div>
                       <div>
                         <p className="text-sm font-semibold">{d.user?.name || "—"}</p>
@@ -261,7 +262,7 @@ export default function DriversPage() {
                       <tr key={d.id} className="cursor-pointer transition-colors hover:bg-muted/20" onClick={() => setSelected(d)}>
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2">
-                            <span className="text-base">🧑‍✈️</span>
+                            <HugeiconsIcon icon={UserGroupIcon} className="size-4 text-muted-foreground" />
                             <div>
                               <p className="font-medium">{d.user?.name || "—"}</p>
                               <p className="text-xs text-muted-foreground">{d.user?.email || "—"}</p>

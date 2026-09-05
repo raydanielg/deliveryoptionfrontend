@@ -173,7 +173,8 @@ export default function NotificationsPage() {
     ]}>
       <div className="flex flex-col gap-6 p-4 lg:p-6">
         <PageHeader
-          title={isAdmin ? "🔔 Notification Logs" : "🔔 My Notifications"}
+          title={isAdmin ? "Notification Logs" : "My Notifications"}
+          icon={<HugeiconsIcon icon={Notification03Icon} className="size-6 text-primary" />}
           description={isAdmin ? "SMS, Email, and Push delivery tracking — monitor and send notifications." : "Your personal notifications and updates."}
           actions={
             <div className="flex gap-2">

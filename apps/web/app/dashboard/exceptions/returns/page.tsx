@@ -142,7 +142,8 @@ export default function ReturnsPage() {
     ]}>
       <div className="flex flex-col gap-6 p-4 lg:p-6">
         <PageHeader
-          title="↩️ Returns"
+          title="Returns"
+          icon={<HugeiconsIcon icon={ArrowLeftIcon} className="size-6 text-primary" />}
           description="Shipment return requests — track, process, and manage returned parcels."
           actions={
             <div className="flex gap-2">

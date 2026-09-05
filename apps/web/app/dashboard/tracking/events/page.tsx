@@ -128,16 +128,17 @@ export default function TrackingEventsPage() {
 
   const MODE_FILTERS = [
     { value: "ALL", label: "All Modes" },
-    { value: "ROAD", label: "🚚 Road" },
-    { value: "RAIL", label: "🚆 SGR Rail" },
-    { value: "AIR", label: "✈️ Air Cargo" },
+    { value: "ROAD", label: "Road" },
+    { value: "RAIL", label: "SGR Rail" },
+    { value: "AIR", label: "Air Cargo" },
   ]
 
   return (
     <DashboardLayout breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Tracking", href: "/dashboard/tracking" }, { label: "Events" }]}>
       <div className="flex flex-col gap-6 p-4 lg:p-6">
         <PageHeader
-          title="📋 Tracking Events"
+          title="Tracking Events"
+          icon={<HugeiconsIcon icon={MapIcon} className="size-6 text-primary" />}
           description="All tracking events across shipments — status changes, locations, and delivery milestones."
         />
 

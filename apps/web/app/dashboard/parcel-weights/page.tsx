@@ -132,7 +132,8 @@ export default function ParcelWeightsPage() {
     ]}>
       <div className="flex flex-col gap-6 p-4 lg:p-6">
         <PageHeader
-          title="⚖️ Weight Tiers"
+          title="Weight Tiers"
+          icon={<HugeiconsIcon icon={ScaleIcon} className="size-6 text-primary" />}
           description="Define weight ranges that determine parcel fares — each tier links to specific pricing rules."
           actions={
             <div className="flex gap-2">

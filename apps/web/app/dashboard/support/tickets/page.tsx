@@ -143,7 +143,8 @@ export default function TicketsPage() {
     ]}>
       <div className="flex flex-col gap-6 p-4 lg:p-6">
         <PageHeader
-          title="🎫 Tickets"
+          title="Tickets"
+          icon={<HugeiconsIcon icon={CustomerService01Icon} className="size-6 text-primary" />}
           description="Customer support tickets — track inquiries, assign agents, and resolve issues."
           actions={
             <Button variant="outline" size="sm" onClick={handleExportPDF}>

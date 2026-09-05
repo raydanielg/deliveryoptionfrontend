@@ -150,7 +150,8 @@ export default function PaymentGatewaysPage() {
     ]}>
       <div className="flex flex-col gap-6 p-4 lg:p-6">
         <PageHeader
-          title="🔌 Gateways"
+          title="Gateways"
+          icon={<HugeiconsIcon icon={CreditCardIcon} className="size-6 text-primary" />}
           description="Configure Selcom, Azampesa, and other payment providers — manage credentials and modes."
           actions={
             <div className="flex gap-2">

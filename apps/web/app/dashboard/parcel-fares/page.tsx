@@ -236,7 +236,8 @@ export default function ParcelFaresPage() {
     ]}>
       <div className="flex flex-col gap-6 p-4 lg:p-6">
         <PageHeader
-          title="🧾 Parcel Fares"
+          title="Parcel Fares"
+          icon={<HugeiconsIcon icon={CoinsIcon} className="size-6 text-primary" />}
           description="Manage base fares, weight-based pricing, cancellation fees, and per-km rates."
           actions={
             <div className="flex gap-2">

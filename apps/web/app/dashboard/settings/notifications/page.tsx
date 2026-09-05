@@ -60,7 +60,8 @@ export default function NotificationSettingsPage() {
     ]}>
       <div className="flex flex-col gap-6 p-4 lg:p-6">
         <PageHeader
-          title="🔔 Notification Settings"
+          title="Notification Settings"
+          icon={<HugeiconsIcon icon={Notification03Icon} className="size-6 text-primary" />}
           description="Configure notification channels, providers, and delivery retry policies."
           actions={
             <div className="flex gap-2">

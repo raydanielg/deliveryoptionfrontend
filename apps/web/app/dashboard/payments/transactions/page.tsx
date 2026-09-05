@@ -91,7 +91,8 @@ export default function TransactionsPage() {
     ]}>
       <div className="flex flex-col gap-6 p-4 lg:p-6">
         <PageHeader
-          title="💳 Transactions"
+          title="Transactions"
+          icon={<HugeiconsIcon icon={CoinsIcon} className="size-6 text-primary" />}
           description="All payment transactions — track payments, methods, and settlement status."
           actions={
             <Button variant="outline" size="sm" onClick={handleExportPDF}>

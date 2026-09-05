@@ -136,7 +136,8 @@ export default function ParcelCategoriesPage() {
     ]}>
       <div className="flex flex-col gap-6 p-4 lg:p-6">
         <PageHeader
-          title="📦 Parcel Categories"
+          title="Parcel Categories"
+          icon={<HugeiconsIcon icon={Package02Icon} className="size-6 text-primary" />}
           description="Manage parcel types — documents, electronics, food, fragile goods, and more."
           actions={
             <div className="flex gap-2">

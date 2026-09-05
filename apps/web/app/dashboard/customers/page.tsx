@@ -102,7 +102,8 @@ export default function CustomersPage() {
     ]}>
       <div className="flex flex-col gap-6 p-4 lg:p-6">
         <PageHeader
-          title="👥 All Customers"
+          title="All Customers"
+          icon={<HugeiconsIcon icon={UsersIcon} className="size-6 text-primary" />}
           description="All registered customers — individuals and businesses. View profiles, shipment history, and spending."
           actions={
             <Button variant="outline" size="sm" onClick={handleExportPDF}>

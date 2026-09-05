@@ -70,7 +70,8 @@ export default function SupportPage() {
     ]}>
       <div className="flex flex-col gap-6 p-4 lg:p-6">
         <PageHeader
-          title="🎧 Support"
+          title="Support"
+          icon={<HugeiconsIcon icon={CustomerService01Icon} className="size-6 text-primary" />}
           description="Customer support tickets and delivery ratings — manage inquiries and track satisfaction."
         />
 

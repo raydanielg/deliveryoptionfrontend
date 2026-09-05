@@ -20,6 +20,13 @@ import {
   PlusIcon,
   Refresh01Icon,
   IdCardIcon,
+  BikeIcon,
+  VanIcon,
+  Car01Icon,
+  PickupIcon,
+  PackageIcon,
+  ContainerIcon,
+  BicycleIcon,
 } from "@hugeicons/core-free-icons"
 import { PageHeader } from "@/components/shared/page-header"
 import { MetricCard } from "@/components/shared/metric-card"
@@ -28,12 +35,15 @@ import { api } from "@/lib/api"
 import { formatNumber } from "@/lib/format"
 import { toast } from "sonner"
 
-const VEHICLE_EMOJI: Record<string, string> = {
-  MOTORCYCLE: "🏍️",
-  VAN: "🚐",
-  TRUCK: "🚛",
-  CAR: "🚗",
-  PICKUP: "🛻",
+const VEHICLE_ICON: Record<string, any> = {
+  MOTORCYCLE: BikeIcon,
+  BICYCLE: BicycleIcon,
+  VAN: VanIcon,
+  TRUCK: TruckIcon,
+  CAR: Car01Icon,
+  PICKUP: PickupIcon,
+  TRAILER: PackageIcon,
+  CONTAINER: ContainerIcon,
 }
 
 export default function VehiclesPage() {
@@ -79,7 +89,7 @@ export default function VehiclesPage() {
   const types = Array.from(new Set(vehicles.map((v) => v.type).filter(Boolean)))
   const TYPE_FILTERS = [
     { value: "ALL", label: "All Types" },
-    ...types.map((t) => ({ value: t, label: `${VEHICLE_EMOJI[t] || "🚗"} ${t?.replace(/_/g, " ").toLowerCase()}` })),
+    ...types.map((t) => ({ value: t, label: t?.replace(/_/g, " ").toLowerCase() })),
   ]
 
   async function handleAddVehicle(e: React.FormEvent) {
@@ -118,7 +128,8 @@ export default function VehiclesPage() {
     <DashboardLayout breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Fleet", href: "/dashboard/fleet" }, { label: "Vehicles" }]}>
       <div className="flex flex-col gap-6 p-4 lg:p-6">
         <PageHeader
-          title="🚛 Vehicles"
+          title="Vehicles"
+          icon={<HugeiconsIcon icon={TruckIcon} className="size-6 text-primary" />}
           description="Fleet vehicle management — registration, capacity, carrier assignments, and status."
           actions={
             <div className="flex gap-2">
@@ -192,8 +203,8 @@ export default function VehiclesPage() {
                 <div key={v.id} className="cursor-pointer rounded-lg border bg-card p-4 transition-shadow hover:shadow-md" onClick={() => setSelected(v)}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="flex size-10 items-center justify-center rounded-lg bg-muted/40 text-lg">
-                        {VEHICLE_EMOJI[v.type] || "🚗"}
+                      <div className="flex size-10 items-center justify-center rounded-lg bg-muted/40">
+                        <HugeiconsIcon icon={VEHICLE_ICON[v.type] || Car01Icon} className="size-5 text-muted-foreground" />
                       </div>
                       <div>
                         <p className="text-sm font-semibold">{v.registrationNo || "—"}</p>
@@ -249,7 +260,7 @@ export default function VehiclesPage() {
                       <tr key={v.id} className="cursor-pointer transition-colors hover:bg-muted/20" onClick={() => setSelected(v)}>
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2">
-                            <span className="text-base">{VEHICLE_EMOJI[v.type] || "🚗"}</span>
+                            <HugeiconsIcon icon={VEHICLE_ICON[v.type] || Car01Icon} className="size-4 text-muted-foreground" />
                             <span className="font-medium">{v.registrationNo || "—"}</span>
                           </div>
                         </td>
@@ -276,8 +287,8 @@ export default function VehiclesPage() {
             <>
               <SheetHeader>
                 <SheetTitle className="flex items-center gap-2">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-lg">
-                    {VEHICLE_EMOJI[selected.type] || "🚗"}
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                    <HugeiconsIcon icon={VEHICLE_ICON[selected.type] || Car01Icon} className="size-5 text-primary" />
                   </div>
                   {selected.registrationNo || "Vehicle"}
                 </SheetTitle>
@@ -363,14 +374,14 @@ export default function VehiclesPage() {
               <div className="space-y-2">
                 <Label>Vehicle Type *</Label>
                 <select className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })}>
-                  <option value="MOTORCYCLE">🏍️ Motorcycle</option>
-                  <option value="BICYCLE">🚲 Bicycle</option>
-                  <option value="CAR">🚗 Car</option>
-                  <option value="VAN">🚐 Van</option>
-                  <option value="PICKUP">🛻 Pickup</option>
-                  <option value="TRUCK">🚛 Truck</option>
-                  <option value="TRAILER">📦 Trailer</option>
-                  <option value="CONTAINER">📦 Container</option>
+                  <option value="MOTORCYCLE">Motorcycle</option>
+                  <option value="BICYCLE">Bicycle</option>
+                  <option value="CAR">Car</option>
+                  <option value="VAN">Van</option>
+                  <option value="PICKUP">Pickup</option>
+                  <option value="TRUCK">Truck</option>
+                  <option value="TRAILER">Trailer</option>
+                  <option value="CONTAINER">Container</option>
                 </select>
               </div>
               <div className="space-y-2">

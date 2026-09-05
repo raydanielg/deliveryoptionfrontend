@@ -138,7 +138,8 @@ export default function TeamPage() {
     ]}>
       <div className="flex flex-col gap-6 p-4 lg:p-6">
         <PageHeader
-          title="👥 Team Management"
+          title="Team Management"
+          icon={<HugeiconsIcon icon={UserGroupIcon} className="size-6 text-primary" />}
           description="Manage team members, roles, and permissions."
           actions={
             <div className="flex gap-2">

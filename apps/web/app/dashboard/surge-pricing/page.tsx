@@ -151,7 +151,8 @@ export default function SurgePricingPage() {
     ]}>
       <div className="flex flex-col gap-6 p-4 lg:p-6">
         <PageHeader
-          title="📈 Surge Pricing"
+          title="Surge Pricing"
+          icon={<HugeiconsIcon icon={TrendingUpIcon} className="size-6 text-primary" />}
           description="Manage time-based surge pricing for peak hours, holidays, and high-demand periods."
           actions={
             <div className="flex gap-2">

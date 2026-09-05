@@ -11,10 +11,17 @@ import { HugeiconsIcon } from "@hugeicons/react"
 import {
   SearchIcon,
   TruckIcon,
+  BikeIcon,
+  VanIcon,
   CallIcon,
   PlayIcon,
   PauseIcon,
   PinLocation02Icon,
+  SatelliteIcon,
+  Globe02Icon,
+  MountainIcon,
+  Moon02Icon,
+  Cancel01Icon,
 } from "@hugeicons/core-free-icons"
 import { PageHeader } from "@/components/shared/page-header"
 import { MetricCard } from "@/components/shared/metric-card"
@@ -329,7 +336,7 @@ export default function TrackingMapPage() {
               <span style="color: ${
                 isSelected ? "#0F172A" : "#FFFFFF"
               }; font-size: 14px; font-weight: bold;">
-                ${veh.vehicleType === "bike" ? "🏍️" : veh.vehicleType === "truck" ? "🚛" : "🚐"}
+                ${veh.vehicleType === "bike" ? "B" : veh.vehicleType === "truck" ? "T" : "V"}
               </span>
               ${
                 veh.speed > 0
@@ -417,7 +424,8 @@ export default function TrackingMapPage() {
     >
       <div className="flex flex-col gap-6 p-4 lg:p-6">
         <PageHeader
-          title="📍 Live Dispatch Map"
+          title="Live Dispatch Map"
+          icon={<HugeiconsIcon icon={PinLocation02Icon} className="size-6 text-primary" />}
           description="Real-time multi-carrier fleet tracking, telemetry & active delivery routes"
           actions={
             <Button
@@ -446,12 +454,12 @@ export default function TrackingMapPage() {
         <div className="absolute top-4 left-4 z-10 flex flex-wrap items-center gap-2">
           <div className="flex items-center rounded-xl bg-slate-900/90 backdrop-blur-md border border-slate-800 p-1 shadow-xl">
             {[
-              { id: "google_roadmap", label: "🗺️ Google Maps" },
-              { id: "google_satellite", label: "🛰️ Google Satellite" },
-              { id: "google_hybrid", label: "🌍 Google Hybrid" },
-              { id: "google_terrain", label: "⛰️ Google Terrain" },
-              { id: "carto_dark", label: "🌙 Dark" },
-              { id: "osm", label: "🗺️ OSM" },
+              { id: "google_roadmap", label: "Google Maps" },
+              { id: "google_satellite", label: "Google Satellite" },
+              { id: "google_hybrid", label: "Google Hybrid" },
+              { id: "google_terrain", label: "Google Terrain" },
+              { id: "carto_dark", label: "Dark" },
+              { id: "osm", label: "OSM" },
             ].map((tile) => (
               <button
                 key={tile.id}
@@ -547,8 +555,8 @@ export default function TrackingMapPage() {
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <div className="flex size-7 items-center justify-center rounded-lg bg-slate-800 border border-slate-700 text-sm">
-                          {veh.vehicleType === "bike" ? "🏍️" : veh.vehicleType === "truck" ? "🚛" : "🚐"}
+                        <div className="flex size-7 items-center justify-center rounded-lg bg-slate-800 border border-slate-700">
+                          <HugeiconsIcon icon={veh.vehicleType === "bike" ? BikeIcon : veh.vehicleType === "truck" ? TruckIcon : VanIcon} className="size-3.5 text-slate-300" />
                         </div>
                         <div>
                           <div className="font-bold text-xs text-white group-hover:text-primary transition-colors">
@@ -589,8 +597,8 @@ export default function TrackingMapPage() {
           <div className="absolute bottom-4 right-4 z-20 w-96 max-w-[calc(100vw-32px)] rounded-2xl bg-slate-900/95 backdrop-blur-xl border border-slate-700 p-4 shadow-2xl text-white animate-in slide-in-from-bottom-4 duration-300">
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-2.5">
-                <div className="flex size-10 items-center justify-center rounded-xl bg-slate-800 border border-slate-700 text-xl">
-                  {selectedDriver.vehicleType === "bike" ? "🏍️" : selectedDriver.vehicleType === "truck" ? "🚛" : "🚐"}
+                <div className="flex size-10 items-center justify-center rounded-xl bg-slate-800 border border-slate-700">
+                  <HugeiconsIcon icon={selectedDriver.vehicleType === "bike" ? BikeIcon : selectedDriver.vehicleType === "truck" ? TruckIcon : VanIcon} className="size-5 text-slate-300" />
                 </div>
                 <div>
                   <div className="font-extrabold text-sm text-white">{selectedDriver.name}</div>
@@ -602,7 +610,7 @@ export default function TrackingMapPage() {
                 onClick={() => setSelectedDriver(null)}
                 className="rounded-lg p-1 text-slate-400 hover:bg-slate-800 hover:text-white transition-colors"
               >
-                ✕
+                <HugeiconsIcon icon={Cancel01Icon} className="size-4" />
               </button>
             </div>
 

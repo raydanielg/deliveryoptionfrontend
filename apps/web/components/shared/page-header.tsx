@@ -6,11 +6,13 @@ export function PageHeader({
   title,
   description,
   actions,
+  icon,
   className,
 }: {
   title: string
   description?: React.ReactNode
   actions?: React.ReactNode
+  icon?: React.ReactNode
   className?: string
 }) {
   return (
@@ -21,7 +23,10 @@ export function PageHeader({
       )}
     >
       <div className="min-w-0">
-        <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
+        <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight">
+          {icon}
+          {title}
+        </h1>
         {description ? (
           <p className="mt-1.5 text-sm text-muted-foreground">{description}</p>
         ) : null}
