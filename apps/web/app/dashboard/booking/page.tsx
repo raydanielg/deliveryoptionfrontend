@@ -17,6 +17,8 @@ import {
   MapPinIcon, ArrowRight01Icon, CheckmarkCircle02Icon,
   SparklesIcon, AlertCircleIcon, BoxIcon, CalculatorIcon,
   Shield01Icon, Clock01Icon, WeightScaleIcon,
+  File02Icon, ShoppingBag01Icon, FactoryIcon, LeafIcon,
+  WineIcon, Settings01Icon, ContainerIcon,
 } from "@hugeicons/core-free-icons"
 import { PageHeader } from "@/components/shared/page-header"
 import { api } from "@/lib/api"
@@ -24,16 +26,18 @@ import { formatMoney, formatNumber } from "@/lib/format"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 
-const CARGO_TYPES = [
-  { value: "DOCUMENT", label: "Document", icon: "📄", description: "Letters, contracts, certificates" },
-  { value: "PARCEL", label: "Parcel", icon: "📦", description: "Small to medium packages" },
-  { value: "COMMERCIAL_CARGO", label: "Commercial Cargo", icon: "🏭", description: "Business goods and inventory" },
-  { value: "ECOMMERCE_ORDER", label: "E-commerce Order", icon: "🛒", description: "Online store orders" },
-  { value: "PALLET", label: "Pallet", icon: "🚢", description: "Palletized goods" },
-  { value: "PERISHABLE_CARGO", label: "Perishable Cargo", icon: "🥬", description: "Food, flowers, temperature-sensitive" },
-  { value: "FRAGILE_CARGO", label: "Fragile Cargo", icon: "🍷", description: "Glass, electronics, breakables" },
-  { value: "MACHINERY_EQUIPMENT", label: "Machinery / Equipment", icon: "⚙️", description: "Heavy equipment and machinery" },
-  { value: "OTHER", label: "Other", icon: "📦", description: "Any other type of cargo" },
+import type { IconSvgElement } from "@hugeicons/react"
+
+const CARGO_TYPES: { value: string; label: string; icon: IconSvgElement; description: string }[] = [
+  { value: "DOCUMENT", label: "Document", icon: File02Icon, description: "Letters, contracts, certificates" },
+  { value: "PARCEL", label: "Parcel", icon: Package02Icon, description: "Small to medium packages" },
+  { value: "COMMERCIAL_CARGO", label: "Commercial Cargo", icon: FactoryIcon, description: "Business goods and inventory" },
+  { value: "ECOMMERCE_ORDER", label: "E-commerce Order", icon: ShoppingBag01Icon, description: "Online store orders" },
+  { value: "PALLET", label: "Pallet", icon: ContainerIcon, description: "Palletized goods" },
+  { value: "PERISHABLE_CARGO", label: "Perishable Cargo", icon: LeafIcon, description: "Food, flowers, temperature-sensitive" },
+  { value: "FRAGILE_CARGO", label: "Fragile Cargo", icon: WineIcon, description: "Glass, electronics, breakables" },
+  { value: "MACHINERY_EQUIPMENT", label: "Machinery / Equipment", icon: Settings01Icon, description: "Heavy equipment and machinery" },
+  { value: "OTHER", label: "Other", icon: BoxIcon, description: "Any other type of cargo" },
 ]
 
 const SERVICE_LEVELS = [
@@ -261,7 +265,9 @@ export default function UniversalBookingPage() {
                       cargoType === ct.value ? "border-primary bg-primary/5 ring-1 ring-primary" : ""
                     }`}
                   >
-                    <span className="text-2xl">{ct.icon}</span>
+                    <div className="flex size-9 items-center justify-center rounded-lg bg-muted/50">
+                      <HugeiconsIcon icon={ct.icon} className="size-5 text-muted-foreground" />
+                    </div>
                     <span className="text-sm font-medium">{ct.label}</span>
                     <span className="text-xs text-muted-foreground">{ct.description}</span>
                   </button>
