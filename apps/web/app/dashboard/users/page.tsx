@@ -8,13 +8,26 @@ import { Input } from "@workspace/ui/components/input"
 import { Label } from "@workspace/ui/components/label"
 import { Switch } from "@workspace/ui/components/switch"
 import { Skeleton } from "@workspace/ui/components/skeleton"
+import { Separator } from "@workspace/ui/components/separator"
 import { PageHeader } from "@/components/shared/page-header"
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@workspace/ui/components/dialog"
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+  SheetFooter,
+} from "@workspace/ui/components/sheet"
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@workspace/ui/components/alert-dialog"
 import {
   Select,
   SelectContent,
@@ -22,6 +35,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@workspace/ui/components/select"
+import { HugeiconsIcon } from "@hugeicons/react"
+import {
+  UserAdd01Icon,
+  Edit01Icon,
+  Delete01Icon,
+  AlertCircleIcon,
+} from "@hugeicons/core-free-icons"
 import { api } from "@/lib/api"
 import { toast } from "sonner"
 
@@ -45,8 +65,10 @@ export default function UsersPage() {
   const [roleFilter, setRoleFilter] = useState("")
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
-  const [dialogOpen, setDialogOpen] = useState(false)
+  const [sheetOpen, setSheetOpen] = useState(false)
   const [editing, setEditing] = useState<any>(null)
+  const [deleteTarget, setDeleteTarget] = useState<any>(null)
+  const [deleting, setDeleting] = useState(false)
   const [form, setForm] = useState({
     name: "", email: "", phone: "", password: "", role: "CUSTOMER", isActive: true,
   })
@@ -74,7 +96,7 @@ export default function UsersPage() {
   function openCreate() {
     setEditing(null)
     setForm({ name: "", email: "", phone: "", password: "", role: "CUSTOMER", isActive: true })
-    setDialogOpen(true)
+    setSheetOpen(true)
   }
 
   function openEdit(user: any) {
@@ -83,7 +105,7 @@ export default function UsersPage() {
       name: user.name, email: user.email, phone: user.phone || "",
       password: "", role: user.role, isActive: user.isActive,
     })
-    setDialogOpen(true)
+    setSheetOpen(true)
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -104,7 +126,7 @@ export default function UsersPage() {
         })
         toast.success("User created")
       }
-      setDialogOpen(false)
+      setSheetOpen(false)
       loadUsers()
     } catch (err: any) {
       toast.error(err.message || "Failed to save user")
@@ -118,13 +140,16 @@ export default function UsersPage() {
     } catch (err: any) { toast.error(err.message) }
   }
 
-  async function deleteUser(id: string) {
-    if (!confirm("Delete this user?")) return
+  async function confirmDelete() {
+    if (!deleteTarget) return
     try {
-      await api.users.delete(id)
+      setDeleting(true)
+      await api.users.delete(deleteTarget.id)
       toast.success("User deleted")
+      setDeleteTarget(null)
       loadUsers()
     } catch (err: any) { toast.error(err.message) }
+    finally { setDeleting(false) }
   }
 
   async function changeRole(id: string, role: string) {
@@ -144,7 +169,7 @@ export default function UsersPage() {
         <PageHeader
           title="User Management"
           description="Manage users, roles, and permissions"
-          actions={<Button onClick={openCreate}>Add User</Button>}
+          actions={<Button onClick={openCreate}><HugeiconsIcon icon={UserAdd01Icon} className="size-4" />Add User</Button>}
         />
 
         {/* Filter toolbar */}
@@ -219,8 +244,8 @@ export default function UsersPage() {
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex gap-2">
-                          <Button variant="outline" size="sm" onClick={() => openEdit(u)}>Edit</Button>
-                          <Button variant="ghost" size="sm" className="text-destructive" onClick={() => deleteUser(u.id)}>Delete</Button>
+                          <Button variant="outline" size="sm" onClick={() => openEdit(u)}><HugeiconsIcon icon={Edit01Icon} className="size-3.5" />Edit</Button>
+                          <Button variant="ghost" size="sm" className="text-destructive" onClick={() => setDeleteTarget(u)}><HugeiconsIcon icon={Delete01Icon} className="size-3.5" />Delete</Button>
                         </div>
                       </td>
                     </tr>
@@ -238,50 +263,88 @@ export default function UsersPage() {
           )}
         </Card>
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>{editing ? "Edit User" : "Add User"}</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label>Full Name</Label>
-              <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
-            </div>
-            <div className="space-y-2">
-              <Label>Email</Label>
-              <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
-            </div>
-            <div className="space-y-2">
-              <Label>Phone (optional)</Label>
-              <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="+255..." />
-            </div>
-            {!editing && (
+      {/* Add/Edit Sheet Drawer (left side) */}
+      <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+        <SheetContent side="left" className="w-full sm:max-w-md p-0">
+          <SheetHeader className="border-b px-6 py-4">
+            <SheetTitle className="flex items-center gap-2 text-lg">
+              <HugeiconsIcon icon={editing ? Edit01Icon : UserAdd01Icon} className="size-5 text-primary" />
+              {editing ? "Edit User" : "Add New User"}
+            </SheetTitle>
+            <SheetDescription>
+              {editing ? `Update ${editing.name}'s details` : "Create a new user account with role and permissions"}
+            </SheetDescription>
+          </SheetHeader>
+          <form onSubmit={handleSubmit} className="flex flex-1 flex-col">
+            <div className="flex-1 space-y-5 overflow-y-auto px-6 py-5">
               <div className="space-y-2">
-                <Label>Password</Label>
-                <Input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required minLength={8} />
+                <Label className="text-sm font-medium">Full Name</Label>
+                <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required placeholder="John Doe" />
               </div>
-            )}
-            <div className="space-y-2">
-              <Label>Role</Label>
-              <Select value={form.role} onValueChange={(v: string | null) => setForm({ ...form, role: (v as string) || "CUSTOMER" })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {ROLES.map((r) => <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Email</Label>
+                <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required placeholder="john@example.com" />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Phone (optional)</Label>
+                <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="+255..." />
+              </div>
+              {!editing && (
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Password</Label>
+                  <Input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required minLength={8} placeholder="Min 8 characters" />
+                </div>
+              )}
+              <Separator />
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Role</Label>
+                <Select value={form.role} onValueChange={(v: string | null) => setForm({ ...form, role: (v as string) || "CUSTOMER" })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {ROLES.map((r) => <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center justify-between rounded-lg border border-border/60 px-3 py-2.5">
+                <div className="flex flex-col">
+                  <Label className="text-sm font-medium">Active</Label>
+                  <span className="text-xs text-muted-foreground">User can login and access the platform</span>
+                </div>
+                <Switch checked={form.isActive} onCheckedChange={(v) => setForm({ ...form, isActive: v })} />
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Switch checked={form.isActive} onCheckedChange={(v) => setForm({ ...form, isActive: v })} />
-              <Label>Active</Label>
-            </div>
-            <div className="flex justify-end gap-2">
-              <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
-              <Button type="submit">{editing ? "Update" : "Create"}</Button>
-            </div>
+            <SheetFooter className="flex-row justify-end gap-2 border-t px-6 py-4">
+              <Button type="button" variant="outline" onClick={() => setSheetOpen(false)}>Cancel</Button>
+              <Button type="submit">{editing ? "Save Changes" : "Create User"}</Button>
+            </SheetFooter>
           </form>
-        </DialogContent>
-      </Dialog>
+        </SheetContent>
+      </Sheet>
+
+      {/* Delete Confirmation AlertDialog */}
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => { if (!open) setDeleteTarget(null) }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <HugeiconsIcon icon={AlertCircleIcon} className="size-5 text-destructive" />
+              Delete User
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete <strong>{deleteTarget?.name}</strong>? This action cannot be undone. All associated data will be permanently removed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              onClick={confirmDelete}
+              disabled={deleting}
+            >
+              {deleting ? "Deleting..." : "Delete User"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       </div>
     </DashboardLayout>
   )
