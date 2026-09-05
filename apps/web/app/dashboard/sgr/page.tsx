@@ -8,7 +8,7 @@ import { Input } from "@workspace/ui/components/input"
 import { Label } from "@workspace/ui/components/label"
 import { Skeleton } from "@workspace/ui/components/skeleton"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@workspace/ui/components/select"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@workspace/ui/components/dialog"
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetDescription } from "@workspace/ui/components/sheet"
 import { PageHeader } from "@/components/shared/page-header"
 import { MetricCard } from "@/components/shared/metric-card"
 import { api } from "@/lib/api"
@@ -140,19 +140,20 @@ export default function SGRPage() {
           description="Manage rail parcel shipments, stations & manifests"
           actions={
             <div className="flex gap-2">
-              <Dialog open={bookingOpen} onOpenChange={setBookingOpen}>
-                <DialogTrigger render={<Button />}>
+              <Sheet open={bookingOpen} onOpenChange={setBookingOpen}>
+                <SheetTrigger render={<Button />}>
                   <HugeiconsIcon icon={PlusIcon} className="size-4" />
                   New Booking
-                </DialogTrigger>
-                <DialogContent className="max-w-lg">
-                  <DialogHeader>
-                    <DialogTitle className="flex items-center gap-2">
+                </SheetTrigger>
+                <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto">
+                  <SheetHeader>
+                    <SheetTitle className="flex items-center gap-2">
                       <HugeiconsIcon icon={Train01Icon} className="size-5 text-primary" />
                       New SGR Parcel Booking
-                    </DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4">
+                    </SheetTitle>
+                    <SheetDescription>Create a new rail parcel shipment booking</SheetDescription>
+                  </SheetHeader>
+                  <div className="space-y-4 px-4 pb-6">
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div className="grid gap-2">
                         <Label>Origin Station <span className="text-destructive">*</span></Label>
@@ -208,8 +209,8 @@ export default function SGRPage() {
                       <HugeiconsIcon icon={ArrowRight01Icon} className="size-4" />
                     </Button>
                   </div>
-                </DialogContent>
-              </Dialog>
+                </SheetContent>
+              </Sheet>
               <Button variant="outline" onClick={() => loadData()}>
                 <HugeiconsIcon icon={Train01Icon} className="size-4" />
                 Refresh

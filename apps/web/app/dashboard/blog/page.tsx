@@ -1,8 +1,7 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import * as React from "react"
 import { DashboardLayout } from "@/components/dashboard-layout"
-import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/components/card"
 import { Badge } from "@workspace/ui/components/badge"
 import { Button } from "@workspace/ui/components/button"
 import { Input } from "@workspace/ui/components/input"
@@ -10,13 +9,9 @@ import { Label } from "@workspace/ui/components/label"
 import { Textarea } from "@workspace/ui/components/textarea"
 import { Switch } from "@workspace/ui/components/switch"
 import { Skeleton } from "@workspace/ui/components/skeleton"
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@workspace/ui/components/dialog"
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@workspace/ui/components/sheet"
+import { PageHeader } from "@/components/shared/page-header"
+import { MetricCard } from "@/components/shared/metric-card"
 import {
   Select,
   SelectContent,
@@ -28,7 +23,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@workspace/ui/componen
 import { api } from "@/lib/api"
 import { toast } from "sonner"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { ArrowRight01Icon, PencilEdit02Icon, Delete02Icon, PlusIcon, ViewIcon, ImageUploadIcon, Attachment02Icon, StarIcon } from "@hugeicons/core-free-icons"
+import { PencilEdit02Icon, Delete02Icon, PlusIcon, ImageUploadIcon, Attachment02Icon, StarIcon, Search01Icon, ViewIcon, File02Icon } from "@hugeicons/core-free-icons"
+import { formatNumber } from "@/lib/format"
 
 const STATUS_COLORS: Record<string, string> = {
   PUBLISHED: "bg-green-100 text-green-700",
@@ -37,28 +33,28 @@ const STATUS_COLORS: Record<string, string> = {
 }
 
 export default function BlogPage() {
-  const [posts, setPosts] = useState<any[]>([])
-  const [categories, setCategories] = useState<any[]>([])
-  const [stats, setStats] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
-  const [search, setSearch] = useState("")
-  const [statusFilter, setStatusFilter] = useState("")
-  const [page, setPage] = useState(1)
-  const [totalPages, setTotalPages] = useState(1)
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [editing, setEditing] = useState<any>(null)
-  const [activeTab, setActiveTab] = useState("posts")
-  const [form, setForm] = useState({
+  const [posts, setPosts] = React.useState<any[]>([])
+  const [categories, setCategories] = React.useState<any[]>([])
+  const [stats, setStats] = React.useState<any>(null)
+  const [loading, setLoading] = React.useState(true)
+  const [search, setSearch] = React.useState("")
+  const [statusFilter, setStatusFilter] = React.useState("")
+  const [page, setPage] = React.useState(1)
+  const [totalPages, setTotalPages] = React.useState(1)
+  const [sheetOpen, setSheetOpen] = React.useState(false)
+  const [editing, setEditing] = React.useState<any>(null)
+  const [activeTab, setActiveTab] = React.useState("posts")
+  const [form, setForm] = React.useState({
     title: "", excerpt: "", content: "", coverImage: "", status: "DRAFT",
     isFeatured: false, tags: "", categoryId: "", seoTitle: "", seoDescription: "",
   })
-  const imageInputRef = useRef<HTMLInputElement>(null)
-  const attachInputRef = useRef<HTMLInputElement>(null)
-  const [editingPostImages, setEditingPostImages] = useState<any[]>([])
-  const [editingPostAttachments, setEditingPostAttachments] = useState<any[]>([])
+  const imageInputRef = React.useRef<HTMLInputElement>(null)
+  const attachInputRef = React.useRef<HTMLInputElement>(null)
+  const [editingPostImages, setEditingPostImages] = React.useState<any[]>([])
+  const [editingPostAttachments, setEditingPostAttachments] = React.useState<any[]>([])
 
-  useEffect(() => { loadPosts(); loadStats(); loadCategories() }, [page, statusFilter])
-  useEffect(() => { if (search) { const t = setTimeout(() => { setPage(1); loadPosts() }, 400); return () => clearTimeout(t) } }, [search])
+  React.useEffect(() => { loadPosts(); loadStats(); loadCategories() }, [page, statusFilter])
+  React.useEffect(() => { if (search) { const t = setTimeout(() => { setPage(1); loadPosts() }, 400); return () => clearTimeout(t) } }, [search])
 
   async function loadPosts() {
     try {
@@ -97,7 +93,7 @@ export default function BlogPage() {
     setForm({ title: "", excerpt: "", content: "", coverImage: "", status: "DRAFT", isFeatured: false, tags: "", categoryId: "", seoTitle: "", seoDescription: "" })
     setEditingPostImages([])
     setEditingPostAttachments([])
-    setDialogOpen(true)
+    setSheetOpen(true)
   }
 
   async function openEdit(post: any) {
@@ -119,7 +115,7 @@ export default function BlogPage() {
       setEditingPostImages(full.data?.images || [])
       setEditingPostAttachments(full.data?.attachments || [])
     } catch {}
-    setDialogOpen(true)
+    setSheetOpen(true)
   }
 
   async function handleSubmit() {
@@ -147,7 +143,7 @@ export default function BlogPage() {
           setEditing(res.data)
         }
       }
-      setDialogOpen(false)
+      setSheetOpen(false)
       loadPosts()
       loadStats()
     } catch (err: any) {
@@ -230,44 +226,24 @@ export default function BlogPage() {
 
   return (
     <DashboardLayout breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Blog" }]}>
-      <div className="flex-1 space-y-6 p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">Blog Management</h1>
-            <p className="text-sm text-muted-foreground">Create and manage blog posts, images, and attachments</p>
-          </div>
-          <Button onClick={openCreate}>
-            <HugeiconsIcon icon={PlusIcon} strokeWidth={2} className="size-4" />
-            New Post
-          </Button>
-        </div>
+      <div className="flex flex-col gap-6 p-4 lg:p-6">
+        <PageHeader
+          title="Blog Management"
+          description="Create and manage blog posts, images, and attachments"
+          actions={
+            <Button onClick={openCreate}>
+              <HugeiconsIcon icon={PlusIcon} className="size-4" />
+              New Post
+            </Button>
+          }
+        />
 
         {stats && (
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-            <Card>
-              <CardContent className="p-4">
-                <p className="text-sm text-muted-foreground">Total Posts</p>
-                <p className="text-2xl font-bold">{stats.total}</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4">
-                <p className="text-sm text-muted-foreground">Published</p>
-                <p className="text-2xl font-bold text-green-600">{stats.published}</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4">
-                <p className="text-sm text-muted-foreground">Drafts</p>
-                <p className="text-2xl font-bold text-gray-600">{stats.drafts}</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4">
-                <p className="text-sm text-muted-foreground">Total Views</p>
-                <p className="text-2xl font-bold text-blue-600">{stats.totalViews}</p>
-              </CardContent>
-            </Card>
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <MetricCard label="Total Posts" value={formatNumber(stats.total ?? 0)} icon={File02Icon} loading={loading} />
+            <MetricCard label="Published" value={formatNumber(stats.published ?? 0)} icon={StarIcon} loading={loading} />
+            <MetricCard label="Drafts" value={formatNumber(stats.drafts ?? 0)} icon={PencilEdit02Icon} loading={loading} />
+            <MetricCard label="Total Views" value={formatNumber(stats.totalViews ?? 0)} icon={ViewIcon} loading={loading} />
           </div>
         )}
 
@@ -279,12 +255,15 @@ export default function BlogPage() {
 
           <TabsContent value="posts" className="space-y-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-              <Input
-                placeholder="Search posts..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="sm:max-w-xs"
-              />
+              <div className="relative flex-1 sm:max-w-xs">
+                <HugeiconsIcon icon={Search01Icon} className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  placeholder="Search posts..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
               <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v === "all" ? "" : (v ?? "")); setPage(1) }}>
                 <SelectTrigger className="sm:w-40">
                   <SelectValue placeholder="All statuses" />
@@ -300,19 +279,17 @@ export default function BlogPage() {
 
             {loading ? (
               <div className="space-y-3">
-                {[1, 2, 3].map((i) => <Skeleton key={i} className="h-24 w-full" />)}
+                {[1, 2, 3].map((i) => <Skeleton key={i} className="h-24 w-full rounded-lg" />)}
               </div>
             ) : posts.length === 0 ? (
-              <Card>
-                <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-                  <p className="text-muted-foreground">No blog posts yet. Create your first post!</p>
-                </CardContent>
-              </Card>
+              <div className="flex flex-col items-center justify-center py-12 text-center rounded-lg border">
+                <HugeiconsIcon icon={File02Icon} className="mx-auto size-8 text-muted-foreground/40" />
+                <p className="mt-2 text-sm text-muted-foreground">No blog posts yet. Create your first post!</p>
+              </div>
             ) : (
               <div className="space-y-3">
                 {posts.map((post) => (
-                  <Card key={post.id} className="overflow-hidden">
-                    <CardContent className="flex items-start gap-4 p-4">
+                  <div key={post.id} className="flex items-start gap-4 rounded-lg border p-4">
                       {post.coverImage ? (
                         <img src={post.coverImage} alt={post.title} className="size-16 shrink-0 rounded-lg object-cover" />
                       ) : (
@@ -335,17 +312,16 @@ export default function BlogPage() {
                       </div>
                       <div className="flex shrink-0 items-center gap-1">
                         <Button variant="ghost" size="icon" onClick={() => handleToggleFeatured(post)} title="Toggle featured">
-                          <HugeiconsIcon icon={StarIcon} strokeWidth={2} className={`size-4 ${post.isFeatured ? "fill-yellow-400 text-yellow-400" : ""}`} />
+                          <HugeiconsIcon icon={StarIcon} className={`size-4 ${post.isFeatured ? "fill-yellow-400 text-yellow-400" : ""}`} />
                         </Button>
                         <Button variant="ghost" size="icon" onClick={() => openEdit(post)} title="Edit">
-                          <HugeiconsIcon icon={PencilEdit02Icon} strokeWidth={2} className="size-4" />
+                          <HugeiconsIcon icon={PencilEdit02Icon} className="size-4" />
                         </Button>
                         <Button variant="ghost" size="icon" onClick={() => handleDelete(post.id)} title="Delete">
-                          <HugeiconsIcon icon={Delete02Icon} strokeWidth={2} className="size-4 text-red-500" />
+                          <HugeiconsIcon icon={Delete02Icon} className="size-4 text-red-500" />
                         </Button>
                       </div>
-                    </CardContent>
-                  </Card>
+                    </div>
                 ))}
               </div>
             )}
@@ -365,12 +341,16 @@ export default function BlogPage() {
         </Tabs>
       </div>
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{editing ? "Edit Post" : "Create New Post"}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
+      <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+        <SheetContent side="right" className="w-full sm:max-w-2xl overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle className="flex items-center gap-2">
+              <HugeiconsIcon icon={PlusIcon} className="size-5 text-primary" />
+              {editing ? "Edit Post" : "Create New Post"}
+            </SheetTitle>
+            <SheetDescription>{editing ? "Update blog post details" : "Create a new blog post"}</SheetDescription>
+          </SheetHeader>
+          <div className="space-y-4 px-4 pb-6">
             <div>
               <Label>Title</Label>
               <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Post title" />
@@ -441,7 +421,7 @@ export default function BlogPage() {
                       </div>
                     ))}
                     <label className="flex size-20 cursor-pointer items-center justify-center rounded-lg border-2 border-dashed text-muted-foreground hover:bg-muted">
-                      <HugeiconsIcon icon={ImageUploadIcon} strokeWidth={2} className="size-5" />
+                      <HugeiconsIcon icon={ImageUploadIcon} className="size-5" />
                       <input ref={imageInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handleUploadImages} />
                     </label>
                   </div>
@@ -452,16 +432,16 @@ export default function BlogPage() {
                   <div className="mt-2 space-y-2">
                     {editingPostAttachments.map((att) => (
                       <div key={att.id} className="flex items-center gap-2 rounded-lg border p-2">
-                        <HugeiconsIcon icon={Attachment02Icon} strokeWidth={2} className="size-4 text-muted-foreground" />
+                        <HugeiconsIcon icon={Attachment02Icon} className="size-4 text-muted-foreground" />
                         <a href={att.url} target="_blank" rel="noopener noreferrer" className="flex-1 text-sm hover:underline">{att.fileName}</a>
                         <span className="text-xs text-muted-foreground">{att.fileType}</span>
                         <Button variant="ghost" size="icon" onClick={() => handleDeleteAttachment(att.id)}>
-                          <HugeiconsIcon icon={Delete02Icon} strokeWidth={2} className="size-4 text-red-500" />
+                          <HugeiconsIcon icon={Delete02Icon} className="size-4 text-red-500" />
                         </Button>
                       </div>
                     ))}
                     <label className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed p-3 text-sm text-muted-foreground hover:bg-muted">
-                      <HugeiconsIcon icon={Attachment02Icon} strokeWidth={2} className="size-4" />
+                      <HugeiconsIcon icon={Attachment02Icon} className="size-4" />
                       Upload files
                       <input ref={attachInputRef} type="file" multiple className="hidden" onChange={handleUploadAttachments} />
                     </label>
@@ -471,21 +451,21 @@ export default function BlogPage() {
             )}
 
             <div className="flex justify-end gap-2 border-t pt-4">
-              <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
+              <Button variant="outline" onClick={() => setSheetOpen(false)}>Cancel</Button>
               <Button onClick={handleSubmit} disabled={!form.title || !form.content}>
                 {editing ? "Update" : "Create"}
               </Button>
             </div>
           </div>
-        </DialogContent>
-      </Dialog>
+        </SheetContent>
+      </Sheet>
     </DashboardLayout>
   )
 }
 
 function CategoriesManager({ categories, onReload }: { categories: any[]; onReload: () => void }) {
-  const [name, setName] = useState("")
-  const [description, setDescription] = useState("")
+  const [name, setName] = React.useState("")
+  const [description, setDescription] = React.useState("")
 
   async function handleCreate() {
     if (!name.trim()) return
@@ -513,11 +493,8 @@ function CategoriesManager({ categories, onReload }: { categories: any[]; onRelo
 
   return (
     <div className="space-y-4">
-      <Card>
-        <CardHeader>
-          <CardTitle>Add Category</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
+      <div className="rounded-lg border p-4 space-y-3">
+        <h3 className="font-semibold">Add Category</h3>
           <div>
             <Label>Name</Label>
             <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Category name" />
@@ -527,28 +504,25 @@ function CategoriesManager({ categories, onReload }: { categories: any[]; onRelo
             <Input value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Optional description" />
           </div>
           <Button onClick={handleCreate} disabled={!name.trim()}>
-            <HugeiconsIcon icon={PlusIcon} strokeWidth={2} className="size-4" />
+            <HugeiconsIcon icon={PlusIcon} className="size-4" />
             Add Category
           </Button>
-        </CardContent>
-      </Card>
+      </div>
 
       <div className="space-y-2">
         {categories.length === 0 ? (
           <p className="text-sm text-muted-foreground">No categories yet.</p>
         ) : (
           categories.map((c) => (
-            <Card key={c.id}>
-              <CardContent className="flex items-center justify-between p-3">
+            <div key={c.id} className="flex items-center justify-between rounded-lg border p-3">
                 <div>
                   <p className="font-medium">{c.name}</p>
                   <p className="text-xs text-muted-foreground">{c._count?.posts || 0} posts • /{c.slug}</p>
                 </div>
                 <Button variant="ghost" size="icon" onClick={() => handleDelete(c.id)}>
-                  <HugeiconsIcon icon={Delete02Icon} strokeWidth={2} className="size-4 text-red-500" />
+                  <HugeiconsIcon icon={Delete02Icon} className="size-4 text-red-500" />
                 </Button>
-              </CardContent>
-            </Card>
+            </div>
           ))
         )}
       </div>

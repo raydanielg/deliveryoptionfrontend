@@ -1,40 +1,55 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import * as React from "react"
 import { DashboardLayout } from "@/components/dashboard-layout"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@workspace/ui/components/card"
 import { Badge } from "@workspace/ui/components/badge"
 import { Button } from "@workspace/ui/components/button"
 import { Input } from "@workspace/ui/components/input"
 import { Label } from "@workspace/ui/components/label"
 import { Skeleton } from "@workspace/ui/components/skeleton"
-import { Separator } from "@workspace/ui/components/separator"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@workspace/ui/components/dialog"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@workspace/ui/components/select"
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@workspace/ui/components/sheet"
+import { PageHeader } from "@/components/shared/page-header"
+import { MetricCard } from "@/components/shared/metric-card"
 import { api } from "@/lib/api"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { WarehouseIcon, Package02Icon, PackageReceiveIcon, ContainerIcon, CheckmarkCircle02Icon, ScaleIcon, Tag01Icon, Bookshelf01Icon, LayersIcon, SendIcon, Clock01Icon } from "@hugeicons/core-free-icons"
+import { WarehouseIcon, Package02Icon, PackageReceiveIcon, ContainerIcon, CheckmarkCircle02Icon, ScaleIcon, Tag01Icon, Bookshelf01Icon, LayersIcon, SendIcon, Clock01Icon, Search01Icon } from "@hugeicons/core-free-icons"
 import { toast } from "sonner"
+import { formatNumber, formatDate } from "@/lib/format"
+
+const STATUS_OPTIONS = [
+  { value: "ALL", label: "All Statuses" },
+  { value: "RECEIVED", label: "Received" },
+  { value: "WEIGHED", label: "Weighed" },
+  { value: "LABELED", label: "Labeled" },
+  { value: "SHELVED", label: "Shelved" },
+  { value: "CONSOLIDATED", label: "Consolidated" },
+  { value: "RELEASED", label: "Released" },
+]
 
 export default function WarehousePage() {
-  const [shipments, setShipments] = useState<any[]>([])
-  const [stats, setStats] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
-  const [filter, setFilter] = useState("")
-  const [showReceive, setShowReceive] = useState(false)
-  const [receiveForm, setReceiveForm] = useState({ stationId: "", shipmentId: "" })
-  const [shelfDialog, setShelfDialog] = useState<any>(null)
-  const [shelfBin, setShelfBin] = useState("")
-  const [consolidateDialog, setConsolidateDialog] = useState(false)
-  const [selectedIds, setSelectedIds] = useState<string[]>([])
-  const [historyDialog, setHistoryDialog] = useState<any>(null)
-  const [history, setHistory] = useState<any[]>([])
+  const [shipments, setShipments] = React.useState<any[]>([])
+  const [stats, setStats] = React.useState<any>(null)
+  const [loading, setLoading] = React.useState(true)
+  const [search, setSearch] = React.useState("")
+  const [statusFilter, setStatusFilter] = React.useState("ALL")
+  const [receiveOpen, setReceiveOpen] = React.useState(false)
+  const [receiveForm, setReceiveForm] = React.useState({ stationId: "", shipmentId: "" })
+  const [shelfSheet, setShelfSheet] = React.useState<any>(null)
+  const [shelfBin, setShelfBin] = React.useState("")
+  const [consolidateOpen, setConsolidateOpen] = React.useState(false)
+  const [selectedIds, setSelectedIds] = React.useState<string[]>([])
+  const [historySheet, setHistorySheet] = React.useState<any>(null)
+  const [history, setHistory] = React.useState<any[]>([])
 
-  useEffect(() => { loadData() }, [])
+  React.useEffect(() => { loadData() }, [statusFilter])
 
   async function loadData() {
+    setLoading(true)
     try {
+      const params = statusFilter !== "ALL" ? `?status=${statusFilter}` : ""
       const [listRes, statsRes] = await Promise.all([
-        api.warehouse.list(filter ? `?status=${filter}` : ""),
+        api.warehouse.list(params),
         api.warehouse.stats(),
       ])
       setShipments(listRes.data || [])
@@ -65,11 +80,11 @@ export default function WarehousePage() {
   }
 
   async function handleShelfAssign() {
-    if (!shelfDialog || !shelfBin) return
+    if (!shelfSheet || !shelfBin) return
     try {
-      await api.warehouse.assignShelfBin({ shipmentId: shelfDialog.id, shelfBin })
+      await api.warehouse.assignShelfBin({ shipmentId: shelfSheet.id, shelfBin })
       toast.success(`Assigned to ${shelfBin}`)
-      setShelfDialog(null)
+      setShelfSheet(null)
       setShelfBin("")
       loadData()
     } catch (err: any) {
@@ -85,7 +100,7 @@ export default function WarehousePage() {
     try {
       await api.warehouse.consolidate({ shipmentIds: selectedIds })
       toast.success("Shipments consolidated")
-      setConsolidateDialog(false)
+      setConsolidateOpen(false)
       setSelectedIds([])
       loadData()
     } catch (err: any) {
@@ -94,10 +109,10 @@ export default function WarehousePage() {
   }
 
   async function loadHistory(shipment: any) {
-    setHistoryDialog(shipment)
+    setHistorySheet(shipment)
     try {
       const res = await api.tracking.trackShipment(shipment.trackingNumber)
-      setHistory(res.data || [])
+      setHistory(res.data?.events || [])
     } catch {
       setHistory([])
     }
@@ -107,67 +122,198 @@ export default function WarehousePage() {
     setSelectedIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])
   }
 
-  const statusColors: Record<string, string> = {
-    RECEIVED: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300",
-    WEIGHED: "bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-300",
-    LABELED: "bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300",
-    SHELVED: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300",
-    CONSOLIDATED: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300",
-    RELEASED: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
-  }
+  const filtered = shipments.filter(s => {
+    if (!search) return true
+    const q = search.toLowerCase()
+    return s.trackingNumber?.toLowerCase().includes(q) ||
+      s.shelfBinLocation?.toLowerCase().includes(q) ||
+      s.fromAddress?.city?.toLowerCase().includes(q) ||
+      s.toAddress?.city?.toLowerCase().includes(q)
+  })
 
   return (
     <DashboardLayout breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Warehouse" }]}>
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Warehouse Operations</h1>
-          <p className="text-sm text-muted-foreground">Receiving, shelving, consolidation & release</p>
+      <div className="flex flex-col gap-6 p-4 lg:p-6">
+        <PageHeader
+          title="Warehouse Operations"
+          description="Receiving, shelving, consolidation & release"
+          actions={
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setReceiveOpen(true)}>
+                <HugeiconsIcon icon={PackageReceiveIcon} className="size-4" />
+                Receive
+              </Button>
+              <Button variant="outline" onClick={() => setConsolidateOpen(true)} disabled={selectedIds.length < 2}>
+                <HugeiconsIcon icon={LayersIcon} className="size-4" />
+                Consolidate ({selectedIds.length})
+              </Button>
+              <Button variant="outline" onClick={() => loadData()}>
+                <HugeiconsIcon icon={WarehouseIcon} className="size-4" />
+                Refresh
+              </Button>
+            </div>
+          }
+        />
+
+        {/* Stats */}
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <MetricCard
+            label="Total in Warehouse"
+            value={formatNumber(stats?.total ?? 0)}
+            icon={Package02Icon}
+            loading={loading}
+            hint="All items"
+          />
+          <MetricCard
+            label="Received Today"
+            value={formatNumber(stats?.receivedToday ?? 0)}
+            icon={PackageReceiveIcon}
+            loading={loading}
+            hint="Today's intake"
+          />
+          <MetricCard
+            label="Consolidated"
+            value={formatNumber(stats?.consolidated ?? 0)}
+            icon={ContainerIcon}
+            loading={loading}
+            hint="Batched for dispatch"
+          />
+          <MetricCard
+            label="Released"
+            value={formatNumber(stats?.released ?? 0)}
+            icon={CheckmarkCircle02Icon}
+            loading={loading}
+            hint="Sent out"
+          />
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setShowReceive(!showReceive)}>
-            <HugeiconsIcon icon={PackageReceiveIcon} className="size-4 mr-2" />
-            Receive
-          </Button>
-          <Button variant="outline" onClick={() => setConsolidateDialog(true)} disabled={selectedIds.length < 2}>
-            <HugeiconsIcon icon={LayersIcon} className="size-4 mr-2" />
-            Consolidate ({selectedIds.length})
-          </Button>
-          <Button onClick={() => loadData()}>
-            <HugeiconsIcon icon={WarehouseIcon} className="size-4 mr-2" />
-            Refresh
-          </Button>
+
+        {/* Filter */}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="relative flex-1 sm:max-w-xs">
+            <HugeiconsIcon icon={Search01Icon} className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Search tracking #, shelf, city..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+          <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v ?? "ALL")}>
+            <SelectTrigger className="w-full sm:w-[200px]"><SelectValue placeholder="Filter by status" /></SelectTrigger>
+            <SelectContent>
+              {STATUS_OPTIONS.map((s) => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Shipments Table */}
+        <div className="overflow-hidden rounded-lg border">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-muted/30 text-left">
+                  <th className="px-4 py-3 font-medium text-muted-foreground w-8"></th>
+                  <th className="px-4 py-3 font-medium text-muted-foreground">Tracking #</th>
+                  <th className="px-4 py-3 font-medium text-muted-foreground">Shelf/Bin</th>
+                  <th className="px-4 py-3 font-medium text-muted-foreground">Weight</th>
+                  <th className="px-4 py-3 font-medium text-muted-foreground">Route</th>
+                  <th className="px-4 py-3 font-medium text-muted-foreground">Status</th>
+                  <th className="px-4 py-3 font-medium text-muted-foreground">Received</th>
+                  <th className="px-4 py-3 font-medium text-muted-foreground">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {loading ? (
+                  Array.from({ length: 8 }).map((_, i) => (
+                    <tr key={i} className="transition-colors hover:bg-muted/20">
+                      <td className="px-4 py-3"><Skeleton className="h-4 w-4" /></td>
+                      <td className="px-4 py-3"><Skeleton className="h-5 w-32" /></td>
+                      <td className="px-4 py-3"><Skeleton className="h-5 w-16" /></td>
+                      <td className="px-4 py-3"><Skeleton className="h-5 w-16" /></td>
+                      <td className="px-4 py-3"><Skeleton className="h-5 w-32" /></td>
+                      <td className="px-4 py-3"><Skeleton className="h-5 w-24 rounded-full" /></td>
+                      <td className="px-4 py-3"><Skeleton className="h-5 w-24" /></td>
+                      <td className="px-4 py-3"><Skeleton className="h-5 w-20" /></td>
+                    </tr>
+                  ))
+                ) : filtered.length === 0 ? (
+                  <tr>
+                    <td colSpan={8} className="px-4 py-12 text-center">
+                      <HugeiconsIcon icon={WarehouseIcon} className="mx-auto size-8 text-muted-foreground/40" />
+                      <p className="mt-2 text-sm text-muted-foreground">No shipments in warehouse</p>
+                    </td>
+                  </tr>
+                ) : (
+                  filtered.map((s: any) => (
+                    <tr key={s.id} className="transition-colors hover:bg-muted/20">
+                      <td className="px-4 py-3">
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.includes(s.id)}
+                          onChange={() => toggleSelect(s.id)}
+                          className="size-4 rounded border-muted"
+                        />
+                      </td>
+                      <td className="px-4 py-3 font-medium">{s.trackingNumber || s.id.slice(0, 8)}</td>
+                      <td className="px-4 py-3 text-muted-foreground">{s.shelfBinLocation || s.shelfBin || "—"}</td>
+                      <td className="px-4 py-3 tabular-nums">{s.actualWeightKg ? `${s.actualWeightKg} kg` : "—"}</td>
+                      <td className="px-4 py-3 text-muted-foreground">{s.fromAddress?.city} → {s.toAddress?.city}</td>
+                      <td className="px-4 py-3">
+                        <Badge variant="secondary">{s.status?.replace(/_/g, " ").toLowerCase()}</Badge>
+                      </td>
+                      <td className="px-4 py-3 text-muted-foreground">{s.receivedAt ? formatDate(s.receivedAt) : "—"}</td>
+                      <td className="px-4 py-3">
+                        <div className="flex flex-wrap gap-1">
+                          {s.status === "RECEIVED" && (
+                            <Button size="sm" variant="outline" onClick={() => handleAction("verify-weigh", s)}>
+                              <HugeiconsIcon icon={ScaleIcon} className="size-3.5" />
+                              Weigh
+                            </Button>
+                          )}
+                          {s.status === "WEIGHED" && (
+                            <Button size="sm" variant="outline" onClick={() => handleAction("label", s)}>
+                              <HugeiconsIcon icon={Tag01Icon} className="size-3.5" />
+                              Label
+                            </Button>
+                          )}
+                          {s.status === "LABELED" && (
+                            <Button size="sm" variant="outline" onClick={() => setShelfSheet(s)}>
+                              <HugeiconsIcon icon={Bookshelf01Icon} className="size-3.5" />
+                              Shelve
+                            </Button>
+                          )}
+                          {(s.status === "SHELVED" || s.status === "CONSOLIDATED") && (
+                            <Button size="sm" variant="outline" onClick={() => handleAction("release", s)}>
+                              <HugeiconsIcon icon={SendIcon} className="size-3.5" />
+                              Release
+                            </Button>
+                          )}
+                          <Button size="sm" variant="ghost" onClick={() => loadHistory(s)}>
+                            <HugeiconsIcon icon={Clock01Icon} className="size-3.5" />
+                            History
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
-      {/* Stats */}
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {[
-          { label: "Total in Warehouse", value: stats?.total ?? 0, icon: Package02Icon, color: "from-blue-500 to-cyan-500" },
-          { label: "Received Today", value: stats?.receivedToday ?? 0, icon: PackageReceiveIcon, color: "from-orange-500 to-amber-500" },
-          { label: "Consolidated", value: stats?.consolidated ?? 0, icon: ContainerIcon, color: "from-purple-500 to-pink-500" },
-          { label: "Released", value: stats?.released ?? 0, icon: CheckmarkCircle02Icon, color: "from-green-500 to-emerald-500" },
-        ].map((stat, i) => (
-          <Card key={i}>
-            <CardContent className="flex items-center gap-4 p-4">
-              <div className={`flex size-12 items-center justify-center rounded-xl bg-gradient-to-br ${stat.color} text-white`}>
-                <HugeiconsIcon icon={stat.icon} className="size-6" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold">{stat.value}</div>
-                <div className="text-xs text-muted-foreground">{stat.label}</div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* Receive Form */}
-      {showReceive && (
-        <Card className="mt-4 border-primary">
-          <CardHeader>
-            <CardTitle>Receive Shipment at Warehouse</CardTitle>
-          </CardHeader>
-          <CardContent className="grid gap-4 sm:grid-cols-2">
+      {/* Receive Sheet */}
+      <Sheet open={receiveOpen} onOpenChange={setReceiveOpen}>
+        <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle className="flex items-center gap-2">
+              <HugeiconsIcon icon={PackageReceiveIcon} className="size-5 text-primary" />
+              Receive Shipment
+            </SheetTitle>
+            <SheetDescription>Receive a shipment at the warehouse</SheetDescription>
+          </SheetHeader>
+          <div className="space-y-4 px-4 pb-6">
             <div className="grid gap-2">
               <Label>Station / Warehouse ID</Label>
               <Input value={receiveForm.stationId} onChange={(e) => setReceiveForm({ ...receiveForm, stationId: e.target.value })} placeholder="Enter station ID" />
@@ -176,140 +322,36 @@ export default function WarehousePage() {
               <Label>Shipment ID</Label>
               <Input value={receiveForm.shipmentId} onChange={(e) => setReceiveForm({ ...receiveForm, shipmentId: e.target.value })} placeholder="Enter shipment ID" />
             </div>
-            <div className="sm:col-span-2">
-              <Button onClick={async () => {
-                try {
-                  await api.warehouse.receive(receiveForm.stationId, { shipmentId: receiveForm.shipmentId })
-                  toast.success("Shipment received at warehouse")
-                  setShowReceive(false)
-                  setReceiveForm({ stationId: "", shipmentId: "" })
-                  loadData()
-                } catch (err: any) {
-                  toast.error(err.message || "Failed to receive shipment")
-                }
-              }}>
-                Confirm Receive
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+            <Button className="w-full" onClick={async () => {
+              try {
+                await api.warehouse.receive(receiveForm.stationId, { shipmentId: receiveForm.shipmentId })
+                toast.success("Shipment received at warehouse")
+                setReceiveOpen(false)
+                setReceiveForm({ stationId: "", shipmentId: "" })
+                loadData()
+              } catch (err: any) {
+                toast.error(err.message || "Failed to receive shipment")
+              }
+            }}>
+              Confirm Receive
+            </Button>
+          </div>
+        </SheetContent>
+      </Sheet>
 
-      {/* Filter */}
-      <div className="mt-6 flex gap-2 flex-wrap">
-        {["", "RECEIVED", "WEIGHED", "LABELED", "SHELVED", "CONSOLIDATED", "RELEASED"].map((f) => (
-          <Button
-            key={f}
-            variant={filter === f ? "default" : "outline"}
-            size="sm"
-            onClick={() => { setFilter(f); setTimeout(loadData, 0) }}
-          >
-            {f || "All"}
-          </Button>
-        ))}
-      </div>
-
-      {/* Shipments Table */}
-      <Card className="mt-4">
-        <CardHeader>
-          <CardTitle>Warehouse Inventory</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <div className="space-y-2">
-              {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
-            </div>
-          ) : shipments.length === 0 ? (
-            <p className="py-8 text-center text-muted-foreground">No shipments in warehouse</p>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b text-left text-muted-foreground">
-                    <th className="pb-2 pr-2"></th>
-                    <th className="pb-2 pr-4 font-medium">Tracking #</th>
-                    <th className="pb-2 pr-4 font-medium">Shelf/Bin</th>
-                    <th className="pb-2 pr-4 font-medium">Weight</th>
-                    <th className="pb-2 pr-4 font-medium">Route</th>
-                    <th className="pb-2 pr-4 font-medium">Status</th>
-                    <th className="pb-2 pr-4 font-medium">Received</th>
-                    <th className="pb-2 font-medium">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {shipments.map((s: any) => (
-                    <tr key={s.id} className="border-b last:border-0">
-                      <td className="py-3 pr-2">
-                        <input
-                          type="checkbox"
-                          checked={selectedIds.includes(s.id)}
-                          onChange={() => toggleSelect(s.id)}
-                          className="size-4 rounded border-muted"
-                        />
-                      </td>
-                      <td className="py-3 pr-4 font-medium">{s.trackingNumber || s.id.slice(0, 8)}</td>
-                      <td className="py-3 pr-4">{s.shelfBinLocation || s.shelfBin || "—"}</td>
-                      <td className="py-3 pr-4">{s.actualWeightKg ? `${s.actualWeightKg} kg` : "—"}</td>
-                      <td className="py-3 pr-4">{s.fromAddress?.city} → {s.toAddress?.city}</td>
-                      <td className="py-3 pr-4">
-                        <Badge className={statusColors[s.status] || "bg-muted text-muted-foreground"} variant="secondary">
-                          {s.status?.replace(/_/g, " ")}
-                        </Badge>
-                      </td>
-                      <td className="py-3 pr-4 text-muted-foreground">{s.receivedAt ? new Date(s.receivedAt).toLocaleDateString() : "—"}</td>
-                      <td className="py-3">
-                        <div className="flex flex-wrap gap-1">
-                          {s.status === "RECEIVED" && (
-                            <Button size="sm" variant="outline" onClick={() => handleAction("verify-weigh", s)}>
-                              <HugeiconsIcon icon={ScaleIcon} className="size-3 mr-1" />
-                              Weigh
-                            </Button>
-                          )}
-                          {s.status === "WEIGHED" && (
-                            <Button size="sm" variant="outline" onClick={() => handleAction("label", s)}>
-                              <HugeiconsIcon icon={Tag01Icon} className="size-3 mr-1" />
-                              Label
-                            </Button>
-                          )}
-                          {s.status === "LABELED" && (
-                            <Button size="sm" variant="outline" onClick={() => setShelfDialog(s)}>
-                              <HugeiconsIcon icon={Bookshelf01Icon} className="size-3 mr-1" />
-                              Shelve
-                            </Button>
-                          )}
-                          {(s.status === "SHELVED" || s.status === "CONSOLIDATED") && (
-                            <Button size="sm" variant="outline" onClick={() => handleAction("release", s)}>
-                              <HugeiconsIcon icon={SendIcon} className="size-3 mr-1" />
-                              Release
-                            </Button>
-                          )}
-                          <Button size="sm" variant="ghost" onClick={() => loadHistory(s)}>
-                            <HugeiconsIcon icon={Clock01Icon} className="size-3 mr-1" />
-                            History
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Shelf-Bin Assignment Dialog */}
-      <Dialog open={!!shelfDialog} onOpenChange={(v) => !v && setShelfDialog(null)}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
+      {/* Shelf-Bin Assignment Sheet */}
+      <Sheet open={!!shelfSheet} onOpenChange={(v) => !v && setShelfSheet(null)}>
+        <SheetContent side="right" className="w-full sm:max-w-sm overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle className="flex items-center gap-2">
               <HugeiconsIcon icon={Bookshelf01Icon} className="size-5 text-primary" />
               Assign Shelf & Bin
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
+            </SheetTitle>
+            <SheetDescription>Assign a storage location for this shipment</SheetDescription>
+          </SheetHeader>
+          <div className="space-y-4 px-4 pb-6">
             <div className="text-sm text-muted-foreground">
-              Shipment: <span className="font-medium">{shelfDialog?.trackingNumber}</span>
+              Shipment: <span className="font-medium text-foreground">{shelfSheet?.trackingNumber}</span>
             </div>
             <div className="grid gap-2">
               <Label>Shelf/Bin Location <span className="text-destructive">*</span></Label>
@@ -324,19 +366,20 @@ export default function WarehousePage() {
               Assign Location
             </Button>
           </div>
-        </DialogContent>
-      </Dialog>
+        </SheetContent>
+      </Sheet>
 
-      {/* Consolidate Confirmation Dialog */}
-      <Dialog open={consolidateDialog} onOpenChange={setConsolidateDialog}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
+      {/* Consolidate Sheet */}
+      <Sheet open={consolidateOpen} onOpenChange={setConsolidateOpen}>
+        <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle className="flex items-center gap-2">
               <HugeiconsIcon icon={LayersIcon} className="size-5 text-primary" />
               Consolidate Shipments
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
+            </SheetTitle>
+            <SheetDescription>Group selected shipments into a single batch</SheetDescription>
+          </SheetHeader>
+          <div className="space-y-4 px-4 pb-6">
             <div className="text-sm text-muted-foreground">
               {selectedIds.length} shipment(s) selected for consolidation. This will group them into a single batch for outbound dispatch.
             </div>
@@ -352,19 +395,20 @@ export default function WarehousePage() {
               Confirm Consolidation
             </Button>
           </div>
-        </DialogContent>
-      </Dialog>
+        </SheetContent>
+      </Sheet>
 
-      {/* Movement History Dialog */}
-      <Dialog open={!!historyDialog} onOpenChange={(v) => !v && setHistoryDialog(null)}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
+      {/* Movement History Sheet */}
+      <Sheet open={!!historySheet} onOpenChange={(v) => !v && setHistorySheet(null)}>
+        <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle className="flex items-center gap-2">
               <HugeiconsIcon icon={Clock01Icon} className="size-5 text-primary" />
               Movement History
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-2 max-h-[400px] overflow-y-auto">
+            </SheetTitle>
+            <SheetDescription>Tracking events for {historySheet?.trackingNumber}</SheetDescription>
+          </SheetHeader>
+          <div className="space-y-2 px-4 pb-6 max-h-[60vh] overflow-y-auto">
             {history.length === 0 ? (
               <p className="py-4 text-center text-muted-foreground">No tracking events found</p>
             ) : (
@@ -374,7 +418,7 @@ export default function WarehousePage() {
                     <HugeiconsIcon icon={Package02Icon} className="size-4 text-primary" />
                   </div>
                   <div className="flex-1">
-                    <div className="text-sm font-medium">{evt.event?.replace(/_/g, " ") || evt.status?.replace(/_/g, " ")}</div>
+                    <div className="text-sm font-medium">{evt.event?.replace(/_/g, " ").toLowerCase() || evt.status?.replace(/_/g, " ").toLowerCase()}</div>
                     {evt.location && <div className="text-xs text-muted-foreground">{evt.location}</div>}
                     {evt.description && <div className="text-xs text-muted-foreground">{evt.description}</div>}
                     <div className="text-xs text-muted-foreground mt-1">
@@ -385,8 +429,8 @@ export default function WarehousePage() {
               ))
             )}
           </div>
-        </DialogContent>
-      </Dialog>
+        </SheetContent>
+      </Sheet>
     </DashboardLayout>
   )
 }
