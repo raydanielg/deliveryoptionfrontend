@@ -18,7 +18,7 @@ import {
   SparklesIcon, AlertCircleIcon, BoxIcon, CalculatorIcon,
   Shield01Icon, Clock01Icon, WeightScaleIcon,
   File02Icon, ShoppingBag01Icon, FactoryIcon, LeafIcon,
-  WineIcon, Settings01Icon, ContainerIcon,
+  ShieldAlertIcon, Settings01Icon, ContainerIcon,
 } from "@hugeicons/core-free-icons"
 import { PageHeader } from "@/components/shared/page-header"
 import { api } from "@/lib/api"
@@ -35,7 +35,7 @@ const CARGO_TYPES: { value: string; label: string; icon: IconSvgElement; descrip
   { value: "ECOMMERCE_ORDER", label: "E-commerce Order", icon: ShoppingBag01Icon, description: "Online store orders" },
   { value: "PALLET", label: "Pallet", icon: ContainerIcon, description: "Palletized goods" },
   { value: "PERISHABLE_CARGO", label: "Perishable Cargo", icon: LeafIcon, description: "Food, flowers, temperature-sensitive" },
-  { value: "FRAGILE_CARGO", label: "Fragile Cargo", icon: WineIcon, description: "Glass, electronics, breakables" },
+  { value: "FRAGILE_CARGO", label: "Fragile Cargo", icon: ShieldAlertIcon, description: "Glass, electronics, breakables" },
   { value: "MACHINERY_EQUIPMENT", label: "Machinery / Equipment", icon: Settings01Icon, description: "Heavy equipment and machinery" },
   { value: "OTHER", label: "Other", icon: BoxIcon, description: "Any other type of cargo" },
 ]
