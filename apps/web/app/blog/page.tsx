@@ -39,7 +39,8 @@ export default function BlogPage() {
       params.set("page", String(page))
       params.set("limit", "9")
       const res = await api.blog.listPublic(params.toString())
-      const allPosts = res.data || []
+      const rawPosts = res.data?.posts || res.data
+      const allPosts = Array.isArray(rawPosts) ? rawPosts : []
       if (page === 1 && !search && !activeCategory) {
         const feat = allPosts.find((p: any) => p.isFeatured) || allPosts[0]
         setFeatured(feat)

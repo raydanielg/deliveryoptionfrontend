@@ -47,8 +47,14 @@ export default function OperationsPage() {
         ])
         if (shipStats.status === "fulfilled") setShipmentStats(shipStats.value.data)
         if (orderStatsRes.status === "fulfilled") setOrderStats(orderStatsRes.value.data)
-        if (shipList.status === "fulfilled") setRecentShipments(shipList.value.data || [])
-        if (orderList.status === "fulfilled") setRecentOrders(orderList.value.data || [])
+        if (shipList.status === "fulfilled") {
+          const rawShip = shipList.value.data?.shipments || shipList.value.data
+          setRecentShipments(Array.isArray(rawShip) ? rawShip : [])
+        }
+        if (orderList.status === "fulfilled") {
+          const rawOrd = orderList.value.data?.orders || orderList.value.data
+          setRecentOrders(Array.isArray(rawOrd) ? rawOrd : [])
+        }
       } catch (err) {
         console.error(err)
       } finally {

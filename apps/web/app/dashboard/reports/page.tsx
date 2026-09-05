@@ -101,7 +101,10 @@ export default function ReportsPage() {
         if (excStatsRes.status === "fulfilled") setExcStats(excStatsRes.value.data)
         if (overviewRes.status === "fulfilled") setOverviewReport(overviewRes.value.data)
         if (revenueRes.status === "fulfilled") setRevenueReport(revenueRes.value.data)
-        if (routesRes.status === "fulfilled") setTopRoutes(routesRes.value.data || [])
+        if (routesRes.status === "fulfilled") {
+          const rawRoutes = routesRes.value.data?.routes || routesRes.value.data
+          setTopRoutes(Array.isArray(rawRoutes) ? rawRoutes : [])
+        }
       } catch {
       } finally {
         if (!cancelled) setLoading(false)

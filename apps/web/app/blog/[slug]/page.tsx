@@ -30,7 +30,9 @@ export default function BlogDetailPage() {
       if (res.data?.category?.slug) {
         try {
           const relRes = await api.blog.listPublic(`category=${res.data.category.slug}&limit=4`)
-          setRelated((relRes.data || []).filter((p: any) => p.id !== res.data.id).slice(0, 3))
+          const rawRel = relRes.data?.posts || relRes.data
+          const relPosts = Array.isArray(rawRel) ? rawRel : []
+          setRelated(relPosts.filter((p: any) => p.id !== res.data.id).slice(0, 3))
         } catch {}
       }
     } catch {
