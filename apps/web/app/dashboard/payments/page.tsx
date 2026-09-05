@@ -31,10 +31,14 @@ export default function PaymentsPage() {
         api.refunds.list().catch(() => ({ data: [] })),
         api.paymentGateways.list().catch(() => ({ data: [] })),
       ])
-      setPayments(payRes.data || [])
-      setInvoices(invRes.data || [])
-      setRefunds(refRes.data || [])
-      setGateways(gwRes.data || [])
+      const rawPays = payRes.data?.payments || payRes.data
+      setPayments(Array.isArray(rawPays) ? rawPays : [])
+      const rawInvs = invRes.data?.invoices || invRes.data
+      setInvoices(Array.isArray(rawInvs) ? rawInvs : [])
+      const rawRefs = refRes.data?.refunds || refRes.data
+      setRefunds(Array.isArray(rawRefs) ? rawRefs : [])
+      const rawGws = gwRes.data?.gateways || gwRes.data
+      setGateways(Array.isArray(rawGws) ? rawGws : [])
     } catch {
     } finally {
       setLoading(false)

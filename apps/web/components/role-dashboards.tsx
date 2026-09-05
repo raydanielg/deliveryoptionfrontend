@@ -536,7 +536,7 @@ export function DriverDashboard() {
 
   React.useEffect(() => {
     api.shipments.list("assignedToMe=true&status=ASSIGNED,OUT_FOR_DELIVERY,PICKED_UP,ACCEPTED,OUT_FOR_PICKUP,ONGOING")
-      .then((res) => { setAssignments(res.data?.shipments || res.data || []); setLoading(false) })
+      .then((res) => { const d = res.data?.shipments || res.data; setAssignments(Array.isArray(d) ? d : []); setLoading(false) })
       .catch(() => setLoading(false))
   }, [])
 
@@ -828,7 +828,7 @@ export function CustomsDashboard() {
 
   React.useEffect(() => {
     api.shipments.list("category=INTERNATIONAL&status=CUSTOMS_REVIEW,CUSTOMS_HOLD")
-      .then((res) => { setShipments(res.data?.shipments || res.data || []); setLoading(false) })
+      .then((res) => { const d = res.data?.shipments || res.data; setShipments(Array.isArray(d) ? d : []); setLoading(false) })
       .catch(() => setLoading(false))
   }, [])
 

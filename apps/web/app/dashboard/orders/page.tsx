@@ -83,8 +83,9 @@ export default function OrdersPage() {
         api.orders.stats(),
       ])
       if (listRes.status === "fulfilled") {
-        setOrders(listRes.value.data || [])
-        setTotal(listRes.value.pagination?.total || listRes.value.total || 0)
+        const rawOrders = listRes.value.data?.orders || listRes.value.data
+        setOrders(Array.isArray(rawOrders) ? rawOrders : [])
+        setTotal(listRes.value.data?.pagination?.total || listRes.value.pagination?.total || listRes.value.total || 0)
       }
       if (statsRes.status === "fulfilled") setStats(statsRes.value.data)
     } catch (err) {

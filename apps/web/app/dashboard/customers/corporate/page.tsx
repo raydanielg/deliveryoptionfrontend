@@ -46,7 +46,8 @@ export default function CorporateAccountsPage() {
   async function load() {
     try {
       const result = await api.corporateAccounts.list()
-      setAccounts(result.data || [])
+      const rawAccounts = result.data?.accounts || result.data
+      setAccounts(Array.isArray(rawAccounts) ? rawAccounts : [])
     } catch {
       setAccounts([])
     } finally {

@@ -84,8 +84,9 @@ export default function UsersPage() {
       params.set("page", String(page))
       params.set("limit", "20")
       const res = await api.users.list(params.toString())
-      setUsers(res.data || [])
-      setTotalPages(res.pagination?.totalPages || 1)
+      const rawUsers = res.data?.users || res.data
+      setUsers(Array.isArray(rawUsers) ? rawUsers : [])
+      setTotalPages(res.data?.pagination?.totalPages || res.pagination?.totalPages || 1)
     } catch (err) {
       console.error(err)
     } finally {

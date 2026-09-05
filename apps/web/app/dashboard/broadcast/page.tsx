@@ -80,7 +80,8 @@ export default function BroadcastPage() {
   async function loadUsers() {
     try {
       const res = await api.users.list("limit=500")
-      setUsers(res.data || [])
+      const rawUsers = res.data?.users || res.data
+      setUsers(Array.isArray(rawUsers) ? rawUsers : [])
     } catch (err: any) {
       toast.error(err.message || "Failed to load users")
     } finally {

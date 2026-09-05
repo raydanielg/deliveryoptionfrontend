@@ -42,7 +42,8 @@ export default function QuotesPage() {
     async function load() {
       try {
         const result = await api.quotes.list()
-        setQuotes(result.data || [])
+        const rawQuotes = result.data?.quotes || result.data
+      setQuotes(Array.isArray(rawQuotes) ? rawQuotes : [])
       } catch {
       } finally {
         setLoading(false)

@@ -42,7 +42,8 @@ export default function ReturnsPage() {
   async function load() {
     try {
       const result = await api.exceptions.list("type=RETURN_REQUEST")
-      setReturns(result.data || [])
+      const rawReturns = result.data?.exceptions || result.data
+      setReturns(Array.isArray(rawReturns) ? rawReturns : [])
     } catch {
       setReturns([])
     } finally {

@@ -56,10 +56,14 @@ export default function ParcelFaresPage() {
         api.parcelCategories.list(),
         api.parcelWeights.list(),
       ])
-      setFares(faresRes.data || [])
-      setFareWeights(fwRes.data || [])
-      setCategories(catRes.data || [])
-      setWeights(wRes.data || [])
+      const rawFares = faresRes.data?.fares || faresRes.data
+      setFares(Array.isArray(rawFares) ? rawFares : [])
+      const rawFW = fwRes.data?.fareWeights || fwRes.data
+      setFareWeights(Array.isArray(rawFW) ? rawFW : [])
+      const rawCats = catRes.data?.categories || catRes.data
+      setCategories(Array.isArray(rawCats) ? rawCats : [])
+      const rawWts = wRes.data?.weights || wRes.data
+      setWeights(Array.isArray(rawWts) ? rawWts : [])
     } catch {
     } finally {
       setLoading(false)

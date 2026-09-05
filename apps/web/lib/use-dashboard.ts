@@ -79,8 +79,9 @@ export function useShipmentVolume(range: string) {
         const res = await api.shipments.list(`?page=1&limit=100&range=${range}`)
         if (!cancelled) {
           const shipments = res.data?.shipments || res.data || []
+          const safeShipments = Array.isArray(shipments) ? shipments : []
           const grouped: Record<string, { shipments: number; delivered: number }> = {}
-          for (const s of shipments) {
+          for (const s of safeShipments) {
             const d = (s.createdAt || s.created_at || "").slice(0, 10)
             if (!d) continue
             if (!grouped[d]) grouped[d] = { shipments: 0, delivered: 0 }
@@ -118,8 +119,9 @@ export function useRoutePerformance() {
         const res = await api.shipments.list("?page=1&limit=500")
         if (!cancelled) {
           const shipments = res.data?.shipments || res.data || []
+          const safeShipments = Array.isArray(shipments) ? shipments : []
           const routeMap: Record<string, { total: number; delivered: number; times: number[] }> = {}
-          for (const s of shipments) {
+          for (const s of safeShipments) {
             const from = s.fromAddress?.city || s.fromAddress?.address || "Unknown"
             const to = s.toAddress?.city || s.toAddress?.address || "Unknown"
             const route = `${from} → ${to}`
@@ -166,7 +168,8 @@ export function useRecentShipments(limit = 8) {
         const res = await api.shipments.list(`?page=1&limit=${limit}`)
         if (!cancelled) {
           const shipments = res.data?.shipments || res.data || []
-          const mapped = shipments.map((s: any) => ({
+          const safeShipments = Array.isArray(shipments) ? shipments : []
+          const mapped = safeShipments.map((s: any) => ({
             id: s.id,
             trackingNumber: s.trackingNumber,
             status: s.status,

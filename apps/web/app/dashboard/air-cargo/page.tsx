@@ -61,9 +61,11 @@ export default function AirCargoPage() {
         api.airCargo.stats(),
         api.stations.list("type=AIRPORT_CARGO&isActive=true"),
       ])
-      setShipments(listRes.data || [])
+      const rawShipments = listRes.data?.shipments || listRes.data
+      setShipments(Array.isArray(rawShipments) ? rawShipments : [])
       setStats(statsRes.data)
-      setAirports(stRes.data || [])
+      const rawAirports = stRes.data?.stations || stRes.data
+      setAirports(Array.isArray(rawAirports) ? rawAirports : [])
     } catch (err: any) {
       toast.error(err.message || "Failed to load air cargo data")
     } finally {

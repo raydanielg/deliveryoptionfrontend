@@ -55,11 +55,14 @@ export default function AirCargoDispatchPage() {
         api.manifests.list(params.toString()),
         api.stations.list("type=AIRPORT_CARGO&isActive=true"),
       ])
-      const airManifests = (mRes.data || []).filter((m: any) =>
+      const rawManifests = mRes.data?.manifests || mRes.data
+      const allManifests = Array.isArray(rawManifests) ? rawManifests : []
+      const airManifests = allManifests.filter((m: any) =>
         m.type === "AIR_CARGO" || m.manifestNumber?.startsWith("AIR") || m.transportMode === "AIR"
       )
       setManifests(airManifests)
-      setAirports(stRes.data || [])
+      const rawAirports = stRes.data?.stations || stRes.data
+      setAirports(Array.isArray(rawAirports) ? rawAirports : [])
     } catch (err: any) {
       toast.error(err.message || "Failed to load flight dispatch data")
     } finally {

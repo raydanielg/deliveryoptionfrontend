@@ -37,7 +37,8 @@ export default function CustomsPage() {
   async function load() {
     try {
       const result = await api.customs.get("")
-      setCustoms(result.data || [])
+      const rawCustoms = result.data?.items || result.data
+      setCustoms(Array.isArray(rawCustoms) ? rawCustoms : [])
     } catch {
       setCustoms([])
     } finally {

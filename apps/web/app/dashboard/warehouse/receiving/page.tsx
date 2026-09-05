@@ -37,9 +37,11 @@ export default function WarehouseReceivingPage() {
         api.warehouse.stats(),
         api.stations.list("type=WAREHOUSE&isActive=true"),
       ])
-      setShipments(listRes.data || [])
+      const rawShipments = listRes.data?.shipments || listRes.data
+      setShipments(Array.isArray(rawShipments) ? rawShipments : [])
       setStats(statsRes.data)
-      setStations(stRes.data || [])
+      const rawStations = stRes.data?.stations || stRes.data
+      setStations(Array.isArray(rawStations) ? rawStations : [])
     } catch (err: any) {
       toast.error(err.message || "Failed to load receiving data")
     } finally {

@@ -34,7 +34,8 @@ export default function RefundsPage() {
   async function load() {
     try {
       const result = await api.refunds.list()
-      setRefunds(result.data || [])
+      const rawRefunds = result.data?.refunds || result.data
+      setRefunds(Array.isArray(rawRefunds) ? rawRefunds : [])
     } catch {
       setRefunds([])
     } finally {

@@ -37,7 +37,8 @@ export default function TicketsPage() {
   async function load() {
     try {
       const result = await api.tickets.list()
-      setTickets(result.data || [])
+      const rawTickets = result.data?.tickets || result.data
+      setTickets(Array.isArray(rawTickets) ? rawTickets : [])
     } catch {
       setTickets([])
     } finally {

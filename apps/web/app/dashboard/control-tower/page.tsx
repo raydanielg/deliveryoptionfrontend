@@ -38,13 +38,15 @@ export default function ControlTowerPage() {
         api.exceptions.list("?limit=10"),
       ])
       setCapacity(capRes.data)
-      setAlerts(alertsRes.data || [])
+      const rawAlerts = alertsRes.data?.alerts || alertsRes.data
+      setAlerts(Array.isArray(rawAlerts) ? rawAlerts : [])
       setSgrStats(sgrRes.data)
       setAirCargoStats(airRes.data)
       setWarehouseStats(whRes.data)
       setShipmentStats(shipRes.data)
       setExceptionStats(excRes.data)
-      setExceptions(excListRes.data || [])
+      const rawExceptions = excListRes.data?.exceptions || excListRes.data
+      setExceptions(Array.isArray(rawExceptions) ? rawExceptions : [])
     } catch (err: any) {
       toast.error(err.message || "Failed to load control tower data")
     } finally {

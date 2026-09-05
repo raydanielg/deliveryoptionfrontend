@@ -52,7 +52,8 @@ export default function WarehousePage() {
         api.warehouse.list(params),
         api.warehouse.stats(),
       ])
-      setShipments(listRes.data || [])
+      const rawShipments = listRes.data?.shipments || listRes.data
+      setShipments(Array.isArray(rawShipments) ? rawShipments : [])
       setStats(statsRes.data)
     } catch (err: any) {
       toast.error(err.message || "Failed to load warehouse shipments")

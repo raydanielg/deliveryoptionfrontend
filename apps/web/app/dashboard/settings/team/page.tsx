@@ -54,7 +54,8 @@ export default function TeamPage() {
         api.users.list(),
         api.users.stats(),
       ])
-      setUsers(usersRes.data || [])
+      const rawUsers = usersRes.data?.users || usersRes.data
+      setUsers(Array.isArray(rawUsers) ? rawUsers : [])
       setStats(statsRes.data)
     } catch (err: any) {
       toast.error(err.message || "Failed to load team members")

@@ -32,7 +32,8 @@ export default function InvoicesPage() {
   async function load() {
     try {
       const result = await api.invoices.list()
-      setInvoices(result.data || [])
+      const rawInvoices = result.data?.invoices || result.data
+      setInvoices(Array.isArray(rawInvoices) ? rawInvoices : [])
     } catch {
       setInvoices([])
     } finally {

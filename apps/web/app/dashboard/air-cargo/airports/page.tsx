@@ -30,7 +30,8 @@ export default function AirportsPage() {
         api.stations.list("type=AIRPORT_CARGO"),
         api.stations.stats(),
       ])
-      setAirports(stRes.data || [])
+      const rawAirports = stRes.data?.stations || stRes.data
+      setAirports(Array.isArray(rawAirports) ? rawAirports : [])
       setStats(statsRes.data)
     } catch (err: any) {
       toast.error(err.message || "Failed to load airports")

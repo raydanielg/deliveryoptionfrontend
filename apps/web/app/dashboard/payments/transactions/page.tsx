@@ -31,7 +31,8 @@ export default function TransactionsPage() {
   async function load() {
     try {
       const result = await api.payments.list()
-      setPayments(result.data || [])
+      const rawPayments = result.data?.payments || result.data
+      setPayments(Array.isArray(rawPayments) ? rawPayments : [])
     } catch {
       setPayments([])
     } finally {

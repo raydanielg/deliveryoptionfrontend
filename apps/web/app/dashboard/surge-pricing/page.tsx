@@ -39,7 +39,8 @@ export default function SurgePricingPage() {
   async function loadSurges() {
     try {
       const result = await api.surgePricing.list()
-      setSurges(result.data || [])
+      const rawSurges = result.data?.surges || result.data
+      setSurges(Array.isArray(rawSurges) ? rawSurges : [])
     } catch {
     } finally {
       setLoading(false)

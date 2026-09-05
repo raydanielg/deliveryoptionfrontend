@@ -52,8 +52,10 @@ export default function DriversPage() {
         api.drivers.list(),
         api.carriers.list(),
       ])
-      setDrivers(driversRes.data || [])
-      setCarriers(carriersRes.data || [])
+      const rawDrivers = driversRes.data?.drivers || driversRes.data
+      setDrivers(Array.isArray(rawDrivers) ? rawDrivers : [])
+      const rawCarriers = carriersRes.data?.carriers || carriersRes.data
+      setCarriers(Array.isArray(rawCarriers) ? rawCarriers : [])
     } catch {
     } finally {
       setLoading(false)

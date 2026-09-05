@@ -47,7 +47,10 @@ export function DashboardLayout({ children, breadcrumbs }: DashboardLayoutProps)
 
   React.useEffect(() => {
     api.notifications.list()
-      .then((res) => setNotifications(res.data || []))
+      .then((res) => {
+        const raw = res.data?.notifications || res.data
+        setNotifications(Array.isArray(raw) ? raw : [])
+      })
       .catch(() => {})
   }, [])
 

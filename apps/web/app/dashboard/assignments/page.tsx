@@ -38,7 +38,9 @@ export default function AssignmentsPage() {
       const params = new URLSearchParams()
       if (statusFilter !== "ALL") params.set("status", statusFilter)
       const result = await api.shipments.list(params.toString())
-      const assigned = (result.data || []).filter((s: any) => s.driverId || s.driver)
+      const rawShipments = result.data?.shipments || result.data
+      const allShipments = Array.isArray(rawShipments) ? rawShipments : []
+      const assigned = allShipments.filter((s: any) => s.driverId || s.driver)
       setShipments(assigned)
     } catch (err) {
       console.error(err)

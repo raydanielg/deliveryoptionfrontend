@@ -31,7 +31,8 @@ export default function SurchargesPage() {
     async function load() {
       try {
         const result = await api.pricing.listSurcharges()
-        setSurcharges(result.data || [])
+        const rawSurcharges = result.data?.surcharges || result.data
+      setSurcharges(Array.isArray(rawSurcharges) ? rawSurcharges : [])
       } catch {
       } finally {
         setLoading(false)

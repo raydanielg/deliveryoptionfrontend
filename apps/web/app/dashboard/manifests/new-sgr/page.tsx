@@ -29,7 +29,8 @@ export default function NewSGRManifestPage() {
     setSearching(true)
     try {
       const result = await api.shipments.list("status=BOOKED&limit=50")
-      setShipments(result.data || [])
+      const rawShipments = result.data?.shipments || result.data
+      setShipments(Array.isArray(rawShipments) ? rawShipments : [])
     } catch (err) {
       toast.error("Failed to load shipments")
     } finally {

@@ -33,7 +33,8 @@ export default function CustomersPage() {
   async function load() {
     try {
       const result = await api.customers.list()
-      setCustomers(result.data || [])
+      const rawCustomers = result.data?.customers || result.data
+      setCustomers(Array.isArray(rawCustomers) ? rawCustomers : [])
     } catch {
       setCustomers([])
     } finally {

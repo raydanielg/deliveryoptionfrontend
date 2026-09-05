@@ -46,7 +46,8 @@ export default function ExceptionsPage() {
         api.exceptions.list(),
         api.exceptions.stats(),
       ])
-      setExceptions(excRes.data || [])
+      const rawExceptions = excRes.data?.exceptions || excRes.data
+      setExceptions(Array.isArray(rawExceptions) ? rawExceptions : [])
       setStats(statsRes.data)
     } catch {
       setExceptions([])

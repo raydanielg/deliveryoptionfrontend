@@ -62,9 +62,11 @@ export default function SGRPage() {
         api.stations.list("type=SGR_STATION&isActive=true"),
         api.capacity.stations(),
       ])
-      setShipments(listRes.data || [])
+      const rawShipments = listRes.data?.shipments || listRes.data
+      setShipments(Array.isArray(rawShipments) ? rawShipments : [])
       setStats(statsRes.data)
-      setStations(stRes.data || [])
+      const rawStations = stRes.data?.stations || stRes.data
+      setStations(Array.isArray(rawStations) ? rawStations : [])
       setCapacity(capRes.data)
     } catch (err: any) {
       toast.error(err.message || "Failed to load SGR data")

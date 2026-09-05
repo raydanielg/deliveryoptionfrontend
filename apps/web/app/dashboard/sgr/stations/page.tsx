@@ -31,7 +31,8 @@ export default function SGRStationsPage() {
         api.stations.list("type=SGR_STATION"),
         api.stations.stats(),
       ])
-      setStations(stRes.data || [])
+      const rawStations = stRes.data?.stations || stRes.data
+      setStations(Array.isArray(rawStations) ? rawStations : [])
       setStats(statsRes.data)
     } catch (err: any) {
       toast.error(err.message || "Failed to load stations")

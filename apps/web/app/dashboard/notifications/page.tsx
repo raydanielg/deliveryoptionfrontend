@@ -70,7 +70,8 @@ export default function NotificationsPage() {
     if (!isAdmin) {
       try {
         const res = await api.notifications.list()
-        setUserNotifs(res.data || [])
+        const rawNotifs = res.data?.notifications || res.data
+        setUserNotifs(Array.isArray(rawNotifs) ? rawNotifs : [])
       } catch {
       } finally {
         setUserLoading(false)
@@ -88,7 +89,8 @@ export default function NotificationsPage() {
         api.notificationService.logs(params.toString()),
         api.notificationService.stats(),
       ])
-      setLogs(logsRes.data || [])
+      const rawLogs = logsRes.data?.logs || logsRes.data
+      setLogs(Array.isArray(rawLogs) ? rawLogs : [])
       setStats(statsRes.data)
     } catch (err: any) {
       toast.error(err.message || "Failed to load notification logs")

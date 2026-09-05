@@ -59,7 +59,8 @@ export default function BlogPage() {
   async function loadCategories() {
     try {
       const res = await api.blog.categories.list()
-      setCategories(res.data || [])
+      const rawCats = res.data?.categories || res.data
+      setCategories(Array.isArray(rawCats) ? rawCats : [])
     } catch {}
   }
 

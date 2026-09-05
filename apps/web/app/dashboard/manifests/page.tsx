@@ -53,8 +53,9 @@ export default function ManifestsPage() {
       params.set("limit", String(limit))
       if (statusFilter !== "ALL") params.set("status", statusFilter)
       const result = await api.manifests.list(params.toString())
-      setManifests(result.data || [])
-      setTotal(result.pagination?.total || result.total || 0)
+      const rawManifests = result.data?.manifests || result.data
+      setManifests(Array.isArray(rawManifests) ? rawManifests : [])
+      setTotal(result.data?.pagination?.total || result.pagination?.total || result.total || 0)
     } catch (err) {
       console.error(err)
     } finally {

@@ -33,7 +33,8 @@ export default function DocumentsPage() {
   async function load() {
     try {
       const result = await api.documents.list()
-      setDocuments(result.data || [])
+      const rawDocs = result.data?.documents || result.data
+      setDocuments(Array.isArray(rawDocs) ? rawDocs : [])
     } catch {
       setDocuments([])
     } finally {

@@ -37,8 +37,10 @@ export default function WarehouseConsolidationPage() {
         api.warehouse.list("?status=CONSOLIDATED"),
         api.warehouse.stats(),
       ])
-      setShipments(availRes.data || [])
-      setConsolidated(consRes.data || [])
+      const rawAvail = availRes.data?.shipments || availRes.data
+      setShipments(Array.isArray(rawAvail) ? rawAvail : [])
+      const rawCons = consRes.data?.shipments || consRes.data
+      setConsolidated(Array.isArray(rawCons) ? rawCons : [])
       setStats(statsRes.data)
     } catch (err: any) {
       toast.error(err.message || "Failed to load consolidation data")

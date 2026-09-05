@@ -59,8 +59,9 @@ export default function PackagesPage() {
         api.shipments.list(params.toString()),
         api.shipments.stats(),
       ])
-      setShipments(listRes.data || [])
-      setTotal(listRes.pagination?.total || listRes.total || 0)
+      const rawShipments = listRes.data?.shipments || listRes.data
+      setShipments(Array.isArray(rawShipments) ? rawShipments : [])
+      setTotal(listRes.data?.pagination?.total || listRes.pagination?.total || listRes.total || 0)
       setStats(statsRes.data)
     } catch (err) {
       console.error(err)

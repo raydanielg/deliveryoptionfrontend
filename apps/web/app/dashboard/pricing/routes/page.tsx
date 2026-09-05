@@ -40,7 +40,8 @@ export default function PricingRoutesPage() {
     async function load() {
       try {
         const result = await api.geography.listRoutes()
-        setRoutes(result.data || [])
+        const rawRoutes = result.data?.routes || result.data
+      setRoutes(Array.isArray(rawRoutes) ? rawRoutes : [])
       } catch {
       } finally {
         setLoading(false)

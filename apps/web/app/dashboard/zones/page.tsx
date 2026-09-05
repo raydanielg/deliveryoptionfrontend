@@ -42,8 +42,10 @@ export default function ZonesPage() {
         api.zones.list(),
         api.geography.listCountries().catch(() => ({ data: [] })),
       ])
-      setZones(zonesRes.data || [])
-      setCountries(geoRes.data || [])
+      const rawZones = zonesRes.data?.zones || zonesRes.data
+      setZones(Array.isArray(rawZones) ? rawZones : [])
+      const rawCountries = geoRes.data?.countries || geoRes.data
+      setCountries(Array.isArray(rawCountries) ? rawCountries : [])
     } catch {
     } finally {
       setLoading(false)

@@ -66,8 +66,10 @@ export default function VehiclesPage() {
         api.vehicles.list(),
         api.carriers.list(),
       ])
-      setVehicles(vehiclesRes.data || [])
-      setCarriers(carriersRes.data || [])
+      const rawVehicles = vehiclesRes.data?.vehicles || vehiclesRes.data
+      setVehicles(Array.isArray(rawVehicles) ? rawVehicles : [])
+      const rawCarriers = carriersRes.data?.carriers || carriersRes.data
+      setCarriers(Array.isArray(rawCarriers) ? rawCarriers : [])
     } catch {
     } finally {
       setLoading(false)

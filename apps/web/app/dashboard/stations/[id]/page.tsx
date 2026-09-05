@@ -28,7 +28,8 @@ export default function StationDetailPage() {
         api.stations.inventory(id),
       ])
       setStation(stationRes.data)
-      setInventory(invRes.data || [])
+      const rawInventory = invRes.data?.items || invRes.data
+      setInventory(Array.isArray(rawInventory) ? rawInventory : [])
     } catch (err: any) {
       toast.error(err.message || "Failed to load station")
     } finally {

@@ -27,8 +27,10 @@ export default function SupportPage() {
         api.tickets.list().catch(() => ({ data: [] })),
         api.ratings.list().catch(() => ({ data: [] })),
       ])
-      setTickets(tickRes.data || [])
-      setRatings(rateRes.data || [])
+      const rawTickets = tickRes.data?.tickets || tickRes.data
+      setTickets(Array.isArray(rawTickets) ? rawTickets : [])
+      const rawRatings = rateRes.data?.ratings || rateRes.data
+      setRatings(Array.isArray(rawRatings) ? rawRatings : [])
     } catch {
     } finally {
       setLoading(false)

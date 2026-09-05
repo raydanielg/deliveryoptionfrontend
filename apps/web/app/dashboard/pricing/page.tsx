@@ -43,7 +43,8 @@ export default function PricingRulesPage() {
   async function loadRules() {
     try {
       const result = await api.pricing.listRules()
-      setRules(result.data || [])
+      const rawRules = result.data?.rules || result.data
+      setRules(Array.isArray(rawRules) ? rawRules : [])
     } catch {
     } finally {
       setLoading(false)

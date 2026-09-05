@@ -33,7 +33,8 @@ export default function PricingZonesPage() {
     async function load() {
       try {
         const result = await api.zones.list()
-        setZones(result.data || [])
+        const rawZones = result.data?.zones || result.data
+        setZones(Array.isArray(rawZones) ? rawZones : [])
       } catch {
       } finally {
         setLoading(false)
@@ -55,7 +56,8 @@ export default function PricingZonesPage() {
   async function loadZones() {
     try {
       const result = await api.zones.list()
-      setZones(result.data || [])
+      const rawZones = result.data?.zones || result.data
+      setZones(Array.isArray(rawZones) ? rawZones : [])
     } catch {
     }
   }

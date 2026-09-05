@@ -31,7 +31,8 @@ export default function ParcelCategoriesPage() {
   async function loadCategories() {
     try {
       const result = await api.parcelCategories.list()
-      setCategories(result.data || [])
+      const rawCategories = result.data?.categories || result.data
+      setCategories(Array.isArray(rawCategories) ? rawCategories : [])
     } catch {
     } finally {
       setLoading(false)

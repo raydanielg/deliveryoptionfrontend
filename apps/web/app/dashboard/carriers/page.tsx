@@ -54,7 +54,8 @@ export default function CarriersPage() {
   async function load() {
     try {
       const result = await api.carriers.list()
-      setCarriers(result.data || [])
+      const rawCarriers = result.data?.carriers || result.data
+      setCarriers(Array.isArray(rawCarriers) ? rawCarriers : [])
     } catch {
     } finally {
       setLoading(false)

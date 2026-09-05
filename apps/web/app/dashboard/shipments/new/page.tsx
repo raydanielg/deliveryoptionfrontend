@@ -173,9 +173,9 @@ export default function NewShipmentPage() {
 
   useEffect(() => {
     if (form.transportMode === "RAIL") {
-      api.stations.list("type=SGR_STATION&isActive=true").then(res => setStations(res.data || [])).catch(() => setStations([]))
+      api.stations.list("type=SGR_STATION&isActive=true").then(res => { const d = res.data?.stations || res.data; setStations(Array.isArray(d) ? d : []) }).catch(() => setStations([]))
     } else if (form.transportMode === "AIR") {
-      api.stations.list("type=AIRPORT_CARGO&isActive=true").then(res => setStations(res.data || [])).catch(() => setStations([]))
+      api.stations.list("type=AIRPORT_CARGO&isActive=true").then(res => { const d = res.data?.stations || res.data; setStations(Array.isArray(d) ? d : []) }).catch(() => setStations([]))
     } else {
       setStations([])
     }

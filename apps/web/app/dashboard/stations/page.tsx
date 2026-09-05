@@ -54,7 +54,8 @@ export default function StationsPage() {
         api.stations.list(),
         api.stations.stats(),
       ])
-      setStations(stationsRes.data || [])
+      const rawStations = stationsRes.data?.stations || stationsRes.data
+      setStations(Array.isArray(rawStations) ? rawStations : [])
       setStats(statsRes.data)
     } catch (err: any) {
       toast.error(err.message || "Failed to load stations")

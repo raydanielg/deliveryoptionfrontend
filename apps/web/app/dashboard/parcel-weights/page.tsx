@@ -35,7 +35,8 @@ export default function ParcelWeightsPage() {
   async function loadWeights() {
     try {
       const result = await api.parcelWeights.list()
-      setWeights(result.data || [])
+      const rawWeights = result.data?.weights || result.data
+      setWeights(Array.isArray(rawWeights) ? rawWeights : [])
     } catch {
     } finally {
       setLoading(false)

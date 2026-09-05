@@ -31,7 +31,8 @@ export default function TrainCapacityPage() {
   async function load() {
     try {
       const res = await api.trainCapacity.list("?limit=100")
-      setTrains(res.data || [])
+      const rawTrains = res.data?.trains || res.data
+      setTrains(Array.isArray(rawTrains) ? rawTrains : [])
     } catch (err: any) {
       toast.error(err.message || "Failed to load trains")
     } finally {

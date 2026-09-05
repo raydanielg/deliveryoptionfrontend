@@ -45,7 +45,8 @@ export default function RatingsPage() {
   async function load() {
     try {
       const result = await api.ratings.list()
-      setRatings(result.data || [])
+      const rawRatings = result.data?.ratings || result.data
+      setRatings(Array.isArray(rawRatings) ? rawRatings : [])
     } catch {
       setRatings([])
     } finally {

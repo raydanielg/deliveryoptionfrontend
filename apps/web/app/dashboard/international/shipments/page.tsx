@@ -33,7 +33,8 @@ export default function IntlShipmentsPage() {
   async function load() {
     try {
       const result = await api.shipments.list("category=INTERNATIONAL")
-      setShipments(result.data || [])
+      const rawShipments = result.data?.shipments || result.data
+      setShipments(Array.isArray(rawShipments) ? rawShipments : [])
     } catch {
       setShipments([])
     } finally {

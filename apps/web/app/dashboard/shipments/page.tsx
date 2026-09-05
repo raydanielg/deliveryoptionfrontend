@@ -54,8 +54,9 @@ export default function ShipmentsPage() {
       params.set("limit", String(limit))
       if (statusFilter !== "ALL") params.set("status", statusFilter)
       const result = await api.shipments.list(params.toString())
-      setShipments(result.data || [])
-      setTotal(result.pagination?.total || result.total || 0)
+      const rawShipments = result.data?.shipments || result.data
+      setShipments(Array.isArray(rawShipments) ? rawShipments : [])
+      setTotal(result.data?.pagination?.total || result.pagination?.total || result.total || 0)
     } catch (err) {
       console.error(err)
     } finally {

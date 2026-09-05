@@ -65,7 +65,8 @@ export default function BlogPage() {
       params.set("page", String(page))
       params.set("limit", "20")
       const res = await api.blog.list(params.toString())
-      setPosts(res.data || [])
+      const rawPosts = res.data?.posts || res.data
+      setPosts(Array.isArray(rawPosts) ? rawPosts : [])
       setTotalPages(Math.ceil((res.total || 0) / 20))
     } catch (err: any) {
       toast.error(err.message || "Failed to load posts")
@@ -84,7 +85,8 @@ export default function BlogPage() {
   async function loadCategories() {
     try {
       const res = await api.blog.categories.list()
-      setCategories(res.data || [])
+      const rawCats = res.data?.categories || res.data
+      setCategories(Array.isArray(rawCats) ? rawCats : [])
     } catch {}
   }
 

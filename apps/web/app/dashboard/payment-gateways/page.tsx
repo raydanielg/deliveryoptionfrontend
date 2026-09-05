@@ -42,7 +42,8 @@ export default function PaymentGatewaysPage() {
   async function loadGateways() {
     try {
       const result = await api.paymentGateways.list()
-      setGateways(result.data || [])
+      const rawGateways = result.data?.gateways || result.data
+      setGateways(Array.isArray(rawGateways) ? rawGateways : [])
     } catch {
     } finally {
       setLoading(false)

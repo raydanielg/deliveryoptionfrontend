@@ -30,9 +30,12 @@ export default function InternationalPage() {
         api.shipments.list("category=INTERNATIONAL").catch(() => ({ data: [] })),
         api.documents.list().catch(() => ({ data: [] })),
       ])
-      setCustoms(customsRes.data || [])
-      setShipments(shipRes.data || [])
-      setDocuments(docRes.data || [])
+      const rawCustoms = customsRes.data?.items || customsRes.data
+      setCustoms(Array.isArray(rawCustoms) ? rawCustoms : [])
+      const rawShipments = shipRes.data?.shipments || shipRes.data
+      setShipments(Array.isArray(rawShipments) ? rawShipments : [])
+      const rawDocs = docRes.data?.documents || docRes.data
+      setDocuments(Array.isArray(rawDocs) ? rawDocs : [])
     } catch {
     } finally {
       setLoading(false)
