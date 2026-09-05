@@ -35,16 +35,20 @@ export function MetricCard({
   const deltaIcon = flat ? MinusSignIcon : rising ? ArrowUpRight02Icon : ArrowDownRight02Icon
 
   return (
-    <Card className={cn("gap-0 p-5", className)}>
-      <div className="flex items-start justify-between gap-3">
+    <Card className={cn("gap-0 p-6", className)}>
+      <div className="flex items-center justify-between gap-4">
         <p className="text-sm font-medium text-muted-foreground">{label}</p>
-        {iconName ? <HugeiconsIcon icon={iconName} className="size-4 shrink-0 text-muted-foreground" /> : null}
+        {iconName ? (
+          <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10">
+            <HugeiconsIcon icon={iconName} className="size-5 shrink-0 text-primary" />
+          </div>
+        ) : null}
       </div>
 
       {loading ? (
-        <Skeleton className="mt-3 h-9 w-32" />
+        <Skeleton className="mt-4 h-10 w-36" />
       ) : (
-        <p className="mt-3 text-2xl font-semibold tracking-tight tabular-nums sm:text-3xl">
+        <p className="mt-4 text-3xl font-bold tracking-tight tabular-nums sm:text-4xl">
           {value}
         </p>
       )}
