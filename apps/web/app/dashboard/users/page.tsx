@@ -2,13 +2,13 @@
 
 import { useState, useEffect } from "react"
 import { DashboardLayout } from "@/components/dashboard-layout"
-import { Card, CardContent } from "@workspace/ui/components/card"
-import { Badge } from "@workspace/ui/components/badge"
+import { Card } from "@workspace/ui/components/card"
 import { Button } from "@workspace/ui/components/button"
 import { Input } from "@workspace/ui/components/input"
 import { Label } from "@workspace/ui/components/label"
 import { Switch } from "@workspace/ui/components/switch"
 import { Skeleton } from "@workspace/ui/components/skeleton"
+import { PageHeader } from "@/components/shared/page-header"
 import {
   Dialog,
   DialogContent,
@@ -38,14 +38,8 @@ const ROLES = [
   { value: "DRIVER", label: "Driver", color: "bg-amber-100 text-amber-700" },
 ]
 
-function getRoleBadge(role: string) {
-  const r = ROLES.find((x) => x.value === role)
-  return r ? <Badge className={r.color}>{r.label}</Badge> : <Badge>{role}</Badge>
-}
-
 export default function UsersPage() {
   const [users, setUsers] = useState<any[]>([])
-  const [stats, setStats] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
   const [roleFilter, setRoleFilter] = useState("")
@@ -57,7 +51,7 @@ export default function UsersPage() {
     name: "", email: "", phone: "", password: "", role: "CUSTOMER", isActive: true,
   })
 
-  useEffect(() => { loadUsers(); loadStats() }, [page, roleFilter])
+  useEffect(() => { loadUsers() }, [page, roleFilter])
 
   async function loadUsers() {
     try {
@@ -75,13 +69,6 @@ export default function UsersPage() {
     } finally {
       setLoading(false)
     }
-  }
-
-  async function loadStats() {
-    try {
-      const res = await api.users.stats()
-      setStats(res.data)
-    } catch (err) { console.error(err) }
   }
 
   function openCreate() {
@@ -119,7 +106,6 @@ export default function UsersPage() {
       }
       setDialogOpen(false)
       loadUsers()
-      loadStats()
     } catch (err: any) {
       toast.error(err.message || "Failed to save user")
     }
@@ -138,7 +124,6 @@ export default function UsersPage() {
       await api.users.delete(id)
       toast.success("User deleted")
       loadUsers()
-      loadStats()
     } catch (err: any) { toast.error(err.message) }
   }
 
@@ -155,59 +140,40 @@ export default function UsersPage() {
       { label: "Dashboard", href: "/dashboard" },
       { label: "Users" },
     ]}>
-      <div className="flex items-center justify-between gap-2 mb-6">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">User Management</h1>
-          <p className="text-sm text-muted-foreground">Manage users, roles, and permissions</p>
-        </div>
-        <Button onClick={openCreate}>Add User</Button>
-      </div>
-
-      {stats && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <Card><CardContent className="p-4">
-            <p className="text-sm text-muted-foreground">Total Users</p>
-            <p className="text-2xl font-bold">{stats.total}</p>
-          </CardContent></Card>
-          <Card><CardContent className="p-4">
-            <p className="text-sm text-muted-foreground">Active</p>
-            <p className="text-2xl font-bold text-green-600">{stats.active}</p>
-          </CardContent></Card>
-          <Card><CardContent className="p-4">
-            <p className="text-sm text-muted-foreground">Inactive</p>
-            <p className="text-2xl font-bold text-red-600">{stats.inactive}</p>
-          </CardContent></Card>
-          <Card><CardContent className="p-4">
-            <p className="text-sm text-muted-foreground">Customers</p>
-            <p className="text-2xl font-bold text-cyan-600">{stats.byRole?.CUSTOMER || 0}</p>
-          </CardContent></Card>
-        </div>
-      )}
-
-      <div className="flex gap-2 mb-4">
-        <Input
-          placeholder="Search by name, email, or phone..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && (setPage(1), loadUsers())}
-          className="max-w-sm"
+      <div className="flex flex-col gap-6 p-4 lg:p-6">
+        <PageHeader
+          title="User Management"
+          description="Manage users, roles, and permissions"
+          actions={<Button onClick={openCreate}>Add User</Button>}
         />
-        <Select value={roleFilter || "all"} onValueChange={(v) => { setRoleFilter(v === "all" ? "" : (v ?? "")); setPage(1) }}>
-          <SelectTrigger className="w-[200px]"><SelectValue placeholder="Filter by role" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Roles</SelectItem>
-            {ROLES.map((r) => <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>)}
-          </SelectContent>
-        </Select>
-        <Button variant="outline" onClick={() => { setPage(1); loadUsers() }}>Search</Button>
-      </div>
 
-      <Card>
-        <CardContent className="p-0">
+        {/* Filter toolbar */}
+        <Card className="p-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <Input
+              placeholder="Search by name, email, or phone..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && (setPage(1), loadUsers())}
+              className="sm:max-w-xs"
+            />
+            <Select value={roleFilter || "all"} onValueChange={(v) => { setRoleFilter(v === "all" ? "" : (v ?? "")); setPage(1) }}>
+              <SelectTrigger className="w-full sm:w-[200px]"><SelectValue placeholder="Filter by role" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Roles</SelectItem>
+                {ROLES.map((r) => <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            <Button variant="outline" onClick={() => { setPage(1); loadUsers() }} className="sm:ml-auto">Search</Button>
+          </div>
+        </Card>
+
+        {/* Users table */}
+        <Card className="overflow-hidden p-0">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b text-left">
+                <tr className="border-b bg-muted/30 text-left">
                   <th className="px-4 py-3 font-medium text-muted-foreground">Name</th>
                   <th className="px-4 py-3 font-medium text-muted-foreground">Email</th>
                   <th className="px-4 py-3 font-medium text-muted-foreground">Phone</th>
@@ -228,10 +194,10 @@ export default function UsersPage() {
                   <tr><td colSpan={7} className="px-4 py-12 text-center text-muted-foreground">No users found</td></tr>
                 ) : (
                   users.map((u) => (
-                    <tr key={u.id} className="border-b last:border-0 hover:bg-muted/50">
+                    <tr key={u.id} className="border-b last:border-0 transition-colors hover:bg-muted/20">
                       <td className="px-4 py-3 font-medium">{u.name}</td>
-                      <td className="px-4 py-3">{u.email}</td>
-                      <td className="px-4 py-3">{u.phone || "—"}</td>
+                      <td className="px-4 py-3 text-muted-foreground">{u.email}</td>
+                      <td className="px-4 py-3 text-muted-foreground">{u.phone || "—"}</td>
                       <td className="px-4 py-3">
                         <Select value={u.role} onValueChange={(v) => { if (v) changeRole(u.id, v) }}>
                           <SelectTrigger className="h-7 w-[160px] text-xs"><SelectValue /></SelectTrigger>
@@ -264,14 +230,13 @@ export default function UsersPage() {
             </table>
           </div>
           {totalPages > 1 && (
-            <div className="flex items-center justify-between px-4 py-3 border-t">
+            <div className="flex items-center justify-between border-t px-4 py-3">
               <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(page - 1)}>Previous</Button>
               <span className="text-sm text-muted-foreground">Page {page} of {totalPages}</span>
               <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(page + 1)}>Next</Button>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </Card>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-md">
@@ -317,6 +282,7 @@ export default function UsersPage() {
           </form>
         </DialogContent>
       </Dialog>
+      </div>
     </DashboardLayout>
   )
 }
