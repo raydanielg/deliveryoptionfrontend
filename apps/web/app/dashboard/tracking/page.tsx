@@ -85,7 +85,7 @@ export default function TrackingPage() {
         <CardContent className="p-6">
           <div className="flex gap-2">
             <div className="relative flex-1">
-              <HugeiconsIcon icon={SearchIcon} strokeWidth={2} className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+              <HugeiconsIcon icon={SearchIcon} className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
               <Input
                 placeholder="e.g. XRD-2026-000928"
                 value={trackingNumber}
@@ -137,7 +137,7 @@ export default function TrackingPage() {
               </div>
               {data.shipment.estimatedDelivery && (
                 <div className="flex items-center gap-2 text-sm">
-                  <HugeiconsIcon icon={ClockIcon} strokeWidth={2} className="size-4 text-muted-foreground" />
+                  <HugeiconsIcon icon={ClockIcon} className="size-4 text-muted-foreground" />
                   <span className="text-muted-foreground">ETA: {new Date(data.shipment.estimatedDelivery).toLocaleDateString()}</span>
                 </div>
               )}
@@ -198,33 +198,55 @@ export default function TrackingPage() {
           <Card className="lg:col-span-3">
             <CardHeader>
               <CardTitle>Tracking Timeline</CardTitle>
-              <CardDescription>All tracking events for this shipment</CardDescription>
+              <CardDescription>Shipment status history and events</CardDescription>
             </CardHeader>
             <CardContent>
-              {data.events && data.events.length > 0 ? (
-                <div className="relative space-y-6 before:absolute before:left-4 before:top-0 before:h-full before:w-px before:bg-border">
-                  {data.events.map((event: any, i: number) => (
-                    <div key={event.id} className="relative flex gap-4">
-                      <div className={`flex size-8 shrink-0 items-center justify-center rounded-full ${i === 0 ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
-                        <HugeiconsIcon icon={i === 0 ? TruckIcon : CheckmarkCircle02Icon} strokeWidth={2} className="size-4" />
+              {(() => {
+                const events = (data.events || []).map((e: any) => ({
+                  id: e.id,
+                  event: e.event,
+                  description: e.description,
+                  location: e.location,
+                  createdAt: e.createdAt,
+                }))
+                const timeline = (data.timeline || []).map((t: any) => ({
+                  id: t.id,
+                  event: `STATUS_${t.status}`,
+                  description: t.notes || `Status changed to ${t.status?.replace(/_/g, " ").toLowerCase()}`,
+                  location: t.location,
+                  createdAt: t.createdAt,
+                }))
+                const combined = [...events, ...timeline].sort(
+                  (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+                )
+
+                if (combined.length === 0) {
+                  return <p className="text-sm text-muted-foreground py-8 text-center">No tracking events yet</p>
+                }
+
+                return (
+                  <div className="relative space-y-6 before:absolute before:left-4 before:top-0 before:h-full before:w-px before:bg-border">
+                    {combined.map((event: any, i: number) => (
+                      <div key={event.id} className="relative flex gap-4">
+                        <div className={`flex size-8 shrink-0 items-center justify-center rounded-full ${i === 0 ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
+                          <HugeiconsIcon icon={i === 0 ? TruckIcon : CheckmarkCircle02Icon} className="size-4" />
+                        </div>
+                        <div className="flex-1 space-y-1">
+                          <span className="font-medium text-sm">{event.event?.replace(/_/g, " ").toLowerCase()}</span>
+                          <p className="text-sm text-muted-foreground">{event.description}</p>
+                          {event.location && (
+                            <p className="text-xs text-muted-foreground flex items-center gap-1">
+                              <HugeiconsIcon icon={MapIcon} className="size-3" />
+                              {event.location}
+                            </p>
+                          )}
+                          <p className="text-xs text-muted-foreground">{new Date(event.createdAt).toLocaleString()}</p>
+                        </div>
                       </div>
-                      <div className="flex-1 space-y-1">
-                        <span className="font-medium text-sm">{event.event?.replace(/_/g, " ")}</span>
-                        <p className="text-sm text-muted-foreground">{event.description}</p>
-                        {event.location && (
-                          <p className="text-xs text-muted-foreground flex items-center gap-1">
-                            <HugeiconsIcon icon={MapIcon} strokeWidth={2} className="size-3" />
-                            {event.location}
-                          </p>
-                        )}
-                        <p className="text-xs text-muted-foreground">{new Date(event.createdAt).toLocaleString()}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-muted-foreground py-8 text-center">No tracking events yet</p>
-              )}
+                    ))}
+                  </div>
+                )
+              })()}
             </CardContent>
           </Card>
         </div>
