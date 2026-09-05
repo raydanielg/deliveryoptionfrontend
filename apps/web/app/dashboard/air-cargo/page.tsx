@@ -59,7 +59,7 @@ export default function AirCargoPage() {
       const [listRes, statsRes, stRes] = await Promise.all([
         api.airCargo.list(params),
         api.airCargo.stats(),
-        api.stations.list("type=AIRPORT&isActive=true"),
+        api.stations.list("type=AIRPORT_CARGO&isActive=true"),
       ])
       setShipments(listRes.data || [])
       setStats(statsRes.data)
