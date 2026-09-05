@@ -9,6 +9,7 @@ import { Skeleton } from "@workspace/ui/components/skeleton"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@workspace/ui/components/select"
 import { PageHeader } from "@/components/shared/page-header"
 import { StatusBadge } from "@/components/shared/status-badge"
+import { MetricCard } from "@/components/shared/metric-card"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
   Coins01Icon,
@@ -83,54 +84,36 @@ export default function OrdersPage() {
         />
 
         {/* Stats Summary */}
-        {stats && !loading && (
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <Card className="p-5">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Orders</p>
-                  <p className="mt-1 text-2xl font-bold tabular-nums">{formatNumber(stats.total ?? 0)}</p>
-                </div>
-                <div className="flex size-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                  <HugeiconsIcon icon={ChartIcon} className="size-5" />
-                </div>
-              </div>
-            </Card>
-            <Card className="p-5">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Revenue</p>
-                  <p className="mt-1 text-2xl font-bold tabular-nums">{formatMoney(Number(stats.totalRevenue || 0), "TZS", { compact: true })}</p>
-                </div>
-                <div className="flex size-11 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600">
-                  <HugeiconsIcon icon={Coins01Icon} className="size-5" />
-                </div>
-              </div>
-            </Card>
-            <Card className="p-5">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Confirmed</p>
-                  <p className="mt-1 text-2xl font-bold tabular-nums text-emerald-600">{formatNumber(stats.confirmed ?? 0)}</p>
-                </div>
-                <div className="flex size-11 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600">
-                  <HugeiconsIcon icon={CheckmarkCircle02Icon} className="size-5" />
-                </div>
-              </div>
-            </Card>
-            <Card className="p-5">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Pending</p>
-                  <p className="mt-1 text-2xl font-bold tabular-nums text-amber-600">{formatNumber(stats.pending ?? 0)}</p>
-                </div>
-                <div className="flex size-11 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600">
-                  <HugeiconsIcon icon={Clock01Icon} className="size-5" />
-                </div>
-              </div>
-            </Card>
-          </div>
-        )}
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <MetricCard
+            label="Total Orders"
+            value={formatNumber(stats?.total ?? 0)}
+            icon={ChartIcon}
+            loading={loading}
+            hint="All time orders"
+          />
+          <MetricCard
+            label="Total Revenue"
+            value={formatMoney(Number(stats?.totalRevenue || 0), "TZS", { compact: true })}
+            icon={Coins01Icon}
+            loading={loading}
+            hint="From paid orders"
+          />
+          <MetricCard
+            label="Confirmed"
+            value={formatNumber(stats?.confirmed ?? 0)}
+            icon={CheckmarkCircle02Icon}
+            loading={loading}
+            hint="Confirmed orders"
+          />
+          <MetricCard
+            label="Pending"
+            value={formatNumber(stats?.pending ?? 0)}
+            icon={Clock01Icon}
+            loading={loading}
+            hint="Awaiting confirmation"
+          />
+        </div>
 
         {/* Filter Toolbar */}
         <Card className="p-3">

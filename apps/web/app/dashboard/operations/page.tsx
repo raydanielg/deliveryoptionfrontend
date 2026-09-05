@@ -8,7 +8,8 @@ import { Button } from "@workspace/ui/components/button"
 import { Skeleton } from "@workspace/ui/components/skeleton"
 import { PageHeader } from "@/components/shared/page-header"
 import { StatusBadge } from "@/components/shared/status-badge"
-import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react"
+import { MetricCard } from "@/components/shared/metric-card"
+import { HugeiconsIcon } from "@hugeicons/react"
 import {
   Package02Icon,
   TruckIcon,
@@ -24,14 +25,6 @@ import {
 } from "@hugeicons/core-free-icons"
 import { api } from "@/lib/api"
 import { formatNumber, formatMoney, formatRelative } from "@/lib/format"
-
-type StatCard = {
-  label: string
-  value: number | undefined
-  icon: IconSvgElement
-  tone: string
-  href: string
-}
 
 export default function OperationsPage() {
   const [shipmentStats, setShipmentStats] = React.useState<any>(null)
@@ -63,13 +56,6 @@ export default function OperationsPage() {
     load()
   }, [])
 
-  const statCards: StatCard[] = [
-    { label: "Total Shipments", value: shipmentStats?.total, icon: Package02Icon, tone: "text-primary bg-primary/10", href: "/dashboard/shipments" },
-    { label: "In Transit", value: shipmentStats?.inTransit, icon: TruckIcon, tone: "text-sky-600 bg-sky-500/10", href: "/dashboard/tracking" },
-    { label: "Delivered", value: shipmentStats?.delivered, icon: CheckmarkCircle02Icon, tone: "text-emerald-600 bg-emerald-500/10", href: "/dashboard/shipments" },
-    { label: "Cancelled", value: shipmentStats?.cancelled, icon: Cancel01Icon, tone: "text-red-600 bg-red-500/10", href: "/dashboard/shipments" },
-  ]
-
   const quickActions = [
     { label: "New Shipment", icon: PlusIcon, href: "/dashboard/shipments/new", description: "Create a new shipment" },
     { label: "Live Tracking", icon: MapIcon, href: "/dashboard/tracking", description: "Track shipments in real-time" },
@@ -96,36 +82,35 @@ export default function OperationsPage() {
         />
 
         {/* Stats Grid */}
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {loading ? (
-            Array.from({ length: 4 }).map((_, i) => (
-              <Card key={i} className="p-5">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-2">
-                    <Skeleton className="h-4 w-24" />
-                    <Skeleton className="h-7 w-16" />
-                  </div>
-                  <Skeleton className="size-12 rounded-xl" />
-                </div>
-              </Card>
-            ))
-          ) : (
-            statCards.map((c) => (
-              <Link key={c.label} href={c.href}>
-                <Card className="p-5 transition-all hover:shadow-md">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-1">
-                      <p className="text-sm text-muted-foreground">{c.label}</p>
-                      <p className="text-2xl font-bold tabular-nums">{formatNumber(c.value ?? 0)}</p>
-                    </div>
-                    <div className={`flex size-12 items-center justify-center rounded-xl ${c.tone}`}>
-                      <HugeiconsIcon icon={c.icon} className="size-5" />
-                    </div>
-                  </div>
-                </Card>
-              </Link>
-            ))
-          )}
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <MetricCard
+            label="Total Shipments"
+            value={formatNumber(shipmentStats?.total ?? 0)}
+            icon={Package02Icon}
+            loading={loading}
+            hint="All shipments"
+          />
+          <MetricCard
+            label="In Transit"
+            value={formatNumber(shipmentStats?.inTransit ?? 0)}
+            icon={TruckIcon}
+            loading={loading}
+            hint="Currently moving"
+          />
+          <MetricCard
+            label="Delivered"
+            value={formatNumber(shipmentStats?.delivered ?? 0)}
+            icon={CheckmarkCircle02Icon}
+            loading={loading}
+            hint="Successfully delivered"
+          />
+          <MetricCard
+            label="Cancelled"
+            value={formatNumber(shipmentStats?.cancelled ?? 0)}
+            icon={Cancel01Icon}
+            loading={loading}
+            hint="Cancelled shipments"
+          />
         </div>
 
         {/* Quick Actions */}
