@@ -1,14 +1,22 @@
 "use client"
 
 import * as React from "react"
-import Link from "next/link"
 import { DashboardLayout } from "@/components/dashboard-layout"
 import { Card } from "@workspace/ui/components/card"
 import { Badge } from "@workspace/ui/components/badge"
-import { buttonVariants } from "@workspace/ui/components/button"
+import { Button } from "@workspace/ui/components/button"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@workspace/ui/components/select"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { ArrowRight01Icon } from "@hugeicons/core-free-icons"
+import {
+  Package02Icon,
+  CheckmarkCircle02Icon,
+  TruckIcon,
+  Cancel01Icon,
+  Coins01Icon,
+  Download01Icon,
+} from "@hugeicons/core-free-icons"
 import { PageHeader } from "@/components/shared/page-header"
+import { MetricCard } from "@/components/shared/metric-card"
 import { ShipmentVolumeChart, type Range } from "@/components/charts/shipment-volume-chart"
 import { RoutePerformanceChart } from "@/components/charts/route-performance-chart"
 import { StatusBreakdownDonut } from "@/components/charts/status-breakdown-donut"
@@ -23,7 +31,7 @@ import {
   useExceptionStats,
   useCapacityOverview,
 } from "@/lib/use-dashboard"
-import { formatNumber } from "@/lib/format"
+import { formatNumber, formatMoney } from "@/lib/format"
 
 export default function AnalyticsPage() {
   const [range, setRange] = React.useState<Range>("30d")
@@ -53,12 +61,61 @@ export default function AnalyticsPage() {
           title="Analytics"
           description="Platform performance metrics and delivery insights."
           actions={
-            <Link href="/dashboard" className={buttonVariants({ variant: "outline", size: "sm" })}>
-              Back to dashboard
-              <HugeiconsIcon icon={ArrowRight01Icon} className="size-4" />
-            </Link>
+            <div className="flex items-center gap-2">
+              <Select value={range} onValueChange={(v) => setRange((v ?? "30d") as Range)}>
+                <SelectTrigger className="h-9 w-[120px]"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="7d">7 Days</SelectItem>
+                  <SelectItem value="30d">30 Days</SelectItem>
+                  <SelectItem value="90d">90 Days</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button variant="outline" size="sm">
+                <HugeiconsIcon icon={Download01Icon} className="size-4" />
+                Export
+              </Button>
+            </div>
           }
         />
+
+        {/* KPI Summary Cards */}
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+          <MetricCard
+            label="Total Shipments"
+            value={formatNumber(stats.data?.total ?? 0)}
+            icon={Package02Icon}
+            loading={stats.isLoading}
+            hint="All time"
+          />
+          <MetricCard
+            label="Delivered"
+            value={formatNumber(stats.data?.delivered ?? 0)}
+            icon={CheckmarkCircle02Icon}
+            loading={stats.isLoading}
+            hint="Successfully delivered"
+          />
+          <MetricCard
+            label="In Transit"
+            value={formatNumber(stats.data?.inTransit ?? 0)}
+            icon={TruckIcon}
+            loading={stats.isLoading}
+            hint="Currently moving"
+          />
+          <MetricCard
+            label="Total Revenue"
+            value={formatMoney(Number(orderStats.data?.totalRevenue || 0), "TZS", { compact: true })}
+            icon={Coins01Icon}
+            loading={orderStats.isLoading}
+            hint="From confirmed orders"
+          />
+          <MetricCard
+            label="Cancelled"
+            value={formatNumber(stats.data?.cancelled ?? 0)}
+            icon={Cancel01Icon}
+            loading={stats.isLoading}
+            hint="Cancelled shipments"
+          />
+        </div>
 
         {/* Hero chart — shipment volume */}
         <ShipmentVolumeChart
@@ -173,14 +230,14 @@ export default function AnalyticsPage() {
         {/* Route breakdown table */}
         {!routes.isLoading && routes.data.length > 0 && (
           <Card className="gap-0 overflow-hidden p-0">
-            <div className="flex items-center justify-between gap-3 border-b border-border/60 px-5 py-4">
+            <div className="flex items-center justify-between gap-3 px-5 py-4">
               <h2 className="text-base font-semibold tracking-tight">Route breakdown</h2>
               <span className="text-sm text-muted-foreground">{routes.data.length} routes</span>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b text-left">
+                  <tr className="bg-muted/30 text-left">
                     <th className="px-5 py-3 font-medium text-muted-foreground">Route</th>
                     <th className="px-5 py-3 font-medium text-muted-foreground text-right">Shipments</th>
                     <th className="px-5 py-3 font-medium text-muted-foreground text-right">Avg time</th>
@@ -189,7 +246,7 @@ export default function AnalyticsPage() {
                 </thead>
                 <tbody>
                   {routes.data.map((r) => (
-                    <tr key={r.route} className="border-b last:border-0 transition-colors hover:bg-muted/40">
+                    <tr key={r.route} className="transition-colors hover:bg-muted/20">
                       <td className="px-5 py-3 font-medium">{r.route}</td>
                       <td className="px-5 py-3 text-right tabular-nums">{r.shipments}</td>
                       <td className="px-5 py-3 text-right tabular-nums text-muted-foreground">

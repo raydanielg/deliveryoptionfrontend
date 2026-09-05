@@ -120,7 +120,7 @@ export default function ShipmentsPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b bg-muted/30 text-left">
+                <tr className="bg-muted/30 text-left">
                   <th className="px-4 py-3 font-medium text-muted-foreground">Tracking #</th>
                   <th className="px-4 py-3 font-medium text-muted-foreground">Route</th>
                   <th className="px-4 py-3 font-medium text-muted-foreground">Weight</th>
@@ -132,7 +132,7 @@ export default function ShipmentsPage() {
               <tbody>
                 {loading ? (
                   Array.from({ length: 8 }).map((_, i) => (
-                    <tr key={i} className="border-b last:border-0">
+                    <tr key={i} className="transition-colors hover:bg-muted/20">
                       <td className="px-4 py-3"><Skeleton className="h-5 w-32" /></td>
                       <td className="px-4 py-3"><Skeleton className="h-5 w-40" /></td>
                       <td className="px-4 py-3"><Skeleton className="h-5 w-16" /></td>
@@ -150,7 +150,7 @@ export default function ShipmentsPage() {
                   </tr>
                 ) : (
                   filtered.map((s) => (
-                    <tr key={s.id} className="border-b last:border-0 transition-colors hover:bg-muted/20">
+                    <tr key={s.id} className="transition-colors hover:bg-muted/20">
                       <td className="px-4 py-3">
                         <Link href={`/dashboard/shipments/${s.id}`} className="font-medium text-primary hover:underline">
                           {s.trackingNumber}
@@ -176,7 +176,7 @@ export default function ShipmentsPage() {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between border-t px-4 py-3">
+            <div className="flex items-center justify-between px-4 py-3">
               <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(page - 1)}>
                 <HugeiconsIcon icon={ArrowLeft01Icon} className="size-3.5" />
                 Previous
