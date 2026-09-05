@@ -3,8 +3,12 @@
 import * as React from "react"
 import { DashboardLayout } from "@/components/dashboard-layout"
 import { Badge } from "@workspace/ui/components/badge"
+import { Button } from "@workspace/ui/components/button"
 import { Input } from "@workspace/ui/components/input"
+import { Label } from "@workspace/ui/components/label"
 import { Skeleton } from "@workspace/ui/components/skeleton"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@workspace/ui/components/dialog"
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@workspace/ui/components/sheet"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
   TruckIcon,
@@ -14,12 +18,17 @@ import {
   AlertCircleIcon,
   CallIcon,
   Globe02Icon,
+  PlusIcon,
+  Refresh01Icon,
+  Mail01Icon,
+  PhoneIcon,
 } from "@hugeicons/core-free-icons"
 import { PageHeader } from "@/components/shared/page-header"
 import { MetricCard } from "@/components/shared/metric-card"
 import { StatusBadge } from "@/components/shared/status-badge"
 import { api } from "@/lib/api"
 import { formatNumber } from "@/lib/format"
+import { toast } from "sonner"
 
 const CARRIER_EMOJI: Record<string, string> = {
   XERIN: "🚚",
@@ -32,19 +41,21 @@ export default function CarriersPage() {
   const [loading, setLoading] = React.useState(true)
   const [search, setSearch] = React.useState("")
   const [typeFilter, setTypeFilter] = React.useState("ALL")
+  const [dialogOpen, setDialogOpen] = React.useState(false)
+  const [selected, setSelected] = React.useState<any | null>(null)
+  const [form, setForm] = React.useState({ name: "", type: "PARTNER", email: "", phone: "", address: "", city: "", country: "Tanzania", licenseNo: "" })
 
-  React.useEffect(() => {
-    async function load() {
-      try {
-        const result = await api.carriers.list()
-        setCarriers(result.data || [])
-      } catch {
-      } finally {
-        setLoading(false)
-      }
+  React.useEffect(() => { load() }, [])
+
+  async function load() {
+    try {
+      const result = await api.carriers.list()
+      setCarriers(result.data || [])
+    } catch {
+    } finally {
+      setLoading(false)
     }
-    load()
-  }, [])
+  }
 
   const filtered = carriers.filter((c) => {
     if (typeFilter !== "ALL" && c.type !== typeFilter) return false
@@ -66,12 +77,44 @@ export default function CarriersPage() {
     ...types.map((t) => ({ value: t, label: `${CARRIER_EMOJI[t] || "📦"} ${t?.replace(/_/g, " ").toLowerCase()}` })),
   ]
 
+  async function handleAddCarrier(e: React.FormEvent) {
+    e.preventDefault()
+    try {
+      const body: Record<string, any> = { name: form.name, type: form.type }
+      if (form.email) body.email = form.email
+      if (form.phone) body.phone = form.phone
+      if (form.address) body.address = form.address
+      if (form.city) body.city = form.city
+      if (form.country) body.country = form.country
+      if (form.licenseNo) body.licenseNo = form.licenseNo
+      await api.carriers.create(body)
+      toast.success("Carrier added successfully")
+      setDialogOpen(false)
+      setForm({ name: "", type: "PARTNER", email: "", phone: "", address: "", city: "", country: "Tanzania", licenseNo: "" })
+      load()
+    } catch (err: any) {
+      toast.error(err.message || "Failed to add carrier")
+    }
+  }
+
   return (
     <DashboardLayout breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Fleet", href: "/dashboard/fleet" }, { label: "Carriers" }]}>
       <div className="flex flex-col gap-6 p-4 lg:p-6">
         <PageHeader
           title="🤝 Carriers"
           description="Xerin and partner carriers — manage relationships, driver counts, and vehicle assignments."
+          actions={
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={load}>
+                <HugeiconsIcon icon={Refresh01Icon} className="size-4" />
+                Refresh
+              </Button>
+              <Button size="sm" onClick={() => setDialogOpen(true)}>
+                <HugeiconsIcon icon={PlusIcon} className="size-4" />
+                Add Carrier
+              </Button>
+            </div>
+          }
         />
 
         {/* Metric Cards */}
@@ -129,7 +172,7 @@ export default function CarriersPage() {
             {/* Carrier Cards */}
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {filtered.slice(0, 12).map((c) => (
-                <div key={c.id} className="rounded-lg border bg-card p-4 transition-shadow hover:shadow-md">
+                <div key={c.id} className="cursor-pointer rounded-lg border bg-card p-4 transition-shadow hover:shadow-md" onClick={() => setSelected(c)}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="flex size-10 items-center justify-center rounded-lg bg-muted/40 text-lg">
@@ -198,7 +241,7 @@ export default function CarriersPage() {
                   </thead>
                   <tbody>
                     {filtered.map((c) => (
-                      <tr key={c.id} className="transition-colors hover:bg-muted/20">
+                      <tr key={c.id} className="cursor-pointer transition-colors hover:bg-muted/20" onClick={() => setSelected(c)}>
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2">
                             <span className="text-base">{CARRIER_EMOJI[c.type] || "📦"}</span>
@@ -226,6 +269,132 @@ export default function CarriersPage() {
           </>
         )}
       </div>
+
+      {/* Carrier Detail Drawer */}
+      <Sheet open={!!selected} onOpenChange={(v) => !v && setSelected(null)}>
+        <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto">
+          {selected && (
+            <>
+              <SheetHeader>
+                <SheetTitle className="flex items-center gap-2">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-lg">
+                    {CARRIER_EMOJI[selected.type] || "📦"}
+                  </div>
+                  {selected.name || "Carrier"}
+                </SheetTitle>
+                <SheetDescription>{selected.type?.replace(/_/g, " ").toLowerCase() || ""}</SheetDescription>
+              </SheetHeader>
+
+              <div className="space-y-4 px-4 pb-6">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="rounded-lg border p-3">
+                    <p className="text-xs text-muted-foreground flex items-center gap-1"><HugeiconsIcon icon={Mail01Icon} className="size-3" /> Email</p>
+                    <p className="mt-1 text-sm font-medium">{selected.email || "—"}</p>
+                  </div>
+                  <div className="rounded-lg border p-3">
+                    <p className="text-xs text-muted-foreground flex items-center gap-1"><HugeiconsIcon icon={PhoneIcon} className="size-3" /> Phone</p>
+                    <p className="mt-1 text-sm font-medium">{selected.phone || "—"}</p>
+                  </div>
+                  <div className="rounded-lg border p-3">
+                    <p className="text-xs text-muted-foreground">Drivers</p>
+                    <p className="mt-1 text-sm font-medium tabular-nums">{selected._count?.drivers || 0}</p>
+                  </div>
+                  <div className="rounded-lg border p-3">
+                    <p className="text-xs text-muted-foreground">Vehicles</p>
+                    <p className="mt-1 text-sm font-medium tabular-nums">{selected._count?.vehicles || 0}</p>
+                  </div>
+                  <div className="rounded-lg border p-3">
+                    <p className="text-xs text-muted-foreground">City</p>
+                    <p className="mt-1 text-sm font-medium">{selected.city || "—"}</p>
+                  </div>
+                  <div className="rounded-lg border p-3">
+                    <p className="text-xs text-muted-foreground">Country</p>
+                    <p className="mt-1 text-sm font-medium">{selected.country || "—"}</p>
+                  </div>
+                  {selected.licenseNo && (
+                    <div className="rounded-lg border p-3">
+                      <p className="text-xs text-muted-foreground">License No</p>
+                      <p className="mt-1 text-sm font-mono font-medium">{selected.licenseNo}</p>
+                    </div>
+                  )}
+                  {selected.address && (
+                    <div className="rounded-lg border p-3">
+                      <p className="text-xs text-muted-foreground">Address</p>
+                      <p className="mt-1 text-sm font-medium">{selected.address}</p>
+                    </div>
+                  )}
+                </div>
+
+                {selected.phone && (
+                  <a href={`tel:${selected.phone}`} className="flex items-center justify-center gap-2 rounded-lg border px-3 py-2.5 text-sm font-medium transition-colors hover:bg-muted/30">
+                    <HugeiconsIcon icon={CallIcon} className="size-4" />
+                    Call Carrier
+                  </a>
+                )}
+
+                <Button variant="outline" className="w-full" onClick={() => setSelected(null)}>Close</Button>
+              </div>
+            </>
+          )}
+        </SheetContent>
+      </Sheet>
+
+      {/* Add Carrier Dialog */}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Add New Carrier</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleAddCarrier} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Carrier Name *</Label>
+                <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+              </div>
+              <div className="space-y-2">
+                <Label>Type *</Label>
+                <select className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })}>
+                  <option value="XERIN">Xerin (In-house)</option>
+                  <option value="PARTNER">Partner</option>
+                  <option value="THIRD_PARTY">Third Party</option>
+                </select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Email</Label>
+                <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+              </div>
+              <div className="space-y-2">
+                <Label>Phone</Label>
+                <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="+255..." />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Address</Label>
+              <Input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
+            </div>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label>City</Label>
+                <Input value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} />
+              </div>
+              <div className="space-y-2">
+                <Label>Country</Label>
+                <Input value={form.country} onChange={(e) => setForm({ ...form, country: e.target.value })} />
+              </div>
+              <div className="space-y-2">
+                <Label>License No</Label>
+                <Input value={form.licenseNo} onChange={(e) => setForm({ ...form, licenseNo: e.target.value })} />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
+              <Button type="submit">Add Carrier</Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   )
 }

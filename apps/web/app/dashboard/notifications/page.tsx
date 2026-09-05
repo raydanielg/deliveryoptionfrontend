@@ -5,22 +5,27 @@ import { DashboardLayout } from "@/components/dashboard-layout"
 import { PageHeader } from "@/components/shared/page-header"
 import { MetricCard } from "@/components/shared/metric-card"
 import { StatusBadge } from "@/components/shared/status-badge"
-import { FilterSelect, NOTIFICATION_CHANNEL_OPTIONS, NOTIFICATION_STATUS_OPTIONS } from "@/components/shared/filter-select"
-import { DataTable, type Column, useTableState } from "@/components/shared/data-table"
-import { EmptyState } from "@/components/shared/states"
 import { Button } from "@workspace/ui/components/button"
-import { Card } from "@workspace/ui/components/card"
+import { Input } from "@workspace/ui/components/input"
+import { Label } from "@workspace/ui/components/label"
 import { Skeleton } from "@workspace/ui/components/skeleton"
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@workspace/ui/components/sheet"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@workspace/ui/components/dialog"
 import { api } from "@/lib/api"
 import { useAuth } from "@/lib/use-auth"
 import { toast } from "sonner"
+import { formatNumber } from "@/lib/format"
+import { exportToPDF } from "@/lib/pdf-export"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
-  Refresh01Icon,
-  CheckmarkCircle02Icon,
-  Notification03Icon,
-  Cancel01Icon,
-  Clock01Icon,
+  Refresh01Icon, CheckmarkCircle02Icon, Notification03Icon,
+  Cancel01Icon, Clock01Icon, Search01Icon, Download01Icon,
+  SendIcon, AlertCircleIcon,
 } from "@hugeicons/core-free-icons"
 
 function timeAgo(date: string) {
@@ -44,39 +49,24 @@ function formatDate(date: string | null | undefined) {
   })
 }
 
-interface NotifLog {
-  id: string
-  recipient: string
-  channel: string
-  provider?: string
-  status: string
-  errorMessage?: string
-  sentAt?: string
-}
-
-interface NotifStats {
-  total: number
-  byStatus?: { status: string; _count: { status: number } }[]
-}
-
 export default function NotificationsPage() {
   const { user } = useAuth()
   const isAdmin = user?.role === "SUPER_ADMIN" || user?.role === "OPERATIONS_MANAGER"
-  const [logs, setLogs] = React.useState<NotifLog[]>([])
-  const [stats, setStats] = React.useState<NotifStats | null>(null)
+  const [logs, setLogs] = React.useState<any[]>([])
+  const [stats, setStats] = React.useState<any>(null)
   const [loading, setLoading] = React.useState(true)
-  const [error, setError] = React.useState<{ status?: number; detail?: string } | null>(null)
   const [userNotifs, setUserNotifs] = React.useState<any[]>([])
   const [userLoading, setUserLoading] = React.useState(true)
+  const [search, setSearch] = React.useState("")
+  const [channelFilter, setChannelFilter] = React.useState("ALL")
+  const [statusFilter, setStatusFilter] = React.useState("ALL")
+  const [selected, setSelected] = React.useState<any | null>(null)
+  const [bulkOpen, setBulkOpen] = React.useState(false)
+  const [bulkForm, setBulkForm] = React.useState({ channel: "SMS", recipient: "", subject: "", message: "" })
 
-  const { page, setPage, search, setSearch, debounced, filters, setFilter } = useTableState({
-    channel: "",
-    status: "",
-  })
+  React.useEffect(() => { loadData() }, [])
 
-  const limit = 25
-
-  const loadData = React.useCallback(async () => {
+  async function loadData() {
     if (!isAdmin) {
       try {
         const res = await api.notifications.list()
@@ -89,13 +79,10 @@ export default function NotificationsPage() {
     }
 
     setLoading(true)
-    setError(null)
     try {
       const params = new URLSearchParams()
-      if (filters.channel) params.set("channel", filters.channel)
-      if (filters.status) params.set("status", filters.status)
-      params.set("page", String(page))
-      params.set("limit", String(limit))
+      if (channelFilter !== "ALL") params.set("channel", channelFilter)
+      if (statusFilter !== "ALL") params.set("status", statusFilter)
 
       const [logsRes, statsRes] = await Promise.all([
         api.notificationService.logs(params.toString()),
@@ -104,16 +91,11 @@ export default function NotificationsPage() {
       setLogs(logsRes.data || [])
       setStats(statsRes.data)
     } catch (err: any) {
-      setError({ detail: err.message || "Failed to load notification logs" })
-      toast.error(err.message || "Failed to load notifications")
+      toast.error(err.message || "Failed to load notification logs")
     } finally {
       setLoading(false)
     }
-  }, [isAdmin, filters.channel, filters.status, page])
-
-  React.useEffect(() => {
-    loadData()
-  }, [loadData])
+  }
 
   async function handleMarkAllRead() {
     try {
@@ -125,84 +107,91 @@ export default function NotificationsPage() {
     }
   }
 
-  const filteredLogs = React.useMemo(() => {
-    if (!debounced) return logs
-    const q = debounced.toLowerCase()
-    return logs.filter(
-      (log) =>
-        log.recipient?.toLowerCase().includes(q) ||
-        log.provider?.toLowerCase().includes(q) ||
-        log.errorMessage?.toLowerCase().includes(q),
-    )
-  }, [logs, debounced])
+  async function handleBulkSend(e: React.FormEvent) {
+    e.preventDefault()
+    try {
+      await api.notificationService.bulk(bulkForm)
+      toast.success("Bulk notification sent")
+      setBulkOpen(false)
+      setBulkForm({ channel: "SMS", recipient: "", subject: "", message: "" })
+      loadData()
+    } catch (err: any) {
+      toast.error(err.message || "Failed to send")
+    }
+  }
 
-  const total = filteredLogs.length
+  function handleExportPDF() {
+    exportToPDF({
+      title: "Notification Logs Report",
+      subtitle: "SMS, Email, and Push notification delivery tracking",
+      columns: [
+        { header: "Recipient", key: "recipient" },
+        { header: "Channel", key: "channel" },
+        { header: "Provider", key: "provider" },
+        { header: "Status", key: "status" },
+        { header: "Error", key: "error" },
+        { header: "Sent At", key: "sentAt" },
+      ],
+      rows: filteredLogs.map((log) => ({
+        recipient: log.recipient || "—",
+        channel: log.channel || "—",
+        provider: log.provider || "—",
+        status: log.status || "—",
+        error: log.errorMessage || "—",
+        sentAt: log.sentAt ? formatDate(log.sentAt) : "—",
+      })),
+      meta: [
+        { label: "Total", value: String(logs.length) },
+        { label: "Sent", value: String(sentCount) },
+        { label: "Failed", value: String(failedCount) },
+      ],
+    })
+  }
 
-  const columns: Column<NotifLog>[] = [
-    {
-      id: "recipient",
-      header: "Recipient",
-      cell: (row) => <span className="font-medium">{row.recipient}</span>,
-    },
-    {
-      id: "channel",
-      header: "Channel",
-      cell: (row) => (
-        <span className="inline-flex items-center gap-1.5 rounded-md bg-muted px-2 py-0.5 text-xs font-medium">
-          {row.channel}
-        </span>
-      ),
-    },
-    {
-      id: "provider",
-      header: "Provider",
-      secondary: true,
-      cell: (row) => <span className="text-muted-foreground">{row.provider || "—"}</span>,
-    },
-    {
-      id: "status",
-      header: "Status",
-      cell: (row) => <StatusBadge status={row.status} size="sm" />,
-    },
-    {
-      id: "error",
-      header: "Error",
-      secondary: true,
-      cell: (row) => (
-        <span className="max-w-xs truncate text-muted-foreground">
-          {row.errorMessage || "—"}
-        </span>
-      ),
-    },
-    {
-      id: "sentAt",
-      header: "Sent",
-      align: "right",
-      cell: (row) => (
-        <span className="whitespace-nowrap text-muted-foreground">
-          {formatDate(row.sentAt)}
-        </span>
-      ),
-    },
-  ]
+  const filteredLogs = logs.filter((log) => {
+    if (channelFilter !== "ALL" && log.channel !== channelFilter) return false
+    if (statusFilter !== "ALL" && log.status !== statusFilter) return false
+    if (!search) return true
+    const q = search.toLowerCase()
+    return log.recipient?.toLowerCase().includes(q) ||
+      log.provider?.toLowerCase().includes(q) ||
+      log.errorMessage?.toLowerCase().includes(q)
+  })
 
-  const sentCount = stats?.byStatus?.find((s) => s.status === "SENT")?._count.status ?? 0
-  const failedCount = stats?.byStatus?.find((s) => s.status === "FAILED")?._count.status ?? 0
-  const pendingCount = stats?.byStatus?.find((s) => s.status === "PENDING")?._count.status ?? 0
+  const sentCount = stats?.byStatus?.find((s: any) => s.status === "SENT")?._count.status ?? 0
+  const failedCount = stats?.byStatus?.find((s: any) => s.status === "FAILED")?._count.status ?? 0
+  const pendingCount = stats?.byStatus?.find((s: any) => s.status === "PENDING")?._count.status ?? 0
+
+  const channelFilters = ["ALL", "SMS", "EMAIL", "PUSH"]
+  const statusFilters = ["ALL", "PENDING", "SENT", "FAILED"]
 
   return (
-    <DashboardLayout breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Notifications" }]}>
+    <DashboardLayout breadcrumbs={[
+      { label: "Dashboard", href: "/dashboard" },
+      { label: "Exceptions", href: "/dashboard/exceptions" },
+      { label: "Notifications" },
+    ]}>
       <div className="flex flex-col gap-6 p-4 lg:p-6">
         <PageHeader
-          title={isAdmin ? "Notification Logs" : "My Notifications"}
-          description={isAdmin ? "SMS, Email, and Push delivery tracking" : "Your personal notifications"}
+          title={isAdmin ? "🔔 Notification Logs" : "🔔 My Notifications"}
+          description={isAdmin ? "SMS, Email, and Push delivery tracking — monitor and send notifications." : "Your personal notifications and updates."}
           actions={
-            <>
+            <div className="flex gap-2">
               {isAdmin && (
-                <Button variant="outline" size="sm" onClick={() => loadData()}>
-                  <HugeiconsIcon icon={Refresh01Icon} className="size-4" />
-                  Refresh
-                </Button>
+                <>
+                  <Button variant="outline" size="sm" onClick={handleExportPDF}>
+                    <HugeiconsIcon icon={Download01Icon} className="size-4" />
+                    Export PDF
+                  </Button>
+                  <Button size="sm" onClick={() => setBulkOpen(true)}>
+                    <HugeiconsIcon icon={SendIcon} className="size-4" />
+                    Bulk Send
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => loadData()}>
+                    <HugeiconsIcon icon={Refresh01Icon} className="size-4" />
+                    Refresh
+                  </Button>
+                </>
               )}
               {!isAdmin && userNotifs.some((n) => !n.isRead) && (
                 <Button variant="outline" size="sm" onClick={handleMarkAllRead}>
@@ -210,81 +199,109 @@ export default function NotificationsPage() {
                   Mark all as read
                 </Button>
               )}
-            </>
+            </div>
           }
         />
 
-        {isAdmin && stats && (
+        {isAdmin && (
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <MetricCard
-              label="Total Sent"
-              value={stats.total?.toLocaleString() ?? "0"}
-              icon={Notification03Icon}
-              loading={loading}
-            />
-            <MetricCard
-              label="Delivered"
-              value={sentCount.toLocaleString()}
-              icon={CheckmarkCircle02Icon}
-              loading={loading}
-              hint="Successfully delivered"
-            />
-            <MetricCard
-              label="Failed"
-              value={failedCount.toLocaleString()}
-              icon={Cancel01Icon}
-              loading={loading}
-              positiveIsGood={false}
-              hint="Delivery failures"
-            />
-            <MetricCard
-              label="Pending"
-              value={pendingCount.toLocaleString()}
-              icon={Clock01Icon}
-              loading={loading}
-              hint="Awaiting confirmation"
-            />
+            <MetricCard label="Total Sent" value={formatNumber(stats?.total ?? 0)} icon={Notification03Icon} hint="All notifications" loading={loading} />
+            <MetricCard label="Delivered" value={formatNumber(sentCount)} icon={CheckmarkCircle02Icon} hint="Successfully delivered" loading={loading} />
+            <MetricCard label="Failed" value={formatNumber(failedCount)} icon={Cancel01Icon} hint="Delivery failures" loading={loading} />
+            <MetricCard label="Pending" value={formatNumber(pendingCount)} icon={Clock01Icon} hint="Awaiting confirmation" loading={loading} />
           </div>
         )}
 
         {isAdmin ? (
-          <Card className="p-5">
-            <DataTable
-              columns={columns}
-              data={filteredLogs}
-              loading={loading}
-              error={error}
-              onRetry={loadData}
-              page={page}
-              onPageChange={setPage}
-              pageSize={limit}
-              total={total}
-              search={search}
-              onSearchChange={setSearch}
-              searchPlaceholder="Search recipient, provider, or error…"
-              rowKey={(row) => row.id}
-              emptyTitle="No notification logs found"
-              emptyDescription="Try clearing filters or widening your date range."
-              filters={
-                <>
-                  <FilterSelect
-                    label="Channel"
-                    value={filters.channel ?? ""}
-                    onChange={(v) => setFilter("channel", v)}
-                    options={NOTIFICATION_CHANNEL_OPTIONS}
-                  />
-                  <FilterSelect
-                    label="Status"
-                    value={filters.status ?? ""}
-                    onChange={(v) => setFilter("status", v)}
-                    options={NOTIFICATION_STATUS_OPTIONS}
-                  />
-                </>
-              }
-            />
-          </Card>
+          <>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="relative max-w-xs">
+                <HugeiconsIcon icon={Search01Icon} className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                <Input placeholder="Search recipient, provider, error..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {channelFilters.map((c) => (
+                  <button
+                    key={c}
+                    onClick={() => setChannelFilter(c)}
+                    className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+                      channelFilter === c
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted/40 text-muted-foreground hover:bg-muted"
+                    }`}
+                  >
+                    {c === "ALL" ? "All Channels" : c}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex flex-wrap gap-1.5">
+              {statusFilters.map((s) => (
+                <button
+                  key={s}
+                  onClick={() => setStatusFilter(s)}
+                  className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+                    statusFilter === s
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted/40 text-muted-foreground hover:bg-muted"
+                  }`}
+                >
+                  {s === "ALL" ? "All Status" : s}
+                </button>
+              ))}
+            </div>
+
+            {loading ? (
+              <div className="space-y-3">
+                {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-14 w-full rounded-lg" />)}
+              </div>
+            ) : filteredLogs.length === 0 ? (
+              <div className="rounded-lg border bg-card py-12 text-center">
+                <HugeiconsIcon icon={AlertCircleIcon} className="mx-auto size-8 text-muted-foreground/40" />
+                <p className="mt-2 text-sm text-muted-foreground">No notification logs found</p>
+              </div>
+            ) : (
+              <div className="overflow-hidden rounded-lg border">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="bg-muted/30 text-left">
+                        <th className="px-4 py-3 font-medium text-muted-foreground">Recipient</th>
+                        <th className="px-4 py-3 font-medium text-muted-foreground">Channel</th>
+                        <th className="px-4 py-3 font-medium text-muted-foreground">Provider</th>
+                        <th className="px-4 py-3 font-medium text-muted-foreground">Status</th>
+                        <th className="px-4 py-3 font-medium text-muted-foreground">Error</th>
+                        <th className="px-4 py-3 font-medium text-muted-foreground">Sent</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredLogs.map((log) => (
+                        <tr
+                          key={log.id}
+                          className="cursor-pointer transition-colors hover:bg-muted/20"
+                          onClick={() => setSelected(log)}
+                        >
+                          <td className="px-4 py-3 font-medium">{log.recipient}</td>
+                          <td className="px-4 py-3">
+                            <span className="inline-flex items-center gap-1.5 rounded-md bg-muted px-2 py-0.5 text-xs font-medium">
+                              {log.channel}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-muted-foreground">{log.provider || "—"}</td>
+                          <td className="px-4 py-3"><StatusBadge status={log.status} size="sm" /></td>
+                          <td className="px-4 py-3 text-muted-foreground max-w-xs truncate">{log.errorMessage || "—"}</td>
+                          <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">{formatDate(log.sentAt)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </>
         ) : (
-          <Card className="overflow-hidden">
+          <div className="rounded-lg border bg-card overflow-hidden">
             {userLoading ? (
               <div className="space-y-3 p-4">
                 {Array.from({ length: 4 }).map((_, i) => (
@@ -299,11 +316,11 @@ export default function NotificationsPage() {
                 ))}
               </div>
             ) : userNotifs.length === 0 ? (
-              <EmptyState
-                title="No notifications"
-                description="You'll see updates about your shipments here."
-                className="border-0"
-              />
+              <div className="py-12 text-center">
+                <HugeiconsIcon icon={Notification03Icon} className="mx-auto size-8 text-muted-foreground/40" />
+                <p className="mt-2 text-sm text-muted-foreground">No notifications yet</p>
+                <p className="mt-1 text-xs text-muted-foreground">You'll see updates about your shipments here.</p>
+              </div>
             ) : (
               <div className="divide-y divide-border/40">
                 {userNotifs.map((n) => (
@@ -344,9 +361,124 @@ export default function NotificationsPage() {
                 ))}
               </div>
             )}
-          </Card>
+          </div>
         )}
       </div>
+
+      {/* Detail Drawer (Admin) */}
+      <Sheet open={!!selected} onOpenChange={(v) => !v && setSelected(null)}>
+        <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto">
+          {selected && (
+            <>
+              <SheetHeader>
+                <SheetTitle className="flex items-center gap-2">
+                  <HugeiconsIcon icon={Notification03Icon} className="size-5 text-primary" />
+                  Notification Details
+                </SheetTitle>
+                <SheetDescription>
+                  {selected.channel} — {selected.recipient}
+                </SheetDescription>
+              </SheetHeader>
+
+              <div className="space-y-4 px-4 pb-6">
+                <div className="flex items-center justify-between rounded-lg border bg-muted/30 p-3">
+                  <span className="text-xs text-muted-foreground">Status</span>
+                  <StatusBadge status={selected.status} size="sm" />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="rounded-lg border p-3">
+                    <p className="text-xs text-muted-foreground">Recipient</p>
+                    <p className="mt-1 text-sm font-medium">{selected.recipient || "—"}</p>
+                  </div>
+                  <div className="rounded-lg border p-3">
+                    <p className="text-xs text-muted-foreground">Channel</p>
+                    <p className="mt-1 text-sm font-medium">{selected.channel || "—"}</p>
+                  </div>
+                  <div className="rounded-lg border p-3">
+                    <p className="text-xs text-muted-foreground">Provider</p>
+                    <p className="mt-1 text-sm font-medium">{selected.provider || "—"}</p>
+                  </div>
+                  <div className="rounded-lg border p-3">
+                    <p className="text-xs text-muted-foreground">Sent At</p>
+                    <p className="mt-1 text-sm font-medium">{formatDate(selected.sentAt)}</p>
+                  </div>
+                </div>
+
+                {selected.subject && (
+                  <div className="rounded-lg border p-3">
+                    <p className="text-xs text-muted-foreground mb-1">Subject</p>
+                    <p className="text-sm font-medium">{selected.subject}</p>
+                  </div>
+                )}
+
+                {selected.message && (
+                  <div className="rounded-lg border p-3">
+                    <p className="text-xs text-muted-foreground mb-1">Message</p>
+                    <p className="text-sm">{selected.message}</p>
+                  </div>
+                )}
+
+                {selected.errorMessage && (
+                  <div className="rounded-lg border bg-red-500/5 p-3">
+                    <p className="text-xs text-muted-foreground mb-1">Error Message</p>
+                    <p className="text-sm text-red-600">{selected.errorMessage}</p>
+                  </div>
+                )}
+
+                <Button variant="outline" className="w-full" onClick={() => setSelected(null)}>Close</Button>
+              </div>
+            </>
+          )}
+        </SheetContent>
+      </Sheet>
+
+      {/* Bulk Send Dialog */}
+      <Dialog open={bulkOpen} onOpenChange={setBulkOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Send Bulk Notification</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleBulkSend} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Channel</Label>
+                <select className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={bulkForm.channel} onChange={(e) => setBulkForm({ ...bulkForm, channel: e.target.value })}>
+                  <option value="SMS">SMS</option>
+                  <option value="EMAIL">Email</option>
+                  <option value="PUSH">Push</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <Label>Recipient(s)</Label>
+                <Input value={bulkForm.recipient} onChange={(e) => setBulkForm({ ...bulkForm, recipient: e.target.value })} placeholder="Phone, email, or 'all'" required />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Subject</Label>
+              <Input value={bulkForm.subject} onChange={(e) => setBulkForm({ ...bulkForm, subject: e.target.value })} placeholder="Notification subject" />
+            </div>
+            <div className="space-y-2">
+              <Label>Message</Label>
+              <textarea
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                rows={4}
+                value={bulkForm.message}
+                onChange={(e) => setBulkForm({ ...bulkForm, message: e.target.value })}
+                placeholder="Notification message..."
+                required
+              />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="outline" onClick={() => setBulkOpen(false)}>Cancel</Button>
+              <Button type="submit">
+                <HugeiconsIcon icon={SendIcon} className="size-4" />
+                Send
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   )
 }

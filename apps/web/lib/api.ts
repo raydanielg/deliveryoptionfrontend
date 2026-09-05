@@ -260,6 +260,8 @@ export const api = {
     getMapConfig: () => request("/settings/map"),
     updateMapConfig: (body: Record<string, any>) => request("/settings/map", { method: "PUT", body }),
     getPublicMapConfig: () => request("/settings/public-map"),
+    getBusinessSettings: () => request("/settings/business"),
+    updateBusinessSettings: (body: Record<string, any>) => request("/settings/business", { method: "PUT", body }),
   },
   stations: {
     list: (params?: string) => request(`/stations${params ? `?${params}` : ""}`),

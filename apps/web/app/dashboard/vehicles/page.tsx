@@ -3,8 +3,12 @@
 import * as React from "react"
 import { DashboardLayout } from "@/components/dashboard-layout"
 import { Badge } from "@workspace/ui/components/badge"
+import { Button } from "@workspace/ui/components/button"
 import { Input } from "@workspace/ui/components/input"
+import { Label } from "@workspace/ui/components/label"
 import { Skeleton } from "@workspace/ui/components/skeleton"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@workspace/ui/components/dialog"
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@workspace/ui/components/sheet"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
   TruckIcon,
@@ -13,12 +17,16 @@ import {
   Clock01Icon,
   AlertCircleIcon,
   CancelCircleIcon,
+  PlusIcon,
+  Refresh01Icon,
+  IdCardIcon,
 } from "@hugeicons/core-free-icons"
 import { PageHeader } from "@/components/shared/page-header"
 import { MetricCard } from "@/components/shared/metric-card"
 import { StatusBadge } from "@/components/shared/status-badge"
 import { api } from "@/lib/api"
 import { formatNumber } from "@/lib/format"
+import { toast } from "sonner"
 
 const VEHICLE_EMOJI: Record<string, string> = {
   MOTORCYCLE: "🏍️",
@@ -30,22 +38,29 @@ const VEHICLE_EMOJI: Record<string, string> = {
 
 export default function VehiclesPage() {
   const [vehicles, setVehicles] = React.useState<any[]>([])
+  const [carriers, setCarriers] = React.useState<any[]>([])
   const [loading, setLoading] = React.useState(true)
   const [search, setSearch] = React.useState("")
   const [typeFilter, setTypeFilter] = React.useState("ALL")
+  const [dialogOpen, setDialogOpen] = React.useState(false)
+  const [selected, setSelected] = React.useState<any | null>(null)
+  const [form, setForm] = React.useState({ carrierId: "", registrationNo: "", type: "MOTORCYCLE", capacityKg: "", make: "", model: "", year: "" })
 
-  React.useEffect(() => {
-    async function load() {
-      try {
-        const result = await api.vehicles.list()
-        setVehicles(result.data || [])
-      } catch {
-      } finally {
-        setLoading(false)
-      }
+  React.useEffect(() => { load() }, [])
+
+  async function load() {
+    try {
+      const [vehiclesRes, carriersRes] = await Promise.all([
+        api.vehicles.list(),
+        api.carriers.list(),
+      ])
+      setVehicles(vehiclesRes.data || [])
+      setCarriers(carriersRes.data || [])
+    } catch {
+    } finally {
+      setLoading(false)
     }
-    load()
-  }, [])
+  }
 
   const filtered = vehicles.filter((v) => {
     if (typeFilter !== "ALL" && v.type !== typeFilter) return false
@@ -67,12 +82,56 @@ export default function VehiclesPage() {
     ...types.map((t) => ({ value: t, label: `${VEHICLE_EMOJI[t] || "🚗"} ${t?.replace(/_/g, " ").toLowerCase()}` })),
   ]
 
+  async function handleAddVehicle(e: React.FormEvent) {
+    e.preventDefault()
+    try {
+      const body: Record<string, any> = {
+        carrierId: form.carrierId,
+        registrationNo: form.registrationNo,
+        type: form.type,
+        capacityKg: Number(form.capacityKg) || 0,
+      }
+      if (form.make) body.make = form.make
+      if (form.model) body.model = form.model
+      if (form.year) body.year = Number(form.year)
+      await api.vehicles.create(body)
+      toast.success("Vehicle added successfully")
+      setDialogOpen(false)
+      setForm({ carrierId: "", registrationNo: "", type: "MOTORCYCLE", capacityKg: "", make: "", model: "", year: "" })
+      load()
+    } catch (err: any) {
+      toast.error(err.message || "Failed to add vehicle")
+    }
+  }
+
+  async function handleStatusChange(id: string, status: string) {
+    try {
+      await api.vehicles.updateStatus(id, { status })
+      toast.success(`Vehicle status updated to ${status}`)
+      load()
+    } catch (err: any) {
+      toast.error(err.message || "Failed to update status")
+    }
+  }
+
   return (
     <DashboardLayout breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Fleet", href: "/dashboard/fleet" }, { label: "Vehicles" }]}>
       <div className="flex flex-col gap-6 p-4 lg:p-6">
         <PageHeader
           title="🚛 Vehicles"
           description="Fleet vehicle management — registration, capacity, carrier assignments, and status."
+          actions={
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={load}>
+                <HugeiconsIcon icon={Refresh01Icon} className="size-4" />
+                Refresh
+              </Button>
+              <Button size="sm" onClick={() => setDialogOpen(true)}>
+                <HugeiconsIcon icon={PlusIcon} className="size-4" />
+                Add Vehicle
+              </Button>
+            </div>
+          }
         />
 
         {/* Metric Cards */}
@@ -130,7 +189,7 @@ export default function VehiclesPage() {
             {/* Vehicle Cards */}
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {filtered.slice(0, 12).map((v) => (
-                <div key={v.id} className="rounded-lg border bg-card p-4 transition-shadow hover:shadow-md">
+                <div key={v.id} className="cursor-pointer rounded-lg border bg-card p-4 transition-shadow hover:shadow-md" onClick={() => setSelected(v)}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="flex size-10 items-center justify-center rounded-lg bg-muted/40 text-lg">
@@ -187,7 +246,7 @@ export default function VehiclesPage() {
                   </thead>
                   <tbody>
                     {filtered.map((v) => (
-                      <tr key={v.id} className="transition-colors hover:bg-muted/20">
+                      <tr key={v.id} className="cursor-pointer transition-colors hover:bg-muted/20" onClick={() => setSelected(v)}>
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2">
                             <span className="text-base">{VEHICLE_EMOJI[v.type] || "🚗"}</span>
@@ -209,6 +268,137 @@ export default function VehiclesPage() {
           </>
         )}
       </div>
+
+      {/* Vehicle Detail Drawer */}
+      <Sheet open={!!selected} onOpenChange={(v) => !v && setSelected(null)}>
+        <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto">
+          {selected && (
+            <>
+              <SheetHeader>
+                <SheetTitle className="flex items-center gap-2">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-lg">
+                    {VEHICLE_EMOJI[selected.type] || "🚗"}
+                  </div>
+                  {selected.registrationNo || "Vehicle"}
+                </SheetTitle>
+                <SheetDescription>{selected.model || selected.type?.replace(/_/g, " ").toLowerCase() || ""}</SheetDescription>
+              </SheetHeader>
+
+              <div className="space-y-4 px-4 pb-6">
+                <div className="flex items-center justify-between rounded-lg border bg-muted/30 p-3">
+                  <span className="text-xs text-muted-foreground">Status</span>
+                  <select
+                    className="rounded-md border border-input bg-background px-2 py-1 text-xs"
+                    value={selected.status || "ACTIVE"}
+                    onChange={(e) => {
+                      handleStatusChange(selected.id, e.target.value)
+                      setSelected({ ...selected, status: e.target.value })
+                    }}
+                  >
+                    <option value="ACTIVE">Active</option>
+                    <option value="MAINTENANCE">Maintenance</option>
+                    <option value="INACTIVE">Inactive</option>
+                  </select>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="rounded-lg border p-3">
+                    <p className="text-xs text-muted-foreground">Type</p>
+                    <p className="mt-1 text-sm font-medium">{selected.type?.replace(/_/g, " ").toLowerCase() || "—"}</p>
+                  </div>
+                  <div className="rounded-lg border p-3">
+                    <p className="text-xs text-muted-foreground">Capacity</p>
+                    <p className="mt-1 text-sm font-medium tabular-nums">{formatNumber(selected.capacityKg || 0)} kg</p>
+                  </div>
+                  <div className="rounded-lg border p-3">
+                    <p className="text-xs text-muted-foreground">Carrier</p>
+                    <p className="mt-1 text-sm font-medium">{selected.carrier?.name || "—"}</p>
+                  </div>
+                  <div className="rounded-lg border p-3">
+                    <p className="text-xs text-muted-foreground">Make / Model</p>
+                    <p className="mt-1 text-sm font-medium">{[selected.make, selected.model].filter(Boolean).join(" ") || "—"}</p>
+                  </div>
+                  {selected.year && (
+                    <div className="rounded-lg border p-3">
+                      <p className="text-xs text-muted-foreground">Year</p>
+                      <p className="mt-1 text-sm font-medium tabular-nums">{selected.year}</p>
+                    </div>
+                  )}
+                  {selected.driver && (
+                    <div className="rounded-lg border p-3">
+                      <p className="text-xs text-muted-foreground">Driver</p>
+                      <p className="mt-1 text-sm font-medium">{selected.driver.user?.name || selected.driver.name || "—"}</p>
+                    </div>
+                  )}
+                </div>
+
+                <Button variant="outline" className="w-full" onClick={() => setSelected(null)}>Close</Button>
+              </div>
+            </>
+          )}
+        </SheetContent>
+      </Sheet>
+
+      {/* Add Vehicle Dialog */}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Add New Vehicle</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleAddVehicle} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Carrier *</Label>
+                <select className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={form.carrierId} onChange={(e) => setForm({ ...form, carrierId: e.target.value })} required>
+                  <option value="">Select carrier...</option>
+                  {carriers.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                </select>
+              </div>
+              <div className="space-y-2">
+                <Label>Registration No *</Label>
+                <Input value={form.registrationNo} onChange={(e) => setForm({ ...form, registrationNo: e.target.value.toUpperCase() })} placeholder="T123 ABC" required />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Vehicle Type *</Label>
+                <select className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })}>
+                  <option value="MOTORCYCLE">🏍️ Motorcycle</option>
+                  <option value="BICYCLE">🚲 Bicycle</option>
+                  <option value="CAR">🚗 Car</option>
+                  <option value="VAN">🚐 Van</option>
+                  <option value="PICKUP">🛻 Pickup</option>
+                  <option value="TRUCK">🚛 Truck</option>
+                  <option value="TRAILER">📦 Trailer</option>
+                  <option value="CONTAINER">📦 Container</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <Label>Capacity (KG) *</Label>
+                <Input type="number" value={form.capacityKg} onChange={(e) => setForm({ ...form, capacityKg: e.target.value })} required />
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label>Make</Label>
+                <Input value={form.make} onChange={(e) => setForm({ ...form, make: e.target.value })} placeholder="Toyota" />
+              </div>
+              <div className="space-y-2">
+                <Label>Model</Label>
+                <Input value={form.model} onChange={(e) => setForm({ ...form, model: e.target.value })} placeholder="Hilux" />
+              </div>
+              <div className="space-y-2">
+                <Label>Year</Label>
+                <Input type="number" value={form.year} onChange={(e) => setForm({ ...form, year: e.target.value })} placeholder="2024" />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
+              <Button type="submit">Add Vehicle</Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   )
 }
