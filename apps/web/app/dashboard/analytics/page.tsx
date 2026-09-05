@@ -79,7 +79,7 @@ export default function AnalyticsPage() {
         />
 
         {/* Primary KPI cards */}
-        <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <MetricCard
             label="Total shipments"
             value={formatNumber(stats.data?.total)}
@@ -110,7 +110,7 @@ export default function AnalyticsPage() {
         </div>
 
         {/* Revenue + exceptions KPIs */}
-        <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <MetricCard
             label="Total revenue"
             value={formatMoney(orderStats.data?.totalRevenue, "TZS", { compact: true })}
@@ -164,7 +164,7 @@ export default function AnalyticsPage() {
         </div>
 
         {/* Shipment status breakdown KPIs */}
-        <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <MetricCard
             label="Delivered"
             value={formatNumber(stats.data?.delivered)}

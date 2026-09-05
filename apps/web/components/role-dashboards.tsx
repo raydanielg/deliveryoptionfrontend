@@ -228,7 +228,7 @@ export function AdminDashboard() {
       )}
 
       {/* Primary KPIs */}
-      <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <MetricCard label="Total shipments" value={formatNumber(stats.data?.total)} icon={Package02Icon} loading={stats.isLoading} />
         <MetricCard label="Active" value={formatNumber(stats.data?.active)} icon={TruckIcon} loading={stats.isLoading} hint="In transit" />
         <MetricCard label="Delivered" value={formatNumber(stats.data?.delivered)} icon={CheckmarkCircle02Icon} loading={stats.isLoading} />
@@ -236,7 +236,7 @@ export function AdminDashboard() {
       </div>
 
       {/* Revenue + performance KPIs */}
-      <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <MetricCard label="Total revenue" value={formatMoney(orderStats.data?.totalRevenue, "TZS", { compact: true })} icon={CoinsIcon} loading={orderStats.isLoading} hint="From paid orders" />
         <MetricCard label="Success rate" value={formatPercent(successRate)} icon={CheckmarkCircle02Icon} loading={stats.isLoading} hint="Delivered / total" />
         <MetricCard label="Cancellation rate" value={formatPercent(cancellationRate)} icon={Cancel01Icon} loading={stats.isLoading} positiveIsGood={false} />
@@ -432,7 +432,7 @@ export function DispatcherDashboard() {
       />
 
       {/* KPIs */}
-      <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <MetricCard label="Awaiting assignment" value={formatNumber(dispatchQueue.length)} icon={Package02Icon} loading={recent.isLoading} hint="Needs driver" />
         <MetricCard label="In transit" value={formatNumber(stats.data?.inTransit)} icon={TruckIcon} loading={stats.isLoading} hint="On the move" />
         <MetricCard label="Active" value={formatNumber(stats.data?.active)} icon={DeliverySent01Icon} loading={stats.isLoading} />
@@ -554,7 +554,7 @@ export function DriverDashboard() {
       />
 
       {/* KPIs */}
-      <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <MetricCard label="Active deliveries" value={formatNumber(active.length)} icon={TruckIcon} loading={loading} hint="In progress" />
         <MetricCard label="Pending pickup" value={formatNumber(pending.length)} icon={PackageReceiveIcon} loading={loading} hint="Awaiting pickup" />
         <MetricCard label="Total assigned" value={formatNumber(assignments.length)} icon={Package02Icon} loading={loading} />
@@ -644,7 +644,7 @@ export function WarehouseDashboard() {
         }
       />
 
-      <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <MetricCard label="Items in storage" value={formatNumber(stats?.totalItems)} icon={WarehouseIcon} loading={loading} />
         <MetricCard label="Pending receiving" value={formatNumber(stats?.pendingReceiving)} icon={PackageReceiveIcon} loading={loading} hint="Awaiting check-in" />
         <MetricCard label="Ready for dispatch" value={formatNumber(stats?.readyForDispatch)} icon={TruckIcon} loading={loading} />
@@ -715,7 +715,7 @@ export function FinanceDashboard() {
         }
       />
 
-      <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <MetricCard label="Total revenue" value={formatMoney(totalRevenue, "TZS", { compact: true })} icon={CoinsIcon} loading={loading} />
         <MetricCard label="Pending payments" value={formatMoney(pendingPayments, "TZS", { compact: true })} icon={File02Icon} loading={loading} hint="Awaiting payment" />
         <MetricCard label="Transactions" value={formatNumber(stats?.payments?.length || 0)} icon={ReceiptIcon} loading={loading} />
@@ -784,7 +784,7 @@ export function CustomerSupportDashboard() {
         }
       />
 
-      <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <MetricCard label="Open exceptions" value={formatNumber(stats?.exceptions?.open)} icon={AlertCircleIcon} loading={loading} hint="Needs attention" />
         <MetricCard label="Resolved today" value={formatNumber(stats?.exceptions?.resolvedToday)} icon={CheckmarkCircle02Icon} loading={loading} />
         <MetricCard label="Active shipments" value={formatNumber(stats?.shipments?.inTransit)} icon={TruckIcon} loading={loading} />
@@ -842,7 +842,7 @@ export function CustomsDashboard() {
         }
       />
 
-      <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <MetricCard label="Customs review" value={formatNumber(shipments.length)} icon={Globe02Icon} loading={loading} hint="Awaiting clearance" />
         <MetricCard label="Cleared today" value="0" icon={CheckmarkCircle02Icon} loading={loading} />
         <MetricCard label="On hold" value="0" icon={AlertCircleIcon} loading={loading} />
@@ -915,7 +915,7 @@ export function ReportViewerDashboard() {
         }
       />
 
-      <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <MetricCard label="Total shipments" value={formatNumber(stats.data?.total)} icon={Package02Icon} loading={stats.isLoading} />
         <MetricCard label="Delivered" value={formatNumber(stats.data?.delivered)} icon={CheckmarkCircle02Icon} loading={stats.isLoading} />
         <MetricCard label="In transit" value={formatNumber(stats.data?.inTransit)} icon={Clock01Icon} loading={stats.isLoading} />
@@ -952,7 +952,7 @@ export function CustomerDashboard() {
         }
       />
 
-      <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <MetricCard label="Active" value={formatNumber(active.length)} icon={TruckIcon} loading={recent.isLoading} hint="In progress" />
         <MetricCard label="Delivered" value={formatNumber(delivered.length)} icon={CheckmarkCircle02Icon} loading={recent.isLoading} />
         <MetricCard label="Total" value={formatNumber(shipments.length)} icon={Package02Icon} loading={recent.isLoading} />
