@@ -31,8 +31,10 @@ import { StatusBadge } from "@/components/shared/status-badge"
 import { api } from "@/lib/api"
 import { formatNumber, formatDate } from "@/lib/format"
 import { toast } from "sonner"
+import { useLang } from "@/lib/i18n"
 
 export default function DriversPage() {
+  const { t } = useLang()
   const [drivers, setDrivers] = React.useState<any[]>([])
   const [carriers, setCarriers] = React.useState<any[]>([])
   const [loading, setLoading] = React.useState(true)
@@ -74,10 +76,10 @@ export default function DriversPage() {
   const totalDeliveries = drivers.reduce((s, d) => s + (d.totalDeliveries || 0), 0)
 
   const STATUS_FILTERS = [
-    { value: "ALL", label: "All Drivers" },
-    { value: "AVAILABLE", label: "Available" },
-    { value: "ON_TRIP", label: "On Trip" },
-    { value: "OFFLINE", label: "Offline" },
+    { value: "ALL", label: t("filter.allDrivers") },
+    { value: "AVAILABLE", label: t("filter.available") },
+    { value: "ON_TRIP", label: t("filter.onTrip") },
+    { value: "OFFLINE", label: t("filter.offline") },
   ]
 
   async function handleAddDriver(e: React.FormEvent) {
@@ -93,41 +95,41 @@ export default function DriversPage() {
       if (form.licenseExpiry) body.licenseExpiry = new Date(form.licenseExpiry).toISOString()
       if (form.carrierId) body.carrierId = form.carrierId
       await api.drivers.create(body)
-      toast.success("Driver added successfully")
+      toast.success(t("toast.driverAdded"))
       setDialogOpen(false)
       setForm({ name: "", email: "", phone: "", password: "", licenseNumber: "", licenseExpiry: "", carrierId: "" })
       load()
     } catch (err: any) {
-      toast.error(err.message || "Failed to add driver")
+      toast.error(err.message || t("toast.driverAddFailed"))
     }
   }
 
   async function handleStatusChange(id: string, status: string) {
     try {
       await api.drivers.updateStatus(id, { status })
-      toast.success(`Driver status updated to ${status}`)
+      toast.success(t("toast.statusUpdated"))
       load()
     } catch (err: any) {
-      toast.error(err.message || "Failed to update status")
+      toast.error(err.message || t("toast.statusUpdateFailed"))
     }
   }
 
   return (
-    <DashboardLayout breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Fleet", href: "/dashboard/fleet" }, { label: "Drivers" }]}>
+    <DashboardLayout breadcrumbs={[{ label: t("breadcrumb.dashboard"), href: "/dashboard" }, { label: t("breadcrumb.fleet"), href: "/dashboard/fleet" }, { label: t("page.drivers") }]}>
       <div className="flex flex-col gap-6 p-4 lg:p-6">
         <PageHeader
-          title="Drivers"
+          title={t("page.drivers")}
           icon={<HugeiconsIcon icon={UserGroupIcon} className="size-6 text-primary" />}
-          description="Manage all registered drivers — status, assignments, license info, and performance."
+          description={t("page.driversDesc")}
           actions={
             <div className="flex gap-2">
               <Button variant="outline" size="sm" onClick={load}>
                 <HugeiconsIcon icon={Refresh01Icon} className="size-4" />
-                Refresh
+                {t("common.refresh")}
               </Button>
               <Button size="sm" onClick={() => setDialogOpen(true)}>
                 <HugeiconsIcon icon={PlusIcon} className="size-4" />
-                Add Driver
+                {t("page.addDriver")}
               </Button>
             </div>
           }
@@ -135,17 +137,17 @@ export default function DriversPage() {
 
         {/* Metric Cards */}
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <MetricCard label="Total Drivers" value={formatNumber(drivers.length)} icon={UserGroupIcon} hint="All registered" />
-          <MetricCard label="Available" value={formatNumber(available)} icon={CheckmarkCircle02Icon} hint="Ready for dispatch" />
-          <MetricCard label="On Trip" value={formatNumber(onTrip)} icon={TruckIcon} hint="Currently delivering" />
-          <MetricCard label="Total Deliveries" value={formatNumber(totalDeliveries)} icon={Package02Icon} hint="All time" />
+          <MetricCard label={t("common.totalDrivers")} value={formatNumber(drivers.length)} icon={UserGroupIcon} hint={t("common.allRegistered")} />
+          <MetricCard label={t("common.available")} value={formatNumber(available)} icon={CheckmarkCircle02Icon} hint={t("common.readyForDispatch")} />
+          <MetricCard label={t("common.onTrip")} value={formatNumber(onTrip)} icon={TruckIcon} hint={t("common.currentlyDelivering")} />
+          <MetricCard label={t("common.totalDeliveries")} value={formatNumber(totalDeliveries)} icon={Package02Icon} hint={t("common.allTime")} />
         </div>
 
         {/* Filters */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <div className="relative flex-1 sm:max-w-xs">
             <HugeiconsIcon icon={Search01Icon} className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-            <Input placeholder="Search name, phone, license..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+            <Input placeholder={t("common.search")} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
           </div>
           <div className="flex flex-wrap gap-1">
             {STATUS_FILTERS.map((f) => (
@@ -181,7 +183,7 @@ export default function DriversPage() {
         ) : filtered.length === 0 ? (
           <div className="rounded-lg border bg-card py-12 text-center">
             <HugeiconsIcon icon={AlertCircleIcon} className="mx-auto size-8 text-muted-foreground/40" />
-            <p className="mt-2 text-sm text-muted-foreground">No drivers found</p>
+            <p className="mt-2 text-sm text-muted-foreground">{t("common.noData")}</p>
           </div>
         ) : (
           <>
@@ -207,24 +209,24 @@ export default function DriversPage() {
                       <div className="flex items-center justify-between">
                         <span className="flex items-center gap-1 text-muted-foreground">
                           <HugeiconsIcon icon={IdCardIcon} className="size-3" />
-                          License
+                          {t("common.license")}
                         </span>
                         <span className="font-mono font-medium">{d.licenseNumber}</span>
                       </div>
                     )}
                     <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">Deliveries</span>
+                      <span className="text-muted-foreground">{t("common.deliveries")}</span>
                       <span className="font-medium tabular-nums">{d.totalDeliveries || 0}</span>
                     </div>
                     {d.carrier && (
                       <div className="flex items-center justify-between">
-                        <span className="text-muted-foreground">Carrier</span>
+                        <span className="text-muted-foreground">{t("nav.carriers")}</span>
                         <span className="font-medium">{d.carrier.name}</span>
                       </div>
                     )}
                     {d.user?.createdAt && (
                       <div className="flex items-center justify-between border-t pt-1.5">
-                        <span className="text-muted-foreground">Joined</span>
+                        <span className="text-muted-foreground">{t("common.joined")}</span>
                         <span className="font-medium">{formatDate(d.user.createdAt)}</span>
                       </div>
                     )}
@@ -236,7 +238,7 @@ export default function DriversPage() {
                       className="mt-3 flex items-center justify-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-medium transition-colors hover:bg-muted/30"
                     >
                       <HugeiconsIcon icon={CallIcon} className="size-3.5" />
-                      Call Driver
+                      {t("common.callDriver")}
                     </a>
                   )}
                 </div>
@@ -249,12 +251,12 @@ export default function DriversPage() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="bg-muted/30 text-left">
-                      <th className="px-4 py-3 font-medium text-muted-foreground">Driver</th>
-                      <th className="px-4 py-3 font-medium text-muted-foreground">Phone</th>
-                      <th className="px-4 py-3 font-medium text-muted-foreground">License</th>
-                      <th className="px-4 py-3 font-medium text-muted-foreground">Carrier</th>
-                      <th className="px-4 py-3 font-medium text-muted-foreground text-right">Deliveries</th>
-                      <th className="px-4 py-3 font-medium text-muted-foreground">Status</th>
+                      <th className="px-4 py-3 font-medium text-muted-foreground">{t("common.driver")}</th>
+                      <th className="px-4 py-3 font-medium text-muted-foreground">{t("common.phone")}</th>
+                      <th className="px-4 py-3 font-medium text-muted-foreground">{t("common.license")}</th>
+                      <th className="px-4 py-3 font-medium text-muted-foreground">{t("common.carrier")}</th>
+                      <th className="px-4 py-3 font-medium text-muted-foreground text-right">{t("common.deliveries")}</th>
+                      <th className="px-4 py-3 font-medium text-muted-foreground">{t("common.status")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -294,14 +296,14 @@ export default function DriversPage() {
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary font-semibold">
                     {selected.user?.name?.charAt(0)?.toUpperCase() || "D"}
                   </div>
-                  {selected.user?.name || "Driver"}
+                  {selected.user?.name || t("common.driver")}
                 </SheetTitle>
-                <SheetDescription>{selected.user?.email || "No email"}</SheetDescription>
+                <SheetDescription>{selected.user?.email || t("common.noEmail")}</SheetDescription>
               </SheetHeader>
 
               <div className="space-y-4 px-4 pb-6">
                 <div className="flex items-center justify-between rounded-lg border bg-muted/30 p-3">
-                  <span className="text-xs text-muted-foreground">Status</span>
+                  <span className="text-muted-foreground">{t("common.status")}</span>
                   <select
                     className="rounded-md border border-input bg-background px-2 py-1 text-xs"
                     value={selected.status || "OFFLINE"}
@@ -310,35 +312,35 @@ export default function DriversPage() {
                       setSelected({ ...selected, status: e.target.value })
                     }}
                   >
-                    <option value="AVAILABLE">Available</option>
-                    <option value="ON_TRIP">On Trip</option>
-                    <option value="OFFLINE">Offline</option>
+                    <option value="AVAILABLE">{t("filter.available")}</option>
+                    <option value="ON_TRIP">{t("filter.onTrip")}</option>
+                    <option value="OFFLINE">{t("filter.offline")}</option>
                   </select>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div className="rounded-lg border p-3">
-                    <p className="text-xs text-muted-foreground flex items-center gap-1"><HugeiconsIcon icon={Mail01Icon} className="size-3" /> Email</p>
+                    <p className="text-xs text-muted-foreground flex items-center gap-1"><HugeiconsIcon icon={Mail01Icon} className="size-3" /> {t("common.email")}</p>
                     <p className="mt-1 text-sm font-medium">{selected.user?.email || "—"}</p>
                   </div>
                   <div className="rounded-lg border p-3">
-                    <p className="text-xs text-muted-foreground flex items-center gap-1"><HugeiconsIcon icon={PhoneIcon} className="size-3" /> Phone</p>
+                    <p className="text-xs text-muted-foreground flex items-center gap-1"><HugeiconsIcon icon={PhoneIcon} className="size-3" /> {t("common.phone")}</p>
                     <p className="mt-1 text-sm font-medium">{selected.user?.phone || "—"}</p>
                   </div>
                   <div className="rounded-lg border p-3">
-                    <p className="text-xs text-muted-foreground flex items-center gap-1"><HugeiconsIcon icon={IdCardIcon} className="size-3" /> License</p>
+                    <p className="text-xs text-muted-foreground flex items-center gap-1"><HugeiconsIcon icon={IdCardIcon} className="size-3" /> {t("common.license")}</p>
                     <p className="mt-1 text-sm font-mono font-medium">{selected.licenseNumber || "—"}</p>
                   </div>
                   <div className="rounded-lg border p-3">
-                    <p className="text-xs text-muted-foreground">Carrier</p>
+                    <p className="text-xs text-muted-foreground">{t("common.carrier")}</p>
                     <p className="mt-1 text-sm font-medium">{selected.carrier?.name || "—"}</p>
                   </div>
                   <div className="rounded-lg border p-3">
-                    <p className="text-xs text-muted-foreground">Deliveries</p>
+                    <p className="text-xs text-muted-foreground">{t("common.deliveries")}</p>
                     <p className="mt-1 text-sm font-medium tabular-nums">{selected.totalDeliveries || 0}</p>
                   </div>
                   <div className="rounded-lg border p-3">
-                    <p className="text-xs text-muted-foreground">Joined</p>
+                    <p className="text-xs text-muted-foreground">{t("common.joined")}</p>
                     <p className="mt-1 text-sm font-medium">{selected.user?.createdAt ? formatDate(selected.user.createdAt) : "—"}</p>
                   </div>
                 </div>
@@ -346,11 +348,11 @@ export default function DriversPage() {
                 {selected.user?.phone && (
                   <a href={`tel:${selected.user.phone}`} className="flex items-center justify-center gap-2 rounded-lg border px-3 py-2.5 text-sm font-medium transition-colors hover:bg-muted/30">
                     <HugeiconsIcon icon={CallIcon} className="size-4" />
-                    Call Driver
+                    {t("common.callDriver")}
                   </a>
                 )}
 
-                <Button variant="outline" className="w-full" onClick={() => setSelected(null)}>Close</Button>
+                <Button variant="outline" className="w-full" onClick={() => setSelected(null)}>{t("common.close")}</Button>
               </div>
             </>
           )}
@@ -361,49 +363,49 @@ export default function DriversPage() {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Add New Driver</DialogTitle>
+            <DialogTitle>{t("page.addDriver")}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleAddDriver} className="space-y-4">
             <div className="space-y-2">
-              <Label>Full Name *</Label>
+              <Label>{t("common.fullName")} {t("common.required")}</Label>
               <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Email *</Label>
+                <Label>{t("common.email")} {t("common.required")}</Label>
                 <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
               </div>
               <div className="space-y-2">
-                <Label>Phone *</Label>
+                <Label>{t("common.phone")} {t("common.required")}</Label>
                 <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="+255..." required />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Password *</Label>
+                <Label>{t("common.password")} {t("common.required")}</Label>
                 <Input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required minLength={8} />
               </div>
               <div className="space-y-2">
-                <Label>License Number *</Label>
+                <Label>{t("common.licenseNumber")} {t("common.required")}</Label>
                 <Input value={form.licenseNumber} onChange={(e) => setForm({ ...form, licenseNumber: e.target.value })} required />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>License Expiry</Label>
+                <Label>{t("common.licenseExpiry")}</Label>
                 <Input type="date" value={form.licenseExpiry} onChange={(e) => setForm({ ...form, licenseExpiry: e.target.value })} />
               </div>
               <div className="space-y-2">
-                <Label>Carrier</Label>
+                <Label>{t("common.carrier")}</Label>
                 <select className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={form.carrierId} onChange={(e) => setForm({ ...form, carrierId: e.target.value })}>
-                  <option value="">No carrier</option>
+                  <option value="">{t("common.noCarrier")}</option>
                   {carriers.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
               </div>
             </div>
             <div className="flex justify-end gap-2">
-              <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
-              <Button type="submit">Add Driver</Button>
+              <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>{t("common.cancel")}</Button>
+              <Button type="submit">{t("page.addDriver")}</Button>
             </div>
           </form>
         </DialogContent>

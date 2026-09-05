@@ -22,6 +22,7 @@ import {
 } from "@workspace/ui/components/sidebar"
 
 import { useRouter } from "next/navigation"
+import { useLang } from "@/lib/i18n"
 
 export function NavUser({
   user,
@@ -34,6 +35,7 @@ export function NavUser({
 }) {
   const { isMobile } = useSidebar()
   const router = useRouter()
+  const { t } = useLang()
   const initials = user.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
   return (
     <SidebarMenu>
@@ -77,10 +79,10 @@ export function NavUser({
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem>
-                Account
+                {t("user.account")}
               </DropdownMenuItem>
               <DropdownMenuItem>
-                Notifications
+                {t("nav.notifications")}
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
@@ -91,7 +93,7 @@ export function NavUser({
               }
               router.push("/auth")
             }}>
-              Log out
+              {t("user.logout")}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

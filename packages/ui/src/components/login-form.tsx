@@ -18,8 +18,33 @@ import { Input } from "@workspace/ui/components/input"
 
 export function LoginForm({
   className,
+  title = "Xerin Delivery Express",
+  subtitle = "Sign in to your account to continue",
+  emailLabel = "Email",
+  emailPlaceholder = "you@example.com",
+  passwordLabel = "Password",
+  passwordPlaceholder = "Enter your password",
+  forgotPassword = "Forgot your password?",
+  submitLabel = "Login",
+  successMessage = "Welcome back! Redirecting to dashboard...",
+  errorMessage = "Login failed. Please try again.",
+  noAccountText = "Don't have an account?",
+  signUpText = "Sign up",
   ...props
-}: React.ComponentProps<"div">) {
+}: React.ComponentProps<"div"> & {
+  title?: string
+  subtitle?: string
+  emailLabel?: string
+  emailPlaceholder?: string
+  passwordLabel?: string
+  passwordPlaceholder?: string
+  forgotPassword?: string
+  submitLabel?: string
+  successMessage?: string
+  errorMessage?: string
+  noAccountText?: string
+  signUpText?: string
+}) {
   const [isLoading, setIsLoading] = React.useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
@@ -47,13 +72,13 @@ export function LoginForm({
         localStorage.setItem("user", JSON.stringify(data.data.user))
       }
 
-      toast.success("Welcome back! Redirecting to dashboard...")
+      toast.success(successMessage)
       setTimeout(() => {
         window.location.href = "/dashboard"
       }, 500)
     } catch (err) {
       setIsLoading(false)
-      toast.error(err instanceof Error ? err.message : "Login failed. Please try again.")
+      toast.error(err instanceof Error ? err.message : errorMessage)
     }
   }
 
@@ -69,13 +94,13 @@ export function LoginForm({
                   alt="Xerin Delivery Express"
                   className="size-16 object-contain"
                 />
-                <h1 className="text-2xl font-bold">Xerin Delivery Express</h1>
+                <h1 className="text-2xl font-bold">{title}</h1>
                 <p className="text-balance text-muted-foreground">
-                  Sign in to your account to continue
+                  {subtitle}
                 </p>
               </div>
               <Field>
-                <FieldLabel htmlFor="email">Email</FieldLabel>
+                <FieldLabel htmlFor="email">{emailLabel}</FieldLabel>
                 <div className="relative">
                   <HugeiconsIcon
                     icon={Mail01Icon}
@@ -84,7 +109,7 @@ export function LoginForm({
                   <Input
                     id="email"
                     type="email"
-                    placeholder="you@example.com"
+                    placeholder={emailPlaceholder}
                     required
                     className="h-12 ps-10 text-base"
                   />
@@ -92,12 +117,12 @@ export function LoginForm({
               </Field>
               <Field>
                 <div className="flex items-center">
-                  <FieldLabel htmlFor="password">Password</FieldLabel>
+                  <FieldLabel htmlFor="password">{passwordLabel}</FieldLabel>
                   <a
                     href="/auth/forgot-password"
                     className="ms-auto text-sm underline-offset-2 hover:underline"
                   >
-                    Forgot your password?
+                    {forgotPassword}
                   </a>
                 </div>
                 <div className="relative">
@@ -108,7 +133,7 @@ export function LoginForm({
                   <Input
                     id="password"
                     type="password"
-                    placeholder="Enter your password"
+                    placeholder={passwordPlaceholder}
                     required
                     className="h-12 ps-10 text-base"
                   />
@@ -116,16 +141,16 @@ export function LoginForm({
               </Field>
               <Field>
                 <Button type="submit" size="lg" loading={isLoading} className="h-12 w-full text-base">
-                  Login
+                  {submitLabel}
                 </Button>
               </Field>
               <FieldDescription className="text-center text-muted-foreground">
                 Authorized personnel only. Contact your administrator for access.
               </FieldDescription>
               <div className="text-center text-sm text-muted-foreground">
-                Don&apos;t have an account?{" "}
+                {noAccountText}{" "}
                 <a href="/auth/sign-up" className="font-medium text-primary hover:underline">
-                  Sign up
+                  {signUpText}
                 </a>
               </div>
             </FieldGroup>

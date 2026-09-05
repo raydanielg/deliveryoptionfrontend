@@ -33,11 +33,13 @@ import { api } from "@/lib/api"
 import { exportToCSV } from "@/lib/csv-export"
 import { formatMoney, formatNumber, formatPercent, formatDate } from "@/lib/format"
 
-type ReportTab = "overview" | "modes" | "exceptions"
+type ReportTab = "overview" | "modes" | "exceptions" | "revenue" | "routes"
 
 const TABS: { id: ReportTab; label: string; icon: any }[] = [
   { id: "overview", label: "Overview", icon: Package02Icon },
   { id: "modes", label: "By Mode", icon: TruckIcon },
+  { id: "revenue", label: "Revenue", icon: CoinsIcon },
+  { id: "routes", label: "Top Routes", icon: Route02Icon },
   { id: "exceptions", label: "Exceptions", icon: AlertCircleIcon },
 ]
 
@@ -57,19 +59,27 @@ export default function ReportsPage() {
   const [orderStats, setOrderStats] = React.useState<any>(null)
   const [excStats, setExcStats] = React.useState<any>(null)
   const [loading, setLoading] = React.useState(true)
+  const [dateRange, setDateRange] = React.useState<{ start: string; end: string }>({ start: "", end: "" })
+  const [overviewReport, setOverviewReport] = React.useState<any>(null)
+  const [revenueReport, setRevenueReport] = React.useState<any>(null)
+  const [topRoutes, setTopRoutes] = React.useState<any[]>([])
 
   React.useEffect(() => {
     let cancelled = false
     async function fetchAll() {
       setLoading(true)
       try {
-        const [shipRes, orderRes, excRes, shipStatsRes, orderStatsRes, excStatsRes] = await Promise.allSettled([
-          api.shipments.list("?page=1&limit=200"),
-          api.orders.list("?page=1&limit=200"),
-          api.exceptions.list("?page=1&limit=200"),
+        const dateParams = buildDateParams(dateRange)
+        const [shipRes, orderRes, excRes, shipStatsRes, orderStatsRes, excStatsRes, overviewRes, revenueRes, routesRes] = await Promise.allSettled([
+          api.shipments.list(`?page=1&limit=200${dateParams}`),
+          api.orders.list(`?page=1&limit=200${dateParams}`),
+          api.exceptions.list(`?page=1&limit=200${dateParams}`),
           api.shipments.stats(),
           api.orders.stats(),
           api.exceptions.stats(),
+          api.reports.overview(dateParams.replace("&", "")),
+          api.reports.revenue(dateParams.replace("&", "")),
+          api.reports.topRoutes(dateParams.replace("&", "") + "&limit=10"),
         ])
 
         if (cancelled) return
@@ -89,6 +99,9 @@ export default function ReportsPage() {
         if (shipStatsRes.status === "fulfilled") setShipStats(shipStatsRes.value.data)
         if (orderStatsRes.status === "fulfilled") setOrderStats(orderStatsRes.value.data)
         if (excStatsRes.status === "fulfilled") setExcStats(excStatsRes.value.data)
+        if (overviewRes.status === "fulfilled") setOverviewReport(overviewRes.value.data)
+        if (revenueRes.status === "fulfilled") setRevenueReport(revenueRes.value.data)
+        if (routesRes.status === "fulfilled") setTopRoutes(routesRes.value.data || [])
       } catch {
       } finally {
         if (!cancelled) setLoading(false)
@@ -96,7 +109,14 @@ export default function ReportsPage() {
     }
     fetchAll()
     return () => { cancelled = true }
-  }, [])
+  }, [dateRange])
+
+  function buildDateParams(range: { start: string; end: string }) {
+    let params = ""
+    if (range.start) params += `&startDate=${new Date(range.start).toISOString()}`
+    if (range.end) params += `&endDate=${new Date(range.end).toISOString()}`
+    return params
+  }
 
   function handleExport() {
     const date = new Date().toISOString().slice(0, 10)
@@ -146,12 +166,27 @@ export default function ReportsPage() {
       <div className="flex flex-col gap-6 p-4 lg:p-6">
         <PageHeader
           title="Reports"
-          description="Comprehensive operational insights — overview, transport mode breakdown, and exception tracking."
+          description="Comprehensive operational insights — overview, transport mode breakdown, revenue, routes, and exception tracking."
           actions={
-            <Button variant="outline" size="sm" onClick={handleExport} disabled={loading}>
-              <HugeiconsIcon icon={Download01Icon} className="size-4" />
-              Export CSV
-            </Button>
+            <div className="flex items-center gap-2">
+              <Input
+                type="date"
+                value={dateRange.start}
+                onChange={(e) => setDateRange((prev) => ({ ...prev, start: e.target.value }))}
+                className="w-auto"
+              />
+              <span className="text-xs text-muted-foreground">to</span>
+              <Input
+                type="date"
+                value={dateRange.end}
+                onChange={(e) => setDateRange((prev) => ({ ...prev, end: e.target.value }))}
+                className="w-auto"
+              />
+              <Button variant="outline" size="sm" onClick={handleExport} disabled={loading}>
+                <HugeiconsIcon icon={Download01Icon} className="size-4" />
+                Export CSV
+              </Button>
+            </div>
           }
         />
 
@@ -199,9 +234,12 @@ export default function ReportsPage() {
                 orders={orders}
                 shipStats={shipStats}
                 orderStats={orderStats}
+                overviewReport={overviewReport}
               />
             )}
             {tab === "modes" && <ModesTab shipments={shipments} />}
+            {tab === "revenue" && <RevenueTab revenueReport={revenueReport} orders={orders} />}
+            {tab === "routes" && <RoutesTab topRoutes={topRoutes} />}
             {tab === "exceptions" && (
               <ExceptionsTab exceptions={exceptions} excStats={excStats} />
             )}
@@ -213,11 +251,12 @@ export default function ReportsPage() {
 }
 
 /* ====================== OVERVIEW TAB ====================== */
-function OverviewTab({ shipments, orders, shipStats, orderStats }: {
+function OverviewTab({ shipments, orders, shipStats, orderStats, overviewReport }: {
   shipments: any[]
   orders: any[]
   shipStats: any
   orderStats: any
+  overviewReport?: any
 }) {
   const [search, setSearch] = React.useState("")
 
@@ -639,6 +678,157 @@ function ExceptionsTab({ exceptions, excStats }: { exceptions: any[]; excStats: 
           </div>
         )}
       </div>
+    </div>
+  )
+}
+
+/* ====================== REVENUE TAB ====================== */
+function RevenueTab({ revenueReport, orders }: { revenueReport: any; orders: any[] }) {
+  const totalRevenue = revenueReport?.totalRevenue || orders.reduce((s, o) => s + Number(o.totalAmount || 0), 0)
+  const outstanding = revenueReport?.outstandingPayments || 0
+  const refunded = revenueReport?.refundedAmount || 0
+  const unpaidInvoices = revenueReport?.unpaidInvoices || 0
+
+  return (
+    <div className="flex flex-col gap-6">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <MetricCard label="Total Revenue" value={formatMoney(totalRevenue, "TZS", { compact: true })} icon={CoinsIcon} hint={`${revenueReport?.totalPayments || orders.length} payments`} />
+        <MetricCard label="Outstanding" value={formatMoney(outstanding, "TZS", { compact: true })} icon={Clock01Icon} positiveIsGood={false} hint={`${revenueReport?.outstandingCount || 0} pending`} />
+        <MetricCard label="Refunded" value={formatMoney(refunded, "TZS", { compact: true })} icon={Cancel01Icon} positiveIsGood={false} hint={`${revenueReport?.refundCount || 0} refunds`} />
+        <MetricCard label="Unpaid Invoices" value={formatMoney(unpaidInvoices, "TZS", { compact: true })} icon={AlertCircleIcon} positiveIsGood={false} hint={`${revenueReport?.unpaidInvoiceCount || 0} invoices`} />
+      </div>
+
+      {revenueReport?.revenueByMethod && revenueReport.revenueByMethod.length > 0 && (
+        <div className="rounded-lg border bg-card p-4">
+          <h3 className="text-sm font-semibold mb-3">Revenue by Payment Method</h3>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left border-b">
+                  <th className="pb-2 font-medium text-muted-foreground">Method</th>
+                  <th className="pb-2 font-medium text-muted-foreground text-right">Amount</th>
+                  <th className="pb-2 font-medium text-muted-foreground text-right">Count</th>
+                </tr>
+              </thead>
+              <tbody>
+                {revenueReport.revenueByMethod.map((m: any) => (
+                  <tr key={m.method} className="border-b last:border-0">
+                    <td className="py-2 font-medium">{m.method?.replace(/_/g, " ").toLowerCase() || "—"}</td>
+                    <td className="py-2 text-right tabular-nums">{formatMoney(Number(m.amount || 0), "TZS", { compact: true })}</td>
+                    <td className="py-2 text-right tabular-nums text-muted-foreground">{m.count}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      <div className="overflow-hidden rounded-lg border">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-muted/30 text-left">
+                <th className="px-4 py-3 font-medium text-muted-foreground">Order #</th>
+                <th className="px-4 py-3 font-medium text-muted-foreground">Status</th>
+                <th className="px-4 py-3 font-medium text-muted-foreground">Payment Status</th>
+                <th className="px-4 py-3 font-medium text-muted-foreground text-right">Amount</th>
+                <th className="px-4 py-3 font-medium text-muted-foreground">Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              {orders.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="px-4 py-12 text-center">
+                    <HugeiconsIcon icon={CoinsIcon} className="mx-auto size-8 text-muted-foreground/40" />
+                    <p className="mt-2 text-sm text-muted-foreground">No orders found</p>
+                  </td>
+                </tr>
+              ) : (
+                orders.slice(0, 50).map((o) => (
+                  <tr key={o.id} className="transition-colors hover:bg-muted/20">
+                    <td className="px-4 py-3 font-medium">{o.orderNumber || o.id?.slice(0, 8) || "—"}</td>
+                    <td className="px-4 py-3"><StatusBadge status={o.status} size="sm" /></td>
+                    <td className="px-4 py-3"><StatusBadge status={o.paymentStatus} size="sm" /></td>
+                    <td className="px-4 py-3 text-right font-medium tabular-nums">{formatMoney(Number(o.totalAmount || 0), "TZS", { compact: true })}</td>
+                    <td className="px-4 py-3 text-muted-foreground">{o.createdAt ? formatDate(o.createdAt) : "—"}</td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ====================== ROUTES TAB ====================== */
+function RoutesTab({ topRoutes }: { topRoutes: any[] }) {
+  const maxCount = topRoutes.length > 0 ? topRoutes[0].count : 1
+
+  return (
+    <div className="flex flex-col gap-6">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <MetricCard label="Total Routes" value={formatNumber(topRoutes.length)} icon={Route02Icon} hint="Active routes" />
+        <MetricCard label="Busiest Route" value={topRoutes[0]?.route || "—"} icon={TrendingUpIcon} hint={topRoutes[0] ? `${topRoutes[0].count} shipments` : ""} />
+        <MetricCard label="Total Weight" value={`${formatNumber(topRoutes.reduce((s, r) => s + (r.weightKg || 0), 0))} kg`} icon={Package02Icon} hint="Across all routes" />
+        <MetricCard label="Total Revenue" value={formatMoney(topRoutes.reduce((s, r) => s + (r.revenue || 0), 0), "TZS", { compact: true })} icon={CoinsIcon} hint="All routes" />
+      </div>
+
+      <div className="rounded-lg border bg-card p-4 space-y-3">
+        <h3 className="text-sm font-semibold">Route Volume</h3>
+        {topRoutes.length === 0 ? (
+          <p className="text-sm text-muted-foreground py-8 text-center">No route data available</p>
+        ) : (
+          topRoutes.map((r, i) => (
+            <div key={i} className="space-y-1">
+              <div className="flex items-center justify-between text-sm">
+                <span className="font-medium flex items-center gap-1">
+                  <HugeiconsIcon icon={Route02Icon} className="size-3.5 text-muted-foreground" />
+                  {r.route}
+                </span>
+                <span className="text-muted-foreground tabular-nums">{r.count} shipments · {formatMoney(Number(r.revenue || 0), "TZS", { compact: true })}</span>
+              </div>
+              <div className="h-2 overflow-hidden rounded-full bg-muted">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-primary to-primary/60 transition-all"
+                  style={{ width: `${(r.count / maxCount) * 100}%` }}
+                />
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {topRoutes.length > 0 && (
+        <div className="overflow-hidden rounded-lg border">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-muted/30 text-left">
+                  <th className="px-4 py-3 font-medium text-muted-foreground">Route</th>
+                  <th className="px-4 py-3 font-medium text-muted-foreground text-right">Shipments</th>
+                  <th className="px-4 py-3 font-medium text-muted-foreground text-right">Weight (kg)</th>
+                  <th className="px-4 py-3 font-medium text-muted-foreground text-right">Revenue</th>
+                  <th className="px-4 py-3 font-medium text-muted-foreground text-right">Delivered</th>
+                </tr>
+              </thead>
+              <tbody>
+                {topRoutes.map((r, i) => (
+                  <tr key={i} className="transition-colors hover:bg-muted/20">
+                    <td className="px-4 py-3 font-medium">{r.route}</td>
+                    <td className="px-4 py-3 text-right tabular-nums">{r.count}</td>
+                    <td className="px-4 py-3 text-right tabular-nums">{formatNumber(r.weightKg || 0)}</td>
+                    <td className="px-4 py-3 text-right font-medium tabular-nums">{formatMoney(Number(r.revenue || 0), "TZS", { compact: true })}</td>
+                    <td className="px-4 py-3 text-right tabular-nums text-emerald-600">{r.delivered || 0}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

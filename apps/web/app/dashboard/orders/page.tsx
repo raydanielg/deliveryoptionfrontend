@@ -29,17 +29,19 @@ import {
 } from "@hugeicons/core-free-icons"
 import { api } from "@/lib/api"
 import { formatMoney, formatNumber, formatDate } from "@/lib/format"
+import { useLang } from "@/lib/i18n"
 
 const PAYMENT_FILTERS = [
-  { value: "ALL", label: "All Payments" },
-  { value: "PAID", label: "Paid" },
-  { value: "PENDING", label: "Pending" },
-  { value: "PARTIAL", label: "Partially Paid" },
-  { value: "REFUNDED", label: "Refunded" },
-  { value: "FAILED", label: "Failed" },
+  { value: "ALL", label: "filter.allPayments" },
+  { value: "PAID", label: "filter.paid" },
+  { value: "PENDING", label: "filter.pending" },
+  { value: "PARTIAL", label: "filter.partial" },
+  { value: "REFUNDED", label: "filter.refunded" },
+  { value: "FAILED", label: "filter.failed" },
 ]
 
 export default function OrdersPage() {
+  const { t } = useLang()
   const [orders, setOrders] = React.useState<any[]>([])
   const [stats, setStats] = React.useState<any>(null)
   const [loading, setLoading] = React.useState(true)
@@ -101,42 +103,42 @@ export default function OrdersPage() {
   const totalPages = Math.ceil(total / limit) || 1
 
   return (
-    <DashboardLayout breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Orders" }]}>
+    <DashboardLayout breadcrumbs={[{ label: t("breadcrumb.dashboard"), href: "/dashboard" }, { label: t("page.orders") }]}>
       <div className="flex flex-col gap-6 p-4 lg:p-6">
         <PageHeader
-          title="Orders"
-          description="Customer order history and payment tracking"
+          title={t("page.orders")}
+          description={t("page.ordersDesc")}
         />
 
         {/* Stats Summary */}
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <MetricCard
-            label="Total Orders"
+            label={t("common.totalOrders")}
             value={formatNumber(stats?.total ?? 0)}
             icon={ChartIcon}
             loading={loading}
-            hint="All time orders"
+            hint={t("common.allTimeOrders")}
           />
           <MetricCard
-            label="Total Revenue"
+            label={t("common.totalRevenue")}
             value={formatMoney(Number(stats?.totalRevenue || 0), "TZS", { compact: true })}
             icon={Coins01Icon}
             loading={loading}
-            hint="From paid orders"
+            hint={t("common.fromPaidOrders")}
           />
           <MetricCard
-            label="Confirmed"
+            label={t("common.confirmed")}
             value={formatNumber(stats?.confirmed ?? 0)}
             icon={CheckmarkCircle02Icon}
             loading={loading}
-            hint="Confirmed orders"
+            hint={t("common.confirmedOrders")}
           />
           <MetricCard
-            label="Pending"
+            label={t("common.pending")}
             value={formatNumber(stats?.pending ?? 0)}
             icon={Clock01Icon}
             loading={loading}
-            hint="Awaiting confirmation"
+            hint={t("common.awaitingConfirmation")}
           />
         </div>
 
@@ -146,21 +148,21 @@ export default function OrdersPage() {
             <div className="relative flex-1 sm:max-w-xs">
               <HugeiconsIcon icon={Search01Icon} className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder="Search order #, customer..."
+                placeholder={t("common.searchOrders")}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-9"
               />
             </div>
             <Select value={paymentFilter} onValueChange={(v) => { setPaymentFilter(v ?? "ALL"); setPage(1) }}>
-              <SelectTrigger className="w-full sm:w-[200px]"><SelectValue placeholder="Filter by payment" /></SelectTrigger>
+              <SelectTrigger className="w-full sm:w-[200px]"><SelectValue placeholder={t("common.filterPayment")} /></SelectTrigger>
               <SelectContent>
-                {PAYMENT_FILTERS.map((f) => <SelectItem key={f.value} value={f.value}>{f.label}</SelectItem>)}
+                {PAYMENT_FILTERS.map((f) => <SelectItem key={f.value} value={f.value}>{t(f.label)}</SelectItem>)}
               </SelectContent>
             </Select>
             <Button variant="outline" onClick={() => { setPage(1); loadOrders() }} className="sm:ml-auto">
               <HugeiconsIcon icon={Search01Icon} className="size-4" />
-              Search
+              {t("common.search")}
             </Button>
           </div>
         </Card>
@@ -171,13 +173,13 @@ export default function OrdersPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-muted/30 text-left">
-                  <th className="px-4 py-3 font-medium text-muted-foreground">Order #</th>
-                  <th className="px-4 py-3 font-medium text-muted-foreground">Customer</th>
-                  <th className="px-4 py-3 font-medium text-muted-foreground">Amount</th>
-                  <th className="px-4 py-3 font-medium text-muted-foreground">Payment</th>
-                  <th className="px-4 py-3 font-medium text-muted-foreground">Status</th>
-                  <th className="px-4 py-3 font-medium text-muted-foreground">Date</th>
-                  <th className="px-4 py-3 text-right font-medium text-muted-foreground">Actions</th>
+                  <th className="px-4 py-3 font-medium text-muted-foreground">{t("common.orderNumber")}</th>
+                  <th className="px-4 py-3 font-medium text-muted-foreground">{t("common.customer")}</th>
+                  <th className="px-4 py-3 font-medium text-muted-foreground">{t("common.amount")}</th>
+                  <th className="px-4 py-3 font-medium text-muted-foreground">{t("common.payment")}</th>
+                  <th className="px-4 py-3 font-medium text-muted-foreground">{t("common.status")}</th>
+                  <th className="px-4 py-3 font-medium text-muted-foreground">{t("common.date")}</th>
+                  <th className="px-4 py-3 text-right font-medium text-muted-foreground">{t("common.actions")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -197,7 +199,7 @@ export default function OrdersPage() {
                   <tr>
                     <td colSpan={7} className="px-4 py-12 text-center">
                       <HugeiconsIcon icon={Coins01Icon} className="mx-auto size-8 text-muted-foreground/40" />
-                      <p className="mt-2 text-sm text-muted-foreground">No orders found</p>
+                      <p className="mt-2 text-sm text-muted-foreground">{t("common.noOrders")}</p>
                     </td>
                   </tr>
                 ) : (
@@ -233,14 +235,14 @@ export default function OrdersPage() {
           {/* Pagination */}
           {totalPages > 1 && (
             <div className="flex items-center justify-between px-4 py-3">
-              <span className="text-sm text-muted-foreground">Page {page} of {totalPages}</span>
+              <span className="text-sm text-muted-foreground">{t("common.page")} {page} {t("common.of")} {totalPages}</span>
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(page - 1)}>
                   <HugeiconsIcon icon={ArrowLeft01Icon} className="size-3.5" />
-                  Previous
+                  {t("common.previous")}
                 </Button>
                 <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(page + 1)}>
-                  Next
+                  {t("common.next")}
                   <HugeiconsIcon icon={ArrowRight01Icon} className="size-3.5" />
                 </Button>
               </div>
@@ -254,7 +256,7 @@ export default function OrdersPage() {
             <SheetHeader>
               <SheetTitle className="flex items-center gap-2">
                 <HugeiconsIcon icon={Coins01Icon} className="size-5 text-muted-foreground" />
-                Order Details
+                {t("common.orderDetails")}
               </SheetTitle>
               <SheetDescription>
                 {selectedOrder?.orderNumber || ""}
@@ -275,11 +277,11 @@ export default function OrdersPage() {
                   </div>
                   <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
                     <div>
-                      <p className="text-xs text-muted-foreground">Amount</p>
+                      <p className="text-xs text-muted-foreground">{t("common.amount")}</p>
                       <p className="mt-0.5 font-semibold tabular-nums">{formatMoney(Number(orderDetails.totalAmount || 0), orderDetails.currency || "TZS")}</p>
                     </div>
                     <div>
-                      <p className="text-xs text-muted-foreground">Date</p>
+                      <p className="text-xs text-muted-foreground">{t("common.date")}</p>
                       <p className="mt-0.5 flex items-center gap-1.5">
                         <HugeiconsIcon icon={Calendar03Icon} className="size-3.5 text-muted-foreground" />
                         {formatDate(orderDetails.createdAt)}
@@ -291,11 +293,11 @@ export default function OrdersPage() {
                 {/* Status badges */}
                 <div className="flex items-center gap-3 p-4">
                   <div className="flex-1">
-                    <p className="mb-1 text-xs text-muted-foreground">Payment Status</p>
+                    <p className="mb-1 text-xs text-muted-foreground">{t("common.paymentStatus")}</p>
                     <StatusBadge status={orderDetails.paymentStatus} />
                   </div>
                   <div className="flex-1">
-                    <p className="mb-1 text-xs text-muted-foreground">Order Status</p>
+                    <p className="mb-1 text-xs text-muted-foreground">{t("common.orderStatus")}</p>
                     <StatusBadge status={orderDetails.status} />
                   </div>
                 </div>
@@ -306,7 +308,7 @@ export default function OrdersPage() {
                 <div className="p-4">
                   <p className="mb-2 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
                     <HugeiconsIcon icon={UserIcon} className="size-3.5" />
-                    CUSTOMER
+                    {t("common.customer")}
                   </p>
                   <div className="space-y-1 text-sm">
                     <p className="font-medium">{orderDetails.customer?.user?.name || orderDetails.createdBy?.name || "—"}</p>
@@ -323,7 +325,7 @@ export default function OrdersPage() {
                     <div className="p-4">
                       <p className="mb-3 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
                         <HugeiconsIcon icon={Package02Icon} className="size-3.5" />
-                        SHIPMENTS ({orderDetails.shipments.length})
+                        {t("common.shipments")} ({orderDetails.shipments.length})
                       </p>
                       <div className="space-y-2">
                         {orderDetails.shipments.map((s: any) => (
@@ -351,7 +353,7 @@ export default function OrdersPage() {
                     <div className="p-4">
                       <p className="mb-3 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
                         <HugeiconsIcon icon={CreditCardIcon} className="size-3.5" />
-                        PAYMENTS ({orderDetails.payments.length})
+                        {t("common.payments")} ({orderDetails.payments.length})
                       </p>
                       <div className="space-y-2">
                         {orderDetails.payments.map((p: any) => (
@@ -372,14 +374,14 @@ export default function OrdersPage() {
                 {/* Notes */}
                 {orderDetails.notes && (
                   <div className="p-4">
-                    <p className="mb-1 text-xs font-medium text-muted-foreground">NOTES</p>
+                    <p className="mb-1 text-xs font-medium text-muted-foreground">{t("common.notes")}</p>
                     <p className="text-sm">{orderDetails.notes}</p>
                   </div>
                 )}
               </div>
             ) : (
               <div className="px-4 py-10 text-center">
-                <p className="text-sm text-muted-foreground">Failed to load order details</p>
+                <p className="text-sm text-muted-foreground">{t("common.failedToLoad")}</p>
               </div>
             )}
           </SheetContent>

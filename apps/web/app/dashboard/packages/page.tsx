@@ -22,19 +22,21 @@ import {
 } from "@hugeicons/core-free-icons"
 import { api } from "@/lib/api"
 import { formatMoney, formatDate, formatNumber } from "@/lib/format"
+import { useLang } from "@/lib/i18n"
 
 const STATUS_OPTIONS = [
-  { value: "ALL", label: "All Statuses" },
-  { value: "BOOKED", label: "Booked" },
-  { value: "PENDING", label: "Pending" },
-  { value: "ACCEPTED", label: "Accepted" },
-  { value: "PICKED_UP", label: "Picked Up" },
-  { value: "IN_TRANSIT", label: "In Transit" },
-  { value: "DELIVERED", label: "Delivered" },
-  { value: "CANCELLED", label: "Cancelled" },
+  { value: "ALL", label: "filter.allStatuses" },
+  { value: "BOOKED", label: "filter.booked" },
+  { value: "PENDING", label: "filter.pending" },
+  { value: "ACCEPTED", label: "filter.accepted" },
+  { value: "PICKED_UP", label: "filter.pickedUp" },
+  { value: "IN_TRANSIT", label: "filter.inTransit" },
+  { value: "DELIVERED", label: "filter.delivered" },
+  { value: "CANCELLED", label: "filter.cancelled" },
 ]
 
 export default function PackagesPage() {
+  const { t } = useLang()
   const [shipments, setShipments] = React.useState<any[]>([])
   const [stats, setStats] = React.useState<any>(null)
   const [loading, setLoading] = React.useState(true)
@@ -78,42 +80,42 @@ export default function PackagesPage() {
   const totalPages = Math.ceil(total / limit) || 1
 
   return (
-    <DashboardLayout breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Packages" }]}>
+    <DashboardLayout breadcrumbs={[{ label: t("breadcrumb.dashboard"), href: "/dashboard" }, { label: t("page.packages") }]}>
       <div className="flex flex-col gap-6 p-4 lg:p-6">
         <PageHeader
-          title="Packages"
-          description="Individual package tracking and management"
+          title={t("page.packages")}
+          description={t("page.packagesDesc")}
         />
 
         {/* Stats */}
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <MetricCard
-            label="Total Packages"
+            label={t("common.totalPackages")}
             value={formatNumber(stats?.total ?? 0)}
             icon={Package02Icon}
             loading={loading}
-            hint="All packages"
+            hint={t("common.allPackages")}
           />
           <MetricCard
-            label="In Transit"
+            label={t("common.inTransit")}
             value={formatNumber(stats?.inTransit ?? 0)}
             icon={TruckIcon}
             loading={loading}
-            hint="Currently moving"
+            hint={t("common.currentlyMoving")}
           />
           <MetricCard
-            label="Delivered"
+            label={t("common.delivered")}
             value={formatNumber(stats?.delivered ?? 0)}
             icon={CheckmarkCircle02Icon}
             loading={loading}
-            hint="Successfully delivered"
+            hint={t("common.successfullyDelivered")}
           />
           <MetricCard
-            label="Cancelled"
+            label={t("common.cancelled")}
             value={formatNumber(stats?.cancelled ?? 0)}
             icon={Cancel01Icon}
             loading={loading}
-            hint="Cancelled packages"
+            hint={t("common.cancelledPackages")}
           />
         </div>
 
@@ -122,21 +124,21 @@ export default function PackagesPage() {
           <div className="relative flex-1 sm:max-w-xs">
             <HugeiconsIcon icon={Search01Icon} className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder="Search tracking #, city..."
+              placeholder={t("common.searchTracking")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-9"
             />
           </div>
           <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v ?? "ALL"); setPage(1) }}>
-            <SelectTrigger className="w-full sm:w-[200px]"><SelectValue placeholder="Filter by status" /></SelectTrigger>
+            <SelectTrigger className="w-full sm:w-[200px]"><SelectValue placeholder={t("common.filterStatus")} /></SelectTrigger>
             <SelectContent>
-              {STATUS_OPTIONS.map((s) => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
+              {STATUS_OPTIONS.map((s) => <SelectItem key={s.value} value={s.value}>{t(s.label)}</SelectItem>)}
             </SelectContent>
           </Select>
           <Button variant="outline" onClick={() => { setPage(1); load() }} className="sm:ml-auto">
             <HugeiconsIcon icon={Search01Icon} className="size-4" />
-            Search
+            {t("common.search")}
           </Button>
         </div>
 
@@ -146,12 +148,12 @@ export default function PackagesPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-muted/30 text-left">
-                  <th className="px-4 py-3 font-medium text-muted-foreground">Tracking #</th>
-                  <th className="px-4 py-3 font-medium text-muted-foreground">Route</th>
-                  <th className="px-4 py-3 font-medium text-muted-foreground">Weight</th>
-                  <th className="px-4 py-3 font-medium text-muted-foreground">Amount</th>
-                  <th className="px-4 py-3 font-medium text-muted-foreground">Status</th>
-                  <th className="px-4 py-3 font-medium text-muted-foreground">Date</th>
+                  <th className="px-4 py-3 font-medium text-muted-foreground">{t("common.trackingNumber")}</th>
+                  <th className="px-4 py-3 font-medium text-muted-foreground">{t("common.route")}</th>
+                  <th className="px-4 py-3 font-medium text-muted-foreground">{t("common.weight")}</th>
+                  <th className="px-4 py-3 font-medium text-muted-foreground">{t("common.amount")}</th>
+                  <th className="px-4 py-3 font-medium text-muted-foreground">{t("common.status")}</th>
+                  <th className="px-4 py-3 font-medium text-muted-foreground">{t("common.date")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -170,7 +172,7 @@ export default function PackagesPage() {
                   <tr>
                     <td colSpan={6} className="px-4 py-12 text-center">
                       <HugeiconsIcon icon={Package02Icon} className="mx-auto size-8 text-muted-foreground/40" />
-                      <p className="mt-2 text-sm text-muted-foreground">No packages found</p>
+                      <p className="mt-2 text-sm text-muted-foreground">{t("common.noPackages")}</p>
                     </td>
                   </tr>
                 ) : (
@@ -203,11 +205,11 @@ export default function PackagesPage() {
             <div className="flex items-center justify-between px-4 py-3">
               <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(page - 1)}>
                 <HugeiconsIcon icon={ArrowLeft01Icon} className="size-3.5" />
-                Previous
+                {t("common.previous")}
               </Button>
-              <span className="text-sm text-muted-foreground">Page {page} of {totalPages}</span>
+              <span className="text-sm text-muted-foreground">{t("common.page")} {page} {t("common.of")} {totalPages}</span>
               <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(page + 1)}>
-                Next
+                {t("common.next")}
                 <HugeiconsIcon icon={ArrowRight01Icon} className="size-3.5" />
               </Button>
             </div>

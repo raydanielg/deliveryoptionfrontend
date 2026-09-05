@@ -18,24 +18,29 @@ import {
 } from "@workspace/ui/components/sidebar"
 import { Toaster } from "@workspace/ui/components/sonner"
 import { api } from "@/lib/api"
+import { useLang } from "@/lib/i18n"
+import { LanguageSwitcher } from "@/components/language-switcher"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { Notification03Icon } from "@hugeicons/core-free-icons"
 
 interface DashboardLayoutProps {
   children: React.ReactNode
   breadcrumbs: { label: string; href?: string }[]
 }
 
-function timeAgo(date: string) {
+function timeAgo(date: string, t: (k: string) => string) {
   const diff = Date.now() - new Date(date).getTime()
   const mins = Math.floor(diff / 60000)
-  if (mins < 1) return "just now"
-  if (mins < 60) return `${mins}m ago`
+  if (mins < 1) return t("layout.justNow")
+  if (mins < 60) return `${mins}${t("layout.minutesAgo")}`
   const hours = Math.floor(mins / 60)
-  if (hours < 24) return `${hours}h ago`
+  if (hours < 24) return `${hours}${t("layout.hoursAgo")}`
   const days = Math.floor(hours / 24)
-  return `${days}d ago`
+  return `${days}${t("layout.daysAgo")}`
 }
 
 export function DashboardLayout({ children, breadcrumbs }: DashboardLayoutProps) {
+  const { t } = useLang()
   const [notifOpen, setNotifOpen] = React.useState(false)
   const [notifications, setNotifications] = React.useState<any[]>([])
   const notifRef = React.useRef<HTMLDivElement>(null)
@@ -102,7 +107,7 @@ export function DashboardLayout({ children, breadcrumbs }: DashboardLayoutProps)
             <div className="relative hidden md:flex items-center">
               <input
                 type="text"
-                placeholder="Search..."
+                placeholder={t("layout.search")}
                 className="h-9 w-48 rounded-lg border border-border/60 bg-muted/30 px-3 text-sm outline-none transition-all duration-200 placeholder:text-muted-foreground focus:w-64 focus:border-primary/40 focus:bg-white focus:ring-2 focus:ring-primary/10 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:placeholder:text-slate-500 dark:focus:border-white/20 dark:focus:bg-white/10 dark:focus:ring-white/10"
               />
             </div>
@@ -113,7 +118,7 @@ export function DashboardLayout({ children, breadcrumbs }: DashboardLayoutProps)
                 onClick={() => setNotifOpen((v) => !v)}
                 className="relative flex size-9 items-center justify-center rounded-lg border border-border/40 bg-white text-foreground transition-all duration-200 hover:bg-muted/40 hover:shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white"
               >
-                <span className="text-sm">🔔</span>
+                <HugeiconsIcon icon={Notification03Icon} className="size-4" />
                 {unreadCount > 0 && (
                   <span className="absolute -right-0.5 -top-0.5 flex size-4 items-center justify-center rounded-full bg-orange-500 text-[9px] font-bold text-white shadow-sm">
                     {unreadCount > 9 ? "9+" : unreadCount}
@@ -123,17 +128,17 @@ export function DashboardLayout({ children, breadcrumbs }: DashboardLayoutProps)
               {notifOpen && (
                 <div className="absolute right-0 top-12 w-80 overflow-hidden rounded-xl border border-border/50 bg-white shadow-xl shadow-black/5 dark:border-white/10 dark:bg-slate-900 dark:shadow-black/30">
                   <div className="flex items-center justify-between border-b border-border/40 px-4 py-3 dark:border-white/10">
-                    <span className="text-sm font-semibold text-foreground dark:text-white">Notifications</span>
+                    <span className="text-sm font-semibold text-foreground dark:text-white">{t("layout.notifications")}</span>
                     {unreadCount > 0 && (
                       <button onClick={handleMarkAllRead} className="text-[10px] font-medium text-primary hover:underline dark:text-orange-400">
-                        Mark all read
+                        {t("layout.markAllRead")}
                       </button>
                     )}
                   </div>
                   <div className="max-h-72 overflow-y-auto">
                     {recentNotifs.length === 0 ? (
                       <div className="px-4 py-8 text-center">
-                        <p className="text-sm text-muted-foreground dark:text-slate-500">No notifications</p>
+                        <p className="text-sm text-muted-foreground dark:text-slate-500">{t("layout.noNotifications")}</p>
                       </div>
                     ) : (
                       recentNotifs.map((n) => (
@@ -142,18 +147,20 @@ export function DashboardLayout({ children, breadcrumbs }: DashboardLayoutProps)
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium text-foreground truncate dark:text-white">{n.title}</p>
                             <p className="text-xs text-muted-foreground truncate dark:text-slate-400">{n.message}</p>
-                            <p className="text-[10px] text-muted-foreground/70 mt-0.5 dark:text-slate-600">{timeAgo(n.createdAt)}</p>
+                            <p className="text-[10px] text-muted-foreground/70 mt-0.5 dark:text-slate-600">{timeAgo(n.createdAt, t)}</p>
                           </div>
                         </div>
                       ))
                     )}
                   </div>
                   <div className="border-t border-border/40 px-4 py-2.5 dark:border-white/10">
-                    <a href="/dashboard/notifications" className="text-xs font-medium text-primary hover:underline dark:text-orange-400">View all notifications</a>
+                    <a href="/dashboard/notifications" className="text-xs font-medium text-primary hover:underline dark:text-orange-400">{t("layout.viewAll")}</a>
                   </div>
                 </div>
               )}
             </div>
+
+            <LanguageSwitcher />
 
             <Separator
               orientation="vertical"

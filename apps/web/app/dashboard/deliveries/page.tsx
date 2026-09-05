@@ -22,17 +22,19 @@ import {
 } from "@hugeicons/core-free-icons"
 import { api } from "@/lib/api"
 import { formatNumber, formatRelative } from "@/lib/format"
+import { useLang } from "@/lib/i18n"
 
 const STATUS_OPTIONS = [
-  { value: "ALL", label: "All Deliveries" },
-  { value: "OUT_FOR_DELIVERY", label: "Out for Delivery" },
-  { value: "DELIVERED", label: "Delivered" },
-  { value: "FAILED", label: "Failed" },
-  { value: "RETURNING", label: "Returning" },
-  { value: "PICKED_UP", label: "Picked Up" },
+  { value: "ALL", label: "filter.allDeliveries" },
+  { value: "OUT_FOR_DELIVERY", label: "filter.outForDelivery" },
+  { value: "DELIVERED", label: "filter.delivered" },
+  { value: "FAILED", label: "filter.failed" },
+  { value: "RETURNING", label: "filter.returning" },
+  { value: "PICKED_UP", label: "filter.pickedUp" },
 ]
 
 export default function DeliveriesPage() {
+  const { t } = useLang()
   const [shipments, setShipments] = React.useState<any[]>([])
   const [stats, setStats] = React.useState<any>(null)
   const [loading, setLoading] = React.useState(true)
@@ -76,42 +78,42 @@ export default function DeliveriesPage() {
   const totalPages = Math.ceil(total / limit) || 1
 
   return (
-    <DashboardLayout breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Deliveries" }]}>
+    <DashboardLayout breadcrumbs={[{ label: t("breadcrumb.dashboard"), href: "/dashboard" }, { label: t("page.deliveries") }]}>
       <div className="flex flex-col gap-6 p-4 lg:p-6">
         <PageHeader
-          title="Deliveries"
-          description="Active and completed deliveries"
+          title={t("page.deliveries")}
+          description={t("page.deliveriesDesc")}
         />
 
         {/* Stats */}
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <MetricCard
-            label="Out for Delivery"
+            label={t("common.outForDelivery")}
             value={formatNumber(shipments.filter(s => s.status === "OUT_FOR_DELIVERY").length)}
             icon={TruckIcon}
             loading={loading}
-            hint="Currently out"
+            hint={t("common.currentlyOut")}
           />
           <MetricCard
-            label="Delivered"
+            label={t("common.delivered")}
             value={formatNumber(stats?.delivered ?? 0)}
             icon={CheckmarkCircle02Icon}
             loading={loading}
-            hint="Successfully delivered"
+            hint={t("common.successfullyDelivered")}
           />
           <MetricCard
-            label="Failed"
+            label={t("common.failed")}
             value={formatNumber(shipments.filter(s => s.status === "FAILED").length)}
             icon={Cancel01Icon}
             loading={loading}
-            hint="Delivery failed"
+            hint={t("common.deliveryFailed")}
           />
           <MetricCard
-            label="Returning"
+            label={t("common.returning")}
             value={formatNumber(shipments.filter(s => s.status === "RETURNING").length)}
             icon={Clock01Icon}
             loading={loading}
-            hint="Being returned"
+            hint={t("common.beingReturned")}
           />
         </div>
 
@@ -120,21 +122,21 @@ export default function DeliveriesPage() {
           <div className="relative flex-1 sm:max-w-xs">
             <HugeiconsIcon icon={Search01Icon} className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder="Search tracking #, city..."
+              placeholder={t("common.searchTracking")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-9"
             />
           </div>
           <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v ?? "ALL"); setPage(1) }}>
-            <SelectTrigger className="w-full sm:w-[200px]"><SelectValue placeholder="Filter by status" /></SelectTrigger>
+            <SelectTrigger className="w-full sm:w-[200px]"><SelectValue placeholder={t("common.filterStatus")} /></SelectTrigger>
             <SelectContent>
-              {STATUS_OPTIONS.map((s) => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
+              {STATUS_OPTIONS.map((s) => <SelectItem key={s.value} value={s.value}>{t(s.label)}</SelectItem>)}
             </SelectContent>
           </Select>
           <Button variant="outline" onClick={() => { setPage(1); load() }} className="sm:ml-auto">
             <HugeiconsIcon icon={Search01Icon} className="size-4" />
-            Search
+            {t("common.search")}
           </Button>
         </div>
 
@@ -144,12 +146,12 @@ export default function DeliveriesPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-muted/30 text-left">
-                  <th className="px-4 py-3 font-medium text-muted-foreground">Tracking #</th>
-                  <th className="px-4 py-3 font-medium text-muted-foreground">Route</th>
-                  <th className="px-4 py-3 font-medium text-muted-foreground">Recipient</th>
-                  <th className="px-4 py-3 font-medium text-muted-foreground">Weight</th>
-                  <th className="px-4 py-3 font-medium text-muted-foreground">Status</th>
-                  <th className="px-4 py-3 font-medium text-muted-foreground">Updated</th>
+                  <th className="px-4 py-3 font-medium text-muted-foreground">{t("common.trackingNumber")}</th>
+                  <th className="px-4 py-3 font-medium text-muted-foreground">{t("common.route")}</th>
+                  <th className="px-4 py-3 font-medium text-muted-foreground">{t("common.recipient")}</th>
+                  <th className="px-4 py-3 font-medium text-muted-foreground">{t("common.weight")}</th>
+                  <th className="px-4 py-3 font-medium text-muted-foreground">{t("common.status")}</th>
+                  <th className="px-4 py-3 font-medium text-muted-foreground">{t("common.updated")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -168,7 +170,7 @@ export default function DeliveriesPage() {
                   <tr>
                     <td colSpan={6} className="px-4 py-12 text-center">
                       <HugeiconsIcon icon={TruckIcon} className="mx-auto size-8 text-muted-foreground/40" />
-                      <p className="mt-2 text-sm text-muted-foreground">No deliveries found</p>
+                      <p className="mt-2 text-sm text-muted-foreground">{t("common.noDeliveries")}</p>
                     </td>
                   </tr>
                 ) : (
@@ -203,11 +205,11 @@ export default function DeliveriesPage() {
             <div className="flex items-center justify-between px-4 py-3">
               <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(page - 1)}>
                 <HugeiconsIcon icon={ArrowLeft01Icon} className="size-3.5" />
-                Previous
+                {t("common.previous")}
               </Button>
-              <span className="text-sm text-muted-foreground">Page {page} of {totalPages}</span>
+              <span className="text-sm text-muted-foreground">{t("common.page")} {page} {t("common.of")} {totalPages}</span>
               <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(page + 1)}>
-                Next
+                {t("common.next")}
                 <HugeiconsIcon icon={ArrowRight01Icon} className="size-3.5" />
               </Button>
             </div>

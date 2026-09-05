@@ -25,8 +25,10 @@ import {
 } from "@hugeicons/core-free-icons"
 import { api } from "@/lib/api"
 import { formatNumber, formatMoney, formatRelative } from "@/lib/format"
+import { useLang } from "@/lib/i18n"
 
 export default function OperationsPage() {
+  const { t } = useLang()
   const [shipmentStats, setShipmentStats] = React.useState<any>(null)
   const [orderStats, setOrderStats] = React.useState<any>(null)
   const [recentShipments, setRecentShipments] = React.useState<any[]>([])
@@ -57,25 +59,25 @@ export default function OperationsPage() {
   }, [])
 
   const quickActions = [
-    { label: "New Shipment", icon: PlusIcon, href: "/dashboard/shipments/new", description: "Create a new shipment" },
-    { label: "Live Tracking", icon: MapIcon, href: "/dashboard/tracking", description: "Track shipments in real-time" },
-    { label: "Manifests", icon: TruckIcon, href: "/dashboard/manifests", description: "Bulk shipment manifests" },
-    { label: "Orders", icon: Coins01Icon, href: "/dashboard/orders", description: "Customer orders overview" },
-    { label: "Exceptions", icon: AlertCircleIcon, href: "/dashboard/exceptions", description: "Handle delivery exceptions" },
-    { label: "Customers", icon: UserGroupIcon, href: "/dashboard/customers", description: "Manage customer accounts" },
+    { label: t("nav.newShipment"), icon: PlusIcon, href: "/dashboard/shipments/new", description: t("qa.newShipmentDesc") },
+    { label: t("nav.tracking"), icon: MapIcon, href: "/dashboard/tracking", description: t("qa.liveTrackingDesc") },
+    { label: t("nav.manifests"), icon: TruckIcon, href: "/dashboard/manifests", description: t("qa.manifestsDesc") },
+    { label: t("nav.orders"), icon: Coins01Icon, href: "/dashboard/orders", description: t("qa.ordersDesc") },
+    { label: t("nav.exceptions"), icon: AlertCircleIcon, href: "/dashboard/exceptions", description: t("qa.exceptionsDesc") },
+    { label: t("nav.customers"), icon: UserGroupIcon, href: "/dashboard/customers", description: t("qa.customersDesc") },
   ]
 
   return (
-    <DashboardLayout breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Operations" }]}>
+    <DashboardLayout breadcrumbs={[{ label: t("breadcrumb.dashboard"), href: "/dashboard" }, { label: t("page.operations") }]}>
       <div className="flex flex-col gap-6 p-4 lg:p-6">
         <PageHeader
-          title="Operations"
-          description="Manage shipments, deliveries, and assignments"
+          title={t("page.operations")}
+          description={t("page.operationsDesc")}
           actions={
             <Link href="/dashboard/shipments/new">
               <Button>
                 <HugeiconsIcon icon={PlusIcon} className="size-4" />
-                New Shipment
+                {t("nav.newShipment")}
               </Button>
             </Link>
           }
@@ -84,32 +86,32 @@ export default function OperationsPage() {
         {/* Stats Grid */}
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <MetricCard
-            label="Total Shipments"
+            label={t("common.totalShipments")}
             value={formatNumber(shipmentStats?.total ?? 0)}
             icon={Package02Icon}
             loading={loading}
-            hint="All shipments"
+            hint={t("common.allShipments")}
           />
           <MetricCard
-            label="In Transit"
+            label={t("common.inTransit")}
             value={formatNumber(shipmentStats?.inTransit ?? 0)}
             icon={TruckIcon}
             loading={loading}
-            hint="Currently moving"
+            hint={t("common.currentlyMoving")}
           />
           <MetricCard
-            label="Delivered"
+            label={t("common.delivered")}
             value={formatNumber(shipmentStats?.delivered ?? 0)}
             icon={CheckmarkCircle02Icon}
             loading={loading}
-            hint="Successfully delivered"
+            hint={t("common.successfullyDelivered")}
           />
           <MetricCard
-            label="Cancelled"
+            label={t("common.cancelled")}
             value={formatNumber(shipmentStats?.cancelled ?? 0)}
             icon={Cancel01Icon}
             loading={loading}
-            hint="Cancelled shipments"
+            hint={t("common.cancelledShipments")}
           />
         </div>
 
@@ -135,10 +137,10 @@ export default function OperationsPage() {
             <div className="flex items-center justify-between border-b px-5 py-4">
               <div className="flex items-center gap-2">
                 <HugeiconsIcon icon={Package02Icon} className="size-5 text-muted-foreground" />
-                <h2 className="text-base font-semibold">Recent Shipments</h2>
+                <h2 className="text-base font-semibold">{t("common.recentShipments")}</h2>
               </div>
               <Link href="/dashboard/shipments" className="flex items-center gap-1 text-xs font-medium text-primary hover:underline">
-                View all
+                {t("common.viewAll")}
                 <HugeiconsIcon icon={ArrowRight01Icon} className="size-3.5" />
               </Link>
             </div>
@@ -157,7 +159,7 @@ export default function OperationsPage() {
               ) : recentShipments.length === 0 ? (
                 <div className="px-5 py-10 text-center">
                   <HugeiconsIcon icon={Package02Icon} className="mx-auto size-8 text-muted-foreground/40" />
-                  <p className="mt-2 text-sm text-muted-foreground">No shipments yet</p>
+                  <p className="mt-2 text-sm text-muted-foreground">{t("common.noShipmentsYet")}</p>
                 </div>
               ) : (
                 recentShipments.map((s) => (
@@ -183,10 +185,10 @@ export default function OperationsPage() {
             <div className="flex items-center justify-between border-b px-5 py-4">
               <div className="flex items-center gap-2">
                 <HugeiconsIcon icon={Coins01Icon} className="size-5 text-muted-foreground" />
-                <h2 className="text-base font-semibold">Recent Orders</h2>
+                <h2 className="text-base font-semibold">{t("common.recentOrders")}</h2>
               </div>
               <Link href="/dashboard/orders" className="flex items-center gap-1 text-xs font-medium text-primary hover:underline">
-                View all
+                {t("common.viewAll")}
                 <HugeiconsIcon icon={ArrowRight01Icon} className="size-3.5" />
               </Link>
             </div>
@@ -205,7 +207,7 @@ export default function OperationsPage() {
               ) : recentOrders.length === 0 ? (
                 <div className="px-5 py-10 text-center">
                   <HugeiconsIcon icon={Coins01Icon} className="mx-auto size-8 text-muted-foreground/40" />
-                  <p className="mt-2 text-sm text-muted-foreground">No orders yet</p>
+                  <p className="mt-2 text-sm text-muted-foreground">{t("common.noOrdersYet")}</p>
                 </div>
               ) : (
                 recentOrders.map((o) => (
@@ -233,24 +235,24 @@ export default function OperationsPage() {
             <div className="border-b px-5 py-4">
               <div className="flex items-center gap-2">
                 <HugeiconsIcon icon={ChartIcon} className="size-5 text-muted-foreground" />
-                <h2 className="text-base font-semibold">Orders Summary</h2>
+                <h2 className="text-base font-semibold">{t("common.ordersSummary")}</h2>
               </div>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-border/40">
               <div className="px-5 py-4">
-                <p className="text-xs text-muted-foreground">Total Orders</p>
+                <p className="text-xs text-muted-foreground">{t("common.totalOrders")}</p>
                 <p className="mt-1 text-xl font-bold tabular-nums">{formatNumber(orderStats.total ?? 0)}</p>
               </div>
               <div className="px-5 py-4">
-                <p className="text-xs text-muted-foreground">Total Revenue</p>
+                <p className="text-xs text-muted-foreground">{t("common.totalRevenue")}</p>
                 <p className="mt-1 text-xl font-bold tabular-nums">{formatMoney(Number(orderStats.totalRevenue || 0), "TZS", { compact: true })}</p>
               </div>
               <div className="px-5 py-4">
-                <p className="text-xs text-muted-foreground">Confirmed</p>
+                <p className="text-xs text-muted-foreground">{t("common.confirmed")}</p>
                 <p className="mt-1 text-xl font-bold tabular-nums text-emerald-600">{formatNumber(orderStats.confirmed ?? 0)}</p>
               </div>
               <div className="px-5 py-4">
-                <p className="text-xs text-muted-foreground">Pending</p>
+                <p className="text-xs text-muted-foreground">{t("common.pending")}</p>
                 <p className="mt-1 text-xl font-bold tabular-nums text-amber-600">{formatNumber(orderStats.pending ?? 0)}</p>
               </div>
             </div>

@@ -366,4 +366,31 @@ export const api = {
     delete: (id: string) => request(`/ratings/${id}`, { method: "DELETE" }),
     stats: () => request("/ratings/stats"),
   },
+  booking: {
+    cargoTypes: () => request("/booking/cargo-types"),
+    recommend: (body: Record<string, any>) => request("/booking/recommend", { method: "POST", body }),
+    create: (body: Record<string, any>) => request("/booking/create", { method: "POST", body }),
+    bulk: (body: Record<string, any>) => request("/booking/bulk", { method: "POST", body }),
+  },
+  reports: {
+    overview: (params?: string) => request(`/reports/overview${params ? `?${params}` : ""}`),
+    byMode: (params?: string) => request(`/reports/by-mode${params ? `?${params}` : ""}`),
+    revenue: (params?: string) => request(`/reports/revenue${params ? `?${params}` : ""}`),
+    topRoutes: (params?: string) => request(`/reports/top-routes${params ? `?${params}` : ""}`),
+    exceptions: (params?: string) => request(`/reports/exceptions${params ? `?${params}` : ""}`),
+    warehouse: () => request("/reports/warehouse"),
+    sgr: (params?: string) => request(`/reports/sgr${params ? `?${params}` : ""}`),
+    airCargo: (params?: string) => request(`/reports/air-cargo${params ? `?${params}` : ""}`),
+  },
+  trainCapacity: {
+    list: (params?: string) => request(`/train-capacity${params ? `?${params}` : ""}`),
+    get: (id: string) => request(`/train-capacity/${id}`),
+    create: (body: Record<string, any>) => request("/train-capacity", { method: "POST", body }),
+    update: (id: string, body: Record<string, any>) => request(`/train-capacity/${id}`, { method: "PUT", body }),
+    delete: (id: string) => request(`/train-capacity/${id}`, { method: "DELETE" }),
+    toggle: (id: string) => request(`/train-capacity/${id}/toggle`, { method: "PATCH" }),
+  },
+  auditLogs: {
+    list: (params?: string) => request(`/audit-logs${params ? `?${params}` : ""}`),
+  },
 }

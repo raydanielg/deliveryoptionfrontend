@@ -31,6 +31,7 @@ import { StatusBadge } from "@/components/shared/status-badge"
 import { api } from "@/lib/api"
 import { formatNumber } from "@/lib/format"
 import { toast } from "sonner"
+import { useLang } from "@/lib/i18n"
 
 const CARRIER_ICON: Record<string, any> = {
   XERIN: TruckIcon,
@@ -39,6 +40,7 @@ const CARRIER_ICON: Record<string, any> = {
 }
 
 export default function CarriersPage() {
+  const { t } = useLang()
   const [carriers, setCarriers] = React.useState<any[]>([])
   const [loading, setLoading] = React.useState(true)
   const [search, setSearch] = React.useState("")
@@ -75,7 +77,7 @@ export default function CarriersPage() {
 
   const types = Array.from(new Set(carriers.map((c) => c.type).filter(Boolean)))
   const TYPE_FILTERS = [
-    { value: "ALL", label: "All Carriers" },
+    { value: "ALL", label: t("filter.allCarriers") },
     ...types.map((t) => ({ value: t, label: t?.replace(/_/g, " ").toLowerCase() })),
   ]
 
@@ -90,31 +92,30 @@ export default function CarriersPage() {
       if (form.country) body.country = form.country
       if (form.licenseNo) body.licenseNo = form.licenseNo
       await api.carriers.create(body)
-      toast.success("Carrier added successfully")
+      toast.success(t("toast.carrierAdded"))
       setDialogOpen(false)
       setForm({ name: "", type: "PARTNER", email: "", phone: "", address: "", city: "", country: "Tanzania", licenseNo: "" })
       load()
     } catch (err: any) {
-      toast.error(err.message || "Failed to add carrier")
+      toast.error(err.message || t("toast.carrierAddFailed"))
     }
   }
 
   return (
-    <DashboardLayout breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Fleet", href: "/dashboard/fleet" }, { label: "Carriers" }]}>
-      <div className="flex flex-col gap-6 p-4 lg:p-6">
+    <DashboardLayout breadcrumbs={[{ label: t("breadcrumb.dashboard"), href: "/dashboard" }, { label: t("breadcrumb.fleet"), href: "/dashboard/fleet" }, { label: t("page.carriers") }]}>      <div className="flex flex-col gap-6 p-4 lg:p-6">
         <PageHeader
-          title="Carriers"
+          title={t("page.carriers")}
           icon={<HugeiconsIcon icon={HandshakeIcon} className="size-6 text-primary" />}
-          description="Xerin and partner carriers — manage relationships, driver counts, and vehicle assignments."
+          description={t("page.carriersDesc")}
           actions={
             <div className="flex gap-2">
               <Button variant="outline" size="sm" onClick={load}>
                 <HugeiconsIcon icon={Refresh01Icon} className="size-4" />
-                Refresh
+                {t("common.refresh")}
               </Button>
               <Button size="sm" onClick={() => setDialogOpen(true)}>
                 <HugeiconsIcon icon={PlusIcon} className="size-4" />
-                Add Carrier
+                {t("page.addCarrier")}
               </Button>
             </div>
           }
@@ -122,17 +123,17 @@ export default function CarriersPage() {
 
         {/* Metric Cards */}
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <MetricCard label="Total Carriers" value={formatNumber(carriers.length)} icon={TruckIcon} hint="All registered" />
-          <MetricCard label="Xerin Fleet" value={formatNumber(xerinCount)} icon={CheckmarkCircle02Icon} hint="In-house" />
-          <MetricCard label="Total Drivers" value={formatNumber(totalDrivers)} icon={UserGroupIcon} hint="Across all carriers" />
-          <MetricCard label="Total Vehicles" value={formatNumber(totalVehicles)} icon={TruckIcon} hint="Across all carriers" />
+          <MetricCard label={t("common.totalCarriers")} value={formatNumber(carriers.length)} icon={TruckIcon} hint={t("common.allRegistered")} />
+          <MetricCard label={t("common.xerinFleet")} value={formatNumber(xerinCount)} icon={CheckmarkCircle02Icon} hint={t("common.inHouse")} />
+          <MetricCard label={t("common.totalDrivers")} value={formatNumber(totalDrivers)} icon={UserGroupIcon} hint={t("common.acrossAllCarriers")} />
+          <MetricCard label={t("common.totalVehicles")} value={formatNumber(totalVehicles)} icon={TruckIcon} hint={t("common.acrossAllCarriers")} />
         </div>
 
         {/* Filters */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <div className="relative flex-1 sm:max-w-xs">
             <HugeiconsIcon icon={Search01Icon} className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-            <Input placeholder="Search name, email, phone..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+            <Input placeholder={t("common.search")} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
           </div>
           <div className="flex flex-wrap gap-1">
             {TYPE_FILTERS.map((f) => (
@@ -168,7 +169,7 @@ export default function CarriersPage() {
         ) : filtered.length === 0 ? (
           <div className="rounded-lg border bg-card py-12 text-center">
             <HugeiconsIcon icon={AlertCircleIcon} className="mx-auto size-8 text-muted-foreground/40" />
-            <p className="mt-2 text-sm text-muted-foreground">No carriers found</p>
+            <p className="mt-2 text-sm text-muted-foreground">{t("common.noCarriers")}</p>
           </div>
         ) : (
           <>
@@ -194,21 +195,21 @@ export default function CarriersPage() {
                   <div className="mt-3 space-y-1.5 text-xs">
                     {c.phone && (
                       <div className="flex items-center justify-between">
-                        <span className="text-muted-foreground">Phone</span>
+                        <span className="text-muted-foreground">{t("common.phone")}</span>
                         <span className="font-medium">{c.phone}</span>
                       </div>
                     )}
                     <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">Drivers</span>
+                      <span className="text-muted-foreground">{t("nav.drivers")}</span>
                       <span className="font-medium tabular-nums">{c._count?.drivers || 0}</span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">Vehicles</span>
+                      <span className="text-muted-foreground">{t("nav.vehicles")}</span>
                       <span className="font-medium tabular-nums">{c._count?.vehicles || 0}</span>
                     </div>
                     {c.isActive !== undefined && (
                       <div className="flex items-center justify-between border-t pt-1.5">
-                        <span className="text-muted-foreground">Status</span>
+                        <span className="text-muted-foreground">{t("common.status")}</span>
                         <StatusBadge status={c.isActive ? "ACTIVE" : "INACTIVE"} size="sm" />
                       </div>
                     )}
@@ -220,7 +221,7 @@ export default function CarriersPage() {
                       className="mt-3 flex items-center justify-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-medium transition-colors hover:bg-muted/30"
                     >
                       <HugeiconsIcon icon={CallIcon} className="size-3.5" />
-                      Call Carrier
+                      {t("common.callCarrier")}
                     </a>
                   )}
                 </div>
@@ -233,13 +234,13 @@ export default function CarriersPage() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="bg-muted/30 text-left">
-                      <th className="px-4 py-3 font-medium text-muted-foreground">Carrier</th>
-                      <th className="px-4 py-3 font-medium text-muted-foreground">Type</th>
-                      <th className="px-4 py-3 font-medium text-muted-foreground">Email</th>
-                      <th className="px-4 py-3 font-medium text-muted-foreground">Phone</th>
-                      <th className="px-4 py-3 font-medium text-muted-foreground text-right">Drivers</th>
-                      <th className="px-4 py-3 font-medium text-muted-foreground text-right">Vehicles</th>
-                      <th className="px-4 py-3 font-medium text-muted-foreground">Status</th>
+                      <th className="px-4 py-3 font-medium text-muted-foreground">{t("common.carrier")}</th>
+                      <th className="px-4 py-3 font-medium text-muted-foreground">{t("common.type")}</th>
+                      <th className="px-4 py-3 font-medium text-muted-foreground">{t("common.email")}</th>
+                      <th className="px-4 py-3 font-medium text-muted-foreground">{t("common.phone")}</th>
+                      <th className="px-4 py-3 font-medium text-muted-foreground text-right">{t("nav.drivers")}</th>
+                      <th className="px-4 py-3 font-medium text-muted-foreground text-right">{t("nav.vehicles")}</th>
+                      <th className="px-4 py-3 font-medium text-muted-foreground">{t("common.status")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -283,7 +284,7 @@ export default function CarriersPage() {
                   <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
                     <HugeiconsIcon icon={CARRIER_ICON[selected.type] || Package02Icon} className="size-5 text-primary" />
                   </div>
-                  {selected.name || "Carrier"}
+                  {selected.name || t("common.carrier")}
                 </SheetTitle>
                 <SheetDescription>{selected.type?.replace(/_/g, " ").toLowerCase() || ""}</SheetDescription>
               </SheetHeader>
@@ -291,38 +292,38 @@ export default function CarriersPage() {
               <div className="space-y-4 px-4 pb-6">
                 <div className="grid grid-cols-2 gap-3">
                   <div className="rounded-lg border p-3">
-                    <p className="text-xs text-muted-foreground flex items-center gap-1"><HugeiconsIcon icon={Mail01Icon} className="size-3" /> Email</p>
+                    <p className="text-xs text-muted-foreground flex items-center gap-1"><HugeiconsIcon icon={Mail01Icon} className="size-3" /> {t("common.email")}</p>
                     <p className="mt-1 text-sm font-medium">{selected.email || "—"}</p>
                   </div>
                   <div className="rounded-lg border p-3">
-                    <p className="text-xs text-muted-foreground flex items-center gap-1"><HugeiconsIcon icon={PhoneIcon} className="size-3" /> Phone</p>
+                    <p className="text-xs text-muted-foreground flex items-center gap-1"><HugeiconsIcon icon={PhoneIcon} className="size-3" /> {t("common.phone")}</p>
                     <p className="mt-1 text-sm font-medium">{selected.phone || "—"}</p>
                   </div>
                   <div className="rounded-lg border p-3">
-                    <p className="text-xs text-muted-foreground">Drivers</p>
+                    <p className="text-xs text-muted-foreground">{t("nav.drivers")}</p>
                     <p className="mt-1 text-sm font-medium tabular-nums">{selected._count?.drivers || 0}</p>
                   </div>
                   <div className="rounded-lg border p-3">
-                    <p className="text-xs text-muted-foreground">Vehicles</p>
+                    <p className="text-xs text-muted-foreground">{t("nav.vehicles")}</p>
                     <p className="mt-1 text-sm font-medium tabular-nums">{selected._count?.vehicles || 0}</p>
                   </div>
                   <div className="rounded-lg border p-3">
-                    <p className="text-xs text-muted-foreground">City</p>
+                    <p className="text-xs text-muted-foreground">{t("common.city")}</p>
                     <p className="mt-1 text-sm font-medium">{selected.city || "—"}</p>
                   </div>
                   <div className="rounded-lg border p-3">
-                    <p className="text-xs text-muted-foreground">Country</p>
+                    <p className="text-xs text-muted-foreground">{t("common.country")}</p>
                     <p className="mt-1 text-sm font-medium">{selected.country || "—"}</p>
                   </div>
                   {selected.licenseNo && (
                     <div className="rounded-lg border p-3">
-                      <p className="text-xs text-muted-foreground">License No</p>
+                      <p className="text-xs text-muted-foreground">{t("common.licenseNo")}</p>
                       <p className="mt-1 text-sm font-mono font-medium">{selected.licenseNo}</p>
                     </div>
                   )}
                   {selected.address && (
                     <div className="rounded-lg border p-3">
-                      <p className="text-xs text-muted-foreground">Address</p>
+                      <p className="text-xs text-muted-foreground">{t("common.address")}</p>
                       <p className="mt-1 text-sm font-medium">{selected.address}</p>
                     </div>
                   )}
@@ -331,11 +332,11 @@ export default function CarriersPage() {
                 {selected.phone && (
                   <a href={`tel:${selected.phone}`} className="flex items-center justify-center gap-2 rounded-lg border px-3 py-2.5 text-sm font-medium transition-colors hover:bg-muted/30">
                     <HugeiconsIcon icon={CallIcon} className="size-4" />
-                    Call Carrier
+                    {t("common.callCarrier")}
                   </a>
                 )}
 
-                <Button variant="outline" className="w-full" onClick={() => setSelected(null)}>Close</Button>
+                <Button variant="outline" className="w-full" onClick={() => setSelected(null)}>{t("common.close")}</Button>
               </div>
             </>
           )}
@@ -346,16 +347,16 @@ export default function CarriersPage() {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Add New Carrier</DialogTitle>
+            <DialogTitle>{t("page.addCarrierTitle")}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleAddCarrier} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Carrier Name *</Label>
+                <Label>{t("common.carrierName")} {t("common.required")}</Label>
                 <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
               </div>
               <div className="space-y-2">
-                <Label>Type *</Label>
+                <Label>{t("common.type")} {t("common.required")}</Label>
                 <select className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })}>
                   <option value="XERIN">Xerin (In-house)</option>
                   <option value="PARTNER">Partner</option>
@@ -365,35 +366,35 @@ export default function CarriersPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Email</Label>
+                <Label>{t("common.email")}</Label>
                 <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
               </div>
               <div className="space-y-2">
-                <Label>Phone</Label>
-                <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="+255..." />
+                <Label>{t("common.phone")}</Label>
+                <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder={t("common.phonePlaceholder")} />
               </div>
             </div>
             <div className="space-y-2">
-              <Label>Address</Label>
+              <Label>{t("common.address")}</Label>
               <Input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
             </div>
             <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2">
-                <Label>City</Label>
+                <Label>{t("common.city")}</Label>
                 <Input value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} />
               </div>
               <div className="space-y-2">
-                <Label>Country</Label>
+                <Label>{t("common.country")}</Label>
                 <Input value={form.country} onChange={(e) => setForm({ ...form, country: e.target.value })} />
               </div>
               <div className="space-y-2">
-                <Label>License No</Label>
+                <Label>{t("common.licenseNo")}</Label>
                 <Input value={form.licenseNo} onChange={(e) => setForm({ ...form, licenseNo: e.target.value })} />
               </div>
             </div>
             <div className="flex justify-end gap-2">
-              <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
-              <Button type="submit">Add Carrier</Button>
+              <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>{t("common.cancel")}</Button>
+              <Button type="submit">{t("page.addCarrier")}</Button>
             </div>
           </form>
         </DialogContent>

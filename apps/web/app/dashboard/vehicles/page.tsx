@@ -34,6 +34,7 @@ import { StatusBadge } from "@/components/shared/status-badge"
 import { api } from "@/lib/api"
 import { formatNumber } from "@/lib/format"
 import { toast } from "sonner"
+import { useLang } from "@/lib/i18n"
 
 const VEHICLE_ICON: Record<string, any> = {
   MOTORCYCLE: BikeIcon,
@@ -47,6 +48,7 @@ const VEHICLE_ICON: Record<string, any> = {
 }
 
 export default function VehiclesPage() {
+  const { t } = useLang()
   const [vehicles, setVehicles] = React.useState<any[]>([])
   const [carriers, setCarriers] = React.useState<any[]>([])
   const [loading, setLoading] = React.useState(true)
@@ -88,7 +90,7 @@ export default function VehiclesPage() {
 
   const types = Array.from(new Set(vehicles.map((v) => v.type).filter(Boolean)))
   const TYPE_FILTERS = [
-    { value: "ALL", label: "All Types" },
+    { value: "ALL", label: t("filter.allTypes") },
     ...types.map((t) => ({ value: t, label: t?.replace(/_/g, " ").toLowerCase() })),
   ]
 
@@ -105,41 +107,41 @@ export default function VehiclesPage() {
       if (form.model) body.model = form.model
       if (form.year) body.year = Number(form.year)
       await api.vehicles.create(body)
-      toast.success("Vehicle added successfully")
+      toast.success(t("toast.vehicleAdded"))
       setDialogOpen(false)
       setForm({ carrierId: "", registrationNo: "", type: "MOTORCYCLE", capacityKg: "", make: "", model: "", year: "" })
       load()
     } catch (err: any) {
-      toast.error(err.message || "Failed to add vehicle")
+      toast.error(err.message || t("toast.vehicleAddFailed"))
     }
   }
 
   async function handleStatusChange(id: string, status: string) {
     try {
       await api.vehicles.updateStatus(id, { status })
-      toast.success(`Vehicle status updated to ${status}`)
+      toast.success(t("toast.vehicleStatusUpdated"))
       load()
     } catch (err: any) {
-      toast.error(err.message || "Failed to update status")
+      toast.error(err.message || t("toast.vehicleStatusFailed"))
     }
   }
 
   return (
-    <DashboardLayout breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Fleet", href: "/dashboard/fleet" }, { label: "Vehicles" }]}>
+    <DashboardLayout breadcrumbs={[{ label: t("breadcrumb.dashboard"), href: "/dashboard" }, { label: t("breadcrumb.fleet"), href: "/dashboard/fleet" }, { label: t("page.vehicles") }]}>
       <div className="flex flex-col gap-6 p-4 lg:p-6">
         <PageHeader
-          title="Vehicles"
+          title={t("page.vehicles")}
           icon={<HugeiconsIcon icon={TruckIcon} className="size-6 text-primary" />}
-          description="Fleet vehicle management — registration, capacity, carrier assignments, and status."
+          description={t("page.vehiclesDesc")}
           actions={
             <div className="flex gap-2">
               <Button variant="outline" size="sm" onClick={load}>
                 <HugeiconsIcon icon={Refresh01Icon} className="size-4" />
-                Refresh
+                {t("common.refresh")}
               </Button>
               <Button size="sm" onClick={() => setDialogOpen(true)}>
                 <HugeiconsIcon icon={PlusIcon} className="size-4" />
-                Add Vehicle
+                {t("page.addVehicle")}
               </Button>
             </div>
           }
@@ -147,17 +149,17 @@ export default function VehiclesPage() {
 
         {/* Metric Cards */}
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <MetricCard label="Total Vehicles" value={formatNumber(vehicles.length)} icon={TruckIcon} hint="All registered" />
-          <MetricCard label="Active" value={formatNumber(active)} icon={CheckmarkCircle02Icon} hint="On the road" />
-          <MetricCard label="Maintenance" value={formatNumber(maintenance)} icon={Clock01Icon} positiveIsGood={false} hint="Being serviced" />
-          <MetricCard label="Total Capacity" value={`${formatNumber(totalCapacity)} kg`} icon={TruckIcon} hint="Combined fleet" />
+          <MetricCard label={t("common.totalVehicles")} value={formatNumber(vehicles.length)} icon={TruckIcon} hint={t("common.allRegistered")} />
+          <MetricCard label={t("common.active")} value={formatNumber(active)} icon={CheckmarkCircle02Icon} hint={t("common.onTheRoad")} />
+          <MetricCard label={t("common.maintenance")} value={formatNumber(maintenance)} icon={Clock01Icon} positiveIsGood={false} hint={t("common.beingServiced")} />
+          <MetricCard label={t("common.totalCapacity")} value={`${formatNumber(totalCapacity)} kg`} icon={TruckIcon} hint={t("common.combinedFleet")} />
         </div>
 
         {/* Filters */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <div className="relative flex-1 sm:max-w-xs">
             <HugeiconsIcon icon={Search01Icon} className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-            <Input placeholder="Search registration, model, carrier..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+            <Input placeholder={t("common.search")} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
           </div>
           <div className="flex flex-wrap gap-1">
             {TYPE_FILTERS.map((f) => (
@@ -193,7 +195,7 @@ export default function VehiclesPage() {
         ) : filtered.length === 0 ? (
           <div className="rounded-lg border bg-card py-12 text-center">
             <HugeiconsIcon icon={AlertCircleIcon} className="mx-auto size-8 text-muted-foreground/40" />
-            <p className="mt-2 text-sm text-muted-foreground">No vehicles found</p>
+            <p className="mt-2 text-sm text-muted-foreground">{t("common.noVehicles")}</p>
           </div>
         ) : (
           <>
@@ -216,22 +218,22 @@ export default function VehiclesPage() {
 
                   <div className="mt-3 space-y-1.5 text-xs">
                     <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">Type</span>
+                      <span className="text-muted-foreground">{t("common.type")}</span>
                       <span className="font-medium">{v.type?.replace(/_/g, " ").toLowerCase() || "—"}</span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">Capacity</span>
+                      <span className="text-muted-foreground">{t("common.capacity")}</span>
                       <span className="font-medium tabular-nums">{formatNumber(v.capacityKg || 0)} kg</span>
                     </div>
                     {v.carrier && (
                       <div className="flex items-center justify-between">
-                        <span className="text-muted-foreground">Carrier</span>
+                        <span className="text-muted-foreground">{t("common.carrier")}</span>
                         <span className="font-medium">{v.carrier.name}</span>
                       </div>
                     )}
                     {v.driver && (
                       <div className="flex items-center justify-between border-t pt-1.5">
-                        <span className="text-muted-foreground">Driver</span>
+                        <span className="text-muted-foreground">{t("common.driver")}</span>
                         <span className="font-medium">{v.driver.user?.name || v.driver.name || "—"}</span>
                       </div>
                     )}
@@ -246,13 +248,13 @@ export default function VehiclesPage() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="bg-muted/30 text-left">
-                      <th className="px-4 py-3 font-medium text-muted-foreground">Registration</th>
-                      <th className="px-4 py-3 font-medium text-muted-foreground">Type</th>
-                      <th className="px-4 py-3 font-medium text-muted-foreground">Model</th>
-                      <th className="px-4 py-3 font-medium text-muted-foreground">Carrier</th>
-                      <th className="px-4 py-3 font-medium text-muted-foreground">Driver</th>
-                      <th className="px-4 py-3 font-medium text-muted-foreground text-right">Capacity</th>
-                      <th className="px-4 py-3 font-medium text-muted-foreground">Status</th>
+                      <th className="px-4 py-3 font-medium text-muted-foreground">{t("common.registration")}</th>
+                      <th className="px-4 py-3 font-medium text-muted-foreground">{t("common.type")}</th>
+                      <th className="px-4 py-3 font-medium text-muted-foreground">{t("common.model")}</th>
+                      <th className="px-4 py-3 font-medium text-muted-foreground">{t("common.carrier")}</th>
+                      <th className="px-4 py-3 font-medium text-muted-foreground">{t("common.driver")}</th>
+                      <th className="px-4 py-3 font-medium text-muted-foreground text-right">{t("common.capacity")}</th>
+                      <th className="px-4 py-3 font-medium text-muted-foreground">{t("common.status")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -290,14 +292,14 @@ export default function VehiclesPage() {
                   <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
                     <HugeiconsIcon icon={VEHICLE_ICON[selected.type] || Car01Icon} className="size-5 text-primary" />
                   </div>
-                  {selected.registrationNo || "Vehicle"}
+                  {selected.registrationNo || t("common.vehicle")}
                 </SheetTitle>
                 <SheetDescription>{selected.model || selected.type?.replace(/_/g, " ").toLowerCase() || ""}</SheetDescription>
               </SheetHeader>
 
               <div className="space-y-4 px-4 pb-6">
                 <div className="flex items-center justify-between rounded-lg border bg-muted/30 p-3">
-                  <span className="text-xs text-muted-foreground">Status</span>
+                  <span className="text-xs text-muted-foreground">{t("common.status")}</span>
                   <select
                     className="rounded-md border border-input bg-background px-2 py-1 text-xs"
                     value={selected.status || "ACTIVE"}
@@ -306,44 +308,44 @@ export default function VehiclesPage() {
                       setSelected({ ...selected, status: e.target.value })
                     }}
                   >
-                    <option value="ACTIVE">Active</option>
-                    <option value="MAINTENANCE">Maintenance</option>
-                    <option value="INACTIVE">Inactive</option>
+                    <option value="ACTIVE">{t("filter.active")}</option>
+                    <option value="MAINTENANCE">{t("common.maintenance")}</option>
+                    <option value="INACTIVE">{t("filter.inactive")}</option>
                   </select>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div className="rounded-lg border p-3">
-                    <p className="text-xs text-muted-foreground">Type</p>
+                    <p className="text-xs text-muted-foreground">{t("common.type")}</p>
                     <p className="mt-1 text-sm font-medium">{selected.type?.replace(/_/g, " ").toLowerCase() || "—"}</p>
                   </div>
                   <div className="rounded-lg border p-3">
-                    <p className="text-xs text-muted-foreground">Capacity</p>
+                    <p className="text-xs text-muted-foreground">{t("common.capacity")}</p>
                     <p className="mt-1 text-sm font-medium tabular-nums">{formatNumber(selected.capacityKg || 0)} kg</p>
                   </div>
                   <div className="rounded-lg border p-3">
-                    <p className="text-xs text-muted-foreground">Carrier</p>
+                    <p className="text-xs text-muted-foreground">{t("common.carrier")}</p>
                     <p className="mt-1 text-sm font-medium">{selected.carrier?.name || "—"}</p>
                   </div>
                   <div className="rounded-lg border p-3">
-                    <p className="text-xs text-muted-foreground">Make / Model</p>
+                    <p className="text-xs text-muted-foreground">{t("common.makeModel")}</p>
                     <p className="mt-1 text-sm font-medium">{[selected.make, selected.model].filter(Boolean).join(" ") || "—"}</p>
                   </div>
                   {selected.year && (
                     <div className="rounded-lg border p-3">
-                      <p className="text-xs text-muted-foreground">Year</p>
+                      <p className="text-xs text-muted-foreground">{t("common.year")}</p>
                       <p className="mt-1 text-sm font-medium tabular-nums">{selected.year}</p>
                     </div>
                   )}
                   {selected.driver && (
                     <div className="rounded-lg border p-3">
-                      <p className="text-xs text-muted-foreground">Driver</p>
+                      <p className="text-xs text-muted-foreground">{t("common.driver")}</p>
                       <p className="mt-1 text-sm font-medium">{selected.driver.user?.name || selected.driver.name || "—"}</p>
                     </div>
                   )}
                 </div>
 
-                <Button variant="outline" className="w-full" onClick={() => setSelected(null)}>Close</Button>
+                <Button variant="outline" className="w-full" onClick={() => setSelected(null)}>{t("common.close")}</Button>
               </div>
             </>
           )}
@@ -354,58 +356,58 @@ export default function VehiclesPage() {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Add New Vehicle</DialogTitle>
+            <DialogTitle>{t("page.addVehicleTitle")}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleAddVehicle} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Carrier *</Label>
+                <Label>{t("common.carrier")} {t("common.required")}</Label>
                 <select className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={form.carrierId} onChange={(e) => setForm({ ...form, carrierId: e.target.value })} required>
-                  <option value="">Select carrier...</option>
+                  <option value="">{t("common.selectCarrier")}</option>
                   {carriers.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
               </div>
               <div className="space-y-2">
-                <Label>Registration No *</Label>
+                <Label>{t("common.registrationNo")} {t("common.required")}</Label>
                 <Input value={form.registrationNo} onChange={(e) => setForm({ ...form, registrationNo: e.target.value.toUpperCase() })} placeholder="T123 ABC" required />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Vehicle Type *</Label>
+                <Label>{t("common.vehicleType")} {t("common.required")}</Label>
                 <select className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })}>
-                  <option value="MOTORCYCLE">Motorcycle</option>
-                  <option value="BICYCLE">Bicycle</option>
-                  <option value="CAR">Car</option>
-                  <option value="VAN">Van</option>
-                  <option value="PICKUP">Pickup</option>
-                  <option value="TRUCK">Truck</option>
-                  <option value="TRAILER">Trailer</option>
-                  <option value="CONTAINER">Container</option>
+                  <option value="MOTORCYCLE">{t("vehicle.MOTORCYCLE")}</option>
+                  <option value="BICYCLE">{t("vehicle.BICYCLE")}</option>
+                  <option value="CAR">{t("vehicle.CAR")}</option>
+                  <option value="VAN">{t("vehicle.VAN")}</option>
+                  <option value="PICKUP">{t("vehicle.PICKUP")}</option>
+                  <option value="TRUCK">{t("vehicle.TRUCK")}</option>
+                  <option value="TRAILER">{t("vehicle.TRAILER")}</option>
+                  <option value="CONTAINER">{t("vehicle.CONTAINER")}</option>
                 </select>
               </div>
               <div className="space-y-2">
-                <Label>Capacity (KG) *</Label>
+                <Label>{t("common.capacityKg")} {t("common.required")}</Label>
                 <Input type="number" value={form.capacityKg} onChange={(e) => setForm({ ...form, capacityKg: e.target.value })} required />
               </div>
             </div>
             <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2">
-                <Label>Make</Label>
+                <Label>{t("common.make")}</Label>
                 <Input value={form.make} onChange={(e) => setForm({ ...form, make: e.target.value })} placeholder="Toyota" />
               </div>
               <div className="space-y-2">
-                <Label>Model</Label>
+                <Label>{t("common.model")}</Label>
                 <Input value={form.model} onChange={(e) => setForm({ ...form, model: e.target.value })} placeholder="Hilux" />
               </div>
               <div className="space-y-2">
-                <Label>Year</Label>
+                <Label>{t("common.year")}</Label>
                 <Input type="number" value={form.year} onChange={(e) => setForm({ ...form, year: e.target.value })} placeholder="2024" />
               </div>
             </div>
             <div className="flex justify-end gap-2">
-              <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
-              <Button type="submit">Add Vehicle</Button>
+              <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>{t("common.cancel")}</Button>
+              <Button type="submit">{t("page.addVehicle")}</Button>
             </div>
           </form>
         </DialogContent>

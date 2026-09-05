@@ -1,8 +1,9 @@
-import { LoginForm } from "@workspace/ui/components/login-form"
-import { Toaster } from "@workspace/ui/components/sonner"
+import { LoginForm } from "@/components/localized-login-form"
 import { AuthBackground } from "@/components/auth-background"
+import { useLang } from "@/lib/i18n"
 
 export default function AuthPage() {
+  const { t } = useLang()
   return (
     <div className="grid min-h-svh lg:grid-cols-2">
       {/* Branding panel */}
@@ -18,12 +19,12 @@ export default function AuthPage() {
           {/* Hero content */}
           <div className="max-w-md space-y-6">
             <h2 className="text-4xl font-bold leading-tight tracking-tight text-white">
-              Deliver smarter,
+              {t("auth.heroTitle")}
               <br />
-              ship faster.
+              {t("auth.heroTitle2")}
             </h2>
             <p className="text-lg text-white/70 leading-relaxed">
-              Manage shipments, track deliveries in real-time, and grow your logistics business with a powerful platform built for Africa.
+              {t("auth.heroDesc")}
             </p>
 
             {/* Feature highlights */}
@@ -35,7 +36,7 @@ export default function AuthPage() {
                     <path d="m9 11 3 3L22 4" />
                   </svg>
                 </div>
-                <span className="text-sm text-white/70">Real-time shipment tracking with GPS precision</span>
+                <span className="text-sm text-white/70">{t("auth.feature1")}</span>
               </div>
               <div className="flex items-center gap-3">
                 <div className="flex size-8 items-center justify-center rounded-full bg-white/10">
@@ -44,7 +45,7 @@ export default function AuthPage() {
                     <path d="m19 9-5 5-4-4-3 3" />
                   </svg>
                 </div>
-                <span className="text-sm text-white/70">Comprehensive analytics and delivery reports</span>
+                <span className="text-sm text-white/70">{t("auth.feature2")}</span>
               </div>
               <div className="flex items-center gap-3">
                 <div className="flex size-8 items-center justify-center rounded-full bg-white/10">
@@ -52,7 +53,7 @@ export default function AuthPage() {
                     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                   </svg>
                 </div>
-                <span className="text-sm text-white/70">Bank-grade security for every shipment</span>
+                <span className="text-sm text-white/70">{t("auth.feature3")}</span>
               </div>
             </div>
           </div>
@@ -60,7 +61,7 @@ export default function AuthPage() {
           {/* Status */}
           <div className="flex items-center gap-2 text-sm text-white/60">
             <div className="size-2 rounded-full bg-emerald-500 animate-pulse" />
-            All systems operational
+            {t("auth.systemsOnline")}
           </div>
         </div>
       </div>
@@ -70,11 +71,10 @@ export default function AuthPage() {
         <div className="absolute inset-0 lg:hidden">
           <AuthBackground />
         </div>
-        <LoginForm className="relative z-10 w-full max-w-md shadow-2xl" />
+        <LoginForm />
         <p className="relative z-10 mt-4 text-center text-xs text-muted-foreground">
-          &copy; {new Date().getFullYear()} Xerin Express. All rights reserved.
+          &copy; {new Date().getFullYear()} Xerin Express. {t("auth.rights")}
         </p>
-        <Toaster />
       </div>
     </div>
   )
