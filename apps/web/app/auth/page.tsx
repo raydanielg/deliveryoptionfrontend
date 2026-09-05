@@ -1,3 +1,5 @@
+"use client"
+
 import { LoginForm } from "@/components/localized-login-form"
 import { AuthBackground } from "@/components/auth-background"
 import { useLang } from "@/lib/i18n"
