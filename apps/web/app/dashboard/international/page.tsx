@@ -6,6 +6,7 @@ import { Badge } from "@workspace/ui/components/badge"
 import { Skeleton } from "@workspace/ui/components/skeleton"
 import { useState, useEffect } from "react"
 import { api } from "@/lib/api"
+import { formatMoney } from "@/lib/format"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Globe02Icon } from "@hugeicons/core-free-icons"
 
@@ -99,7 +100,7 @@ export default function InternationalPage() {
                     <tr key={c.id} className="border-b last:border-0 hover:bg-muted/50">
                       <td className="px-4 py-3 font-medium">{c.shipment?.trackingNumber || c.shipmentId}</td>
                       <td className="px-4 py-3"><Badge variant="secondary">{c.importExportType}</Badge></td>
-                      <td className="px-4 py-3 font-medium">{c.currency} {Number(c.declaredValue || 0).toLocaleString()}</td>
+                      <td className="px-4 py-3 font-medium">{formatMoney(Number(c.declaredValue || 0))}</td>
                       <td className="px-4 py-3 text-muted-foreground">{c.countryOfOrigin || "—"}</td>
                       <td className="px-4 py-3"><Badge variant={c.status === "CLEARED" ? "default" : c.status === "HELD" ? "destructive" : "secondary"}>{c.status}</Badge></td>
                     </tr>

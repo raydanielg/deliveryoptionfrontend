@@ -37,7 +37,7 @@ export default function SettingsPage() {
             </div>
             <div className="grid gap-2">
               <Label>Default Currency</Label>
-              <Input defaultValue="TZS" />
+              <Input defaultValue="TZS" readOnly disabled className="bg-muted/50 font-medium" />
             </div>
             <Button onClick={() => toast.success("Settings saved")}>Save Changes</Button>
           </CardContent>

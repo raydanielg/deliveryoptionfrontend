@@ -6,6 +6,7 @@ import { Card, CardContent } from "@workspace/ui/components/card"
 import { Badge } from "@workspace/ui/components/badge"
 import { Skeleton } from "@workspace/ui/components/skeleton"
 import { api } from "@/lib/api"
+import { formatMoney } from "@/lib/format"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { CoinsIcon } from "@hugeicons/core-free-icons"
 
@@ -64,7 +65,7 @@ export default function PaymentsPage() {
                     <tr key={p.id} className="border-b last:border-0 hover:bg-muted/50">
                       <td className="px-4 py-3 font-medium">{p.paymentRef}</td>
                       <td className="px-4 py-3 text-muted-foreground">{p.payer?.name || "—"}</td>
-                      <td className="px-4 py-3 font-medium">{p.currency} {Number(p.amount || 0).toLocaleString()}</td>
+                      <td className="px-4 py-3 font-medium">{formatMoney(Number(p.amount || 0))}</td>
                       <td className="px-4 py-3"><Badge variant="secondary">{p.method?.replace(/_/g, " ")}</Badge></td>
                       <td className="px-4 py-3"><Badge variant={p.status === "PAID" ? "default" : "secondary"}>{p.status}</Badge></td>
                       <td className="px-4 py-3 text-muted-foreground">{new Date(p.createdAt).toLocaleDateString()}</td>

@@ -10,6 +10,7 @@ import { Separator } from "@workspace/ui/components/separator"
 import { Skeleton } from "@workspace/ui/components/skeleton"
 import { api } from "@/lib/api"
 import { toast } from "sonner"
+import { formatMoney } from "@/lib/format"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { MapIcon, Package02Icon, TruckIcon, UserIcon, CoinsIcon, ClockIcon, CalendarIcon, CheckmarkCircle02Icon, CancelCircleIcon, Train01Icon, Airplane01Icon, Ticket01Icon } from "@hugeicons/core-free-icons"
 
@@ -269,12 +270,12 @@ export default function ShipmentDetailPage() {
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Total Amount</span>
-                <span className="text-sm font-bold text-primary">{shipment.currency} {Number(shipment.totalAmount || 0).toLocaleString()}</span>
+                <span className="text-sm font-bold text-primary">{formatMoney(Number(shipment.totalAmount || 0))}</span>
               </div>
               {shipment.insuranceEnabled && (
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">Insurance</span>
-                  <span className="text-sm font-medium">{shipment.currency} {Number(shipment.insurancePremium || 0).toLocaleString()}</span>
+                  <span className="text-sm font-medium">{formatMoney(Number(shipment.insurancePremium || 0))}</span>
                 </div>
               )}
               {packages.length > 0 && (

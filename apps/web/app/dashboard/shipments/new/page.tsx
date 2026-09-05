@@ -13,6 +13,7 @@ import { Separator } from "@workspace/ui/components/separator"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@workspace/ui/components/select"
 import { toast } from "sonner"
 import { api } from "@/lib/api"
+import { formatMoney } from "@/lib/format"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
   Package02Icon,
@@ -938,24 +939,24 @@ export default function NewShipmentPage() {
                 <Separator />
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">Subtotal</span>
-                  <span className="font-medium">{quoteResult.currency} {Number(quoteResult.subtotal).toLocaleString()}</span>
+                  <span className="font-medium">{formatMoney(Number(quoteResult.subtotal))}</span>
                 </div>
                 {Object.entries(quoteResult.fees || {}).map(([key, val]: [string, any]) => (
                   <div key={key} className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground capitalize">{key.replace(/_/g, " ").toLowerCase()}</span>
-                    <span className="font-medium">{quoteResult.currency} {Number(val).toLocaleString()}</span>
+                    <span className="font-medium">{formatMoney(Number(val))}</span>
                   </div>
                 ))}
                 {quoteResult.insurancePremium > 0 && (
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">Insurance</span>
-                    <span className="font-medium">{quoteResult.currency} {Number(quoteResult.insurancePremium).toLocaleString()}</span>
+                    <span className="font-medium">{formatMoney(Number(quoteResult.insurancePremium))}</span>
                   </div>
                 )}
                 <Separator />
                 <div className="flex items-center justify-between">
                   <span className="text-lg font-bold">Total</span>
-                  <span className="text-lg font-bold text-primary">{quoteResult.currency} {Number(quoteResult.total).toLocaleString()}</span>
+                  <span className="text-lg font-bold text-primary">{formatMoney(Number(quoteResult.total))}</span>
                 </div>
                 <div className="flex items-center gap-2 rounded-lg bg-primary/5 p-3 text-sm text-muted-foreground">
                   <HugeiconsIcon icon={TruckIcon} strokeWidth={2} className="size-4 text-primary" />
@@ -1076,7 +1077,7 @@ export default function NewShipmentPage() {
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">Shipment Total</span>
                   <span className="text-lg font-bold text-primary">
-                    {quoteResult?.currency} {Number(quoteResult?.total || 0).toLocaleString()}
+                    {formatMoney(Number(quoteResult?.total || 0))}
                   </span>
                 </div>
                 <div className="mt-1 text-xs text-muted-foreground">
@@ -1123,7 +1124,7 @@ export default function NewShipmentPage() {
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Total Amount</span>
-                <span className="font-bold">{createdShipment.shipment?.currency} {Number(createdShipment.shipment?.totalAmount || 0).toLocaleString()}</span>
+                <span className="font-bold">{formatMoney(Number(createdShipment.shipment?.totalAmount || 0))}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Status</span>

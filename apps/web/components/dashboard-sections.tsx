@@ -1,6 +1,7 @@
 "use client"
 
 import { HugeiconsIcon } from "@hugeicons/react"
+import { formatMoney } from "@/lib/format"
 import {
   TrendingUpIcon,
   TrendingDownIcon,
@@ -184,15 +185,15 @@ export function RevenueOverviewSection({ data }: { data?: { grossRevenue: number
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <span className="text-sm text-muted-foreground">Gross Revenue</span>
-          <span className="text-sm font-medium tabular-nums">{r.currency} {fmt(r.grossRevenue)}</span>
+          <span className="text-sm font-medium tabular-nums">{formatMoney(r.grossRevenue)}</span>
         </div>
         <div className="flex items-center justify-between">
           <span className="text-sm text-muted-foreground">Refunds</span>
-          <span className="text-sm font-medium tabular-nums text-red-600">-{r.currency} {fmt(r.refunds)}</span>
+          <span className="text-sm font-medium tabular-nums text-red-600">-{formatMoney(r.refunds, undefined, { showCode: false })}</span>
         </div>
         <div className="border-t pt-2 flex items-center justify-between">
           <span className="text-sm font-medium">Net Revenue</span>
-          <span className="text-sm font-semibold tabular-nums text-emerald-600">{r.currency} {fmt(r.netRevenue)}</span>
+          <span className="text-sm font-semibold tabular-nums text-emerald-600">{formatMoney(r.netRevenue)}</span>
         </div>
       </div>
     </div>

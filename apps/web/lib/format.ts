@@ -1,7 +1,8 @@
-export function formatMoney(value: number | null | undefined, currency = "TZS", opts?: { compact?: boolean; showCode?: boolean }) {
+export function formatMoney(value: number | null | undefined, _currency = "TZS", opts?: { compact?: boolean; showCode?: boolean }) {
   if (value === null || value === undefined) return "—"
   const compact = opts?.compact ?? false
   const showCode = opts?.showCode ?? true
+  const currency = "TZS"
 
   let formatted: string
   if (compact) {

@@ -7,6 +7,7 @@ import { Badge } from "@workspace/ui/components/badge"
 import { Skeleton } from "@workspace/ui/components/skeleton"
 import { Separator } from "@workspace/ui/components/separator"
 import { api } from "@/lib/api"
+import { formatMoney } from "@/lib/format"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { CoinsIcon } from "@hugeicons/core-free-icons"
 
@@ -66,7 +67,7 @@ export default function QuotesPage() {
                       <td className="px-4 py-3 font-medium">{q.quoteNumber || q.id.slice(0, 8)}</td>
                       <td className="px-4 py-3 text-muted-foreground">{q.originCity} → {q.destinationCity}</td>
                       <td className="px-4 py-3">{q.chargeableWeightKg} kg</td>
-                      <td className="px-4 py-3 font-medium">{q.currency} {Number(q.total || 0).toLocaleString()}</td>
+                      <td className="px-4 py-3 font-medium">{formatMoney(Number(q.total || 0))}</td>
                       <td className="px-4 py-3 text-muted-foreground">{q.etaMin}–{q.etaMax} days</td>
                       <td className="px-4 py-3 text-muted-foreground">{new Date(q.createdAt).toLocaleDateString()}</td>
                     </tr>

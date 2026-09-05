@@ -10,6 +10,7 @@ import { Label } from "@workspace/ui/components/label"
 import { Skeleton } from "@workspace/ui/components/skeleton"
 import { api } from "@/lib/api"
 import { toast } from "sonner"
+import { formatMoney } from "@/lib/format"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { CoinsIcon, TruckIcon, Train01Icon, Airplane01Icon, SaveIcon } from "@hugeicons/core-free-icons"
 
@@ -210,9 +211,9 @@ export default function ModePricingConfigPage() {
                         <Badge variant="secondary" className="text-xs">{rule.serviceLevel || "ALL"}</Badge>
                       </div>
                       <div className="text-xs text-muted-foreground space-y-0.5">
-                        {rule.baseFare && <div>Base: {rule.currency || "TZS"} {rule.baseFare}</div>}
-                        {rule.perKgRate && <div>Per kg: {rule.currency || "TZS"} {rule.perKgRate}</div>}
-                        {rule.perKmRate && <div>Per km: {rule.currency || "TZS"} {rule.perKmRate}</div>}
+                        {rule.baseFare && <div>Base: {formatMoney(Number(rule.baseFare), undefined, { showCode: false })}</div>}
+                        {rule.perKgRate && <div>Per kg: {formatMoney(Number(rule.perKgRate), undefined, { showCode: false })}</div>}
+                        {rule.perKmRate && <div>Per km: {formatMoney(Number(rule.perKmRate), undefined, { showCode: false })}</div>}
                       </div>
                     </div>
                   ))}
