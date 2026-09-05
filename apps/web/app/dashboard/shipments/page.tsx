@@ -3,7 +3,6 @@
 import * as React from "react"
 import Link from "next/link"
 import { DashboardLayout } from "@/components/dashboard-layout"
-import { Card } from "@workspace/ui/components/card"
 import { Button } from "@workspace/ui/components/button"
 import { Input } from "@workspace/ui/components/input"
 import { Skeleton } from "@workspace/ui/components/skeleton"
@@ -91,32 +90,30 @@ export default function ShipmentsPage() {
         />
 
         {/* Filter Toolbar */}
-        <Card className="p-3">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <div className="relative flex-1 sm:max-w-xs">
-              <HugeiconsIcon icon={Search01Icon} className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder="Search tracking #, city..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-9"
-              />
-            </div>
-            <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v ?? "ALL"); setPage(1) }}>
-              <SelectTrigger className="w-full sm:w-[200px]"><SelectValue placeholder="Filter by status" /></SelectTrigger>
-              <SelectContent>
-                {STATUS_OPTIONS.map((s) => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
-              </SelectContent>
-            </Select>
-            <Button variant="outline" onClick={() => { setPage(1); loadShipments() }} className="sm:ml-auto">
-              <HugeiconsIcon icon={Search01Icon} className="size-4" />
-              Search
-            </Button>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="relative flex-1 sm:max-w-xs">
+            <HugeiconsIcon icon={Search01Icon} className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Search tracking #, city..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9"
+            />
           </div>
-        </Card>
+          <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v ?? "ALL"); setPage(1) }}>
+            <SelectTrigger className="w-full sm:w-[200px]"><SelectValue placeholder="Filter by status" /></SelectTrigger>
+            <SelectContent>
+              {STATUS_OPTIONS.map((s) => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <Button variant="outline" onClick={() => { setPage(1); loadShipments() }} className="sm:ml-auto">
+            <HugeiconsIcon icon={Search01Icon} className="size-4" />
+            Search
+          </Button>
+        </div>
 
         {/* Shipments Table */}
-        <Card className="overflow-hidden p-0">
+        <div className="overflow-hidden rounded-lg border">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -188,7 +185,7 @@ export default function ShipmentsPage() {
               </Button>
             </div>
           )}
-        </Card>
+        </div>
       </div>
     </DashboardLayout>
   )

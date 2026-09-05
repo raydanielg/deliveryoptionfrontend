@@ -1,31 +1,52 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import * as React from "react"
+import { useRouter } from "next/navigation"
 import { DashboardLayout } from "@/components/dashboard-layout"
-import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/components/card"
-import { Badge } from "@workspace/ui/components/badge"
 import { Button } from "@workspace/ui/components/button"
 import { Input } from "@workspace/ui/components/input"
 import { Skeleton } from "@workspace/ui/components/skeleton"
-import { api } from "@/lib/api"
-import { useRouter } from "next/navigation"
+import { Badge } from "@workspace/ui/components/badge"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@workspace/ui/components/select"
+import { PageHeader } from "@/components/shared/page-header"
+import { MetricCard } from "@/components/shared/metric-card"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { Store02Icon, PlusIcon } from "@hugeicons/core-free-icons"
+import {
+  Store02Icon,
+  PlusIcon,
+  Search01Icon,
+  CheckmarkCircle02Icon,
+  Package02Icon,
+  TruckIcon,
+} from "@hugeicons/core-free-icons"
+import { api } from "@/lib/api"
+import { formatNumber } from "@/lib/format"
 import { toast } from "sonner"
+
+const TYPE_OPTIONS = [
+  { value: "ALL", label: "All Types" },
+  { value: "SGR_STATION", label: "SGR Station" },
+  { value: "WAREHOUSE", label: "Warehouse" },
+  { value: "HUB", label: "Hub" },
+  { value: "DROP_POINT", label: "Drop Point" },
+  { value: "AIRPORT_CARGO", label: "Airport Cargo" },
+]
 
 export default function StationsPage() {
   const router = useRouter()
-  const [stations, setStations] = useState<any[]>([])
-  const [stats, setStats] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
-  const [showForm, setShowForm] = useState(false)
-  const [form, setForm] = useState({
+  const [stations, setStations] = React.useState<any[]>([])
+  const [stats, setStats] = React.useState<any>(null)
+  const [loading, setLoading] = React.useState(true)
+  const [showForm, setShowForm] = React.useState(false)
+  const [search, setSearch] = React.useState("")
+  const [typeFilter, setTypeFilter] = React.useState("ALL")
+  const [form, setForm] = React.useState({
     name: "", code: "", type: "SGR_STATION", city: "", region: "",
     country: "Tanzania", address: "", phone: "", email: "",
     managerName: "", capacityKg: "",
   })
 
-  useEffect(() => { loadData() }, [])
+  React.useEffect(() => { loadData() }, [])
 
   async function loadData() {
     try {
@@ -66,33 +87,65 @@ export default function StationsPage() {
     }
   }
 
+  const filtered = stations.filter(s => {
+    if (!search) return true
+    const q = search.toLowerCase()
+    return s.name?.toLowerCase().includes(q) ||
+      s.code?.toLowerCase().includes(q) ||
+      s.city?.toLowerCase().includes(q)
+  }).filter(s => typeFilter === "ALL" || s.type === typeFilter)
+
   return (
-    <DashboardLayout breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Operations", href: "/dashboard/operations" }, { label: "Stations" }]}>
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Stations</h1>
-          <p className="text-sm text-muted-foreground">SGR stations, warehouses, hubs & drop points</p>
-        </div>
-        <Button onClick={() => setShowForm(!showForm)}>
-          <HugeiconsIcon icon={PlusIcon} className="size-4 mr-2" />
-          New Station
-        </Button>
-      </div>
+    <DashboardLayout breadcrumbs={[{ label: "Dashboard", href: "/dashboard" }, { label: "Stations" }]}>
+      <div className="flex flex-col gap-6 p-4 lg:p-6">
+        <PageHeader
+          title="Stations"
+          description="SGR stations, warehouses, hubs & drop points"
+          actions={
+            <Button onClick={() => setShowForm(!showForm)}>
+              <HugeiconsIcon icon={PlusIcon} className="size-4" />
+              New Station
+            </Button>
+          }
+        />
 
-      {stats && (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">Total Stations</p><p className="text-2xl font-bold">{stats.total}</p></CardContent></Card>
-          <Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">Active</p><p className="text-2xl font-bold">{stats.active}</p></CardContent></Card>
-          <Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">In Inventory</p><p className="text-2xl font-bold">{stats.totalInventory}</p></CardContent></Card>
-          <Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">Dispatched</p><p className="text-2xl font-bold">{stats.totalDispatched}</p></CardContent></Card>
+        {/* Stats */}
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <MetricCard
+            label="Total Stations"
+            value={formatNumber(stats?.total ?? 0)}
+            icon={Store02Icon}
+            loading={loading}
+            hint="All stations"
+          />
+          <MetricCard
+            label="Active"
+            value={formatNumber(stats?.active ?? 0)}
+            icon={CheckmarkCircle02Icon}
+            loading={loading}
+            hint="Currently active"
+          />
+          <MetricCard
+            label="In Inventory"
+            value={formatNumber(stats?.totalInventory ?? 0)}
+            icon={Package02Icon}
+            loading={loading}
+            hint="Items in inventory"
+          />
+          <MetricCard
+            label="Dispatched"
+            value={formatNumber(stats?.totalDispatched ?? 0)}
+            icon={TruckIcon}
+            loading={loading}
+            hint="Items dispatched"
+          />
         </div>
-      )}
 
-      {showForm && (
-        <Card>
-          <CardHeader><CardTitle>Create New Station</CardTitle></CardHeader>
-          <CardContent>
-            <form onSubmit={handleCreate} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {/* Form */}
+        {showForm && (
+          <div className="rounded-lg border p-5">
+            <h2 className="text-base font-semibold tracking-tight">Create New Station</h2>
+            <form onSubmit={handleCreate} className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               <div><label className="text-sm font-medium">Name *</label><Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} required /></div>
               <div><label className="text-sm font-medium">Code *</label><Input value={form.code} onChange={e => setForm({ ...form, code: e.target.value.toUpperCase() })} placeholder="DAR" required /></div>
               <div>
@@ -118,16 +171,34 @@ export default function StationsPage() {
                 <Button type="button" variant="outline" onClick={() => setShowForm(false)}>Cancel</Button>
               </div>
             </form>
-          </CardContent>
-        </Card>
-      )}
+          </div>
+        )}
 
-      <Card>
-        <CardContent className="p-0">
+        {/* Filter */}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="relative flex-1 sm:max-w-xs">
+            <HugeiconsIcon icon={Search01Icon} className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Search name, code, city..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+          <Select value={typeFilter} onValueChange={(v) => setTypeFilter(v ?? "ALL")}>
+            <SelectTrigger className="w-full sm:w-[200px]"><SelectValue placeholder="Filter by type" /></SelectTrigger>
+            <SelectContent>
+              {TYPE_OPTIONS.map((s) => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Table */}
+        <div className="overflow-hidden rounded-lg border">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b text-left">
+                <tr className="bg-muted/30 text-left">
                   <th className="px-4 py-3 font-medium text-muted-foreground">Name</th>
                   <th className="px-4 py-3 font-medium text-muted-foreground">Code</th>
                   <th className="px-4 py-3 font-medium text-muted-foreground">Type</th>
@@ -142,25 +213,31 @@ export default function StationsPage() {
               <tbody>
                 {loading ? (
                   Array.from({ length: 5 }).map((_, i) => (
-                    <tr key={i} className="border-b last:border-0">
+                    <tr key={i} className="transition-colors hover:bg-muted/20">
                       {Array.from({ length: 9 }).map((_, j) => <td key={j} className="px-4 py-3"><Skeleton className="h-5 w-24" /></td>)}
                     </tr>
                   ))
-                ) : stations.length === 0 ? (
-                  <tr><td colSpan={9} className="px-4 py-12 text-center text-muted-foreground">
-                    <HugeiconsIcon icon={Store02Icon} strokeWidth={2} className="size-8 mx-auto mb-2 opacity-50" />
-                    No stations found
-                  </td></tr>
+                ) : filtered.length === 0 ? (
+                  <tr>
+                    <td colSpan={9} className="px-4 py-12 text-center">
+                      <HugeiconsIcon icon={Store02Icon} className="mx-auto size-8 text-muted-foreground/40" />
+                      <p className="mt-2 text-sm text-muted-foreground">No stations found</p>
+                    </td>
+                  </tr>
                 ) : (
-                  stations.map((s) => (
-                    <tr key={s.id} className="border-b last:border-0 hover:bg-muted/50 cursor-pointer" onClick={() => router.push(`/dashboard/stations/${s.id}`)}>
+                  filtered.map((s) => (
+                    <tr
+                      key={s.id}
+                      className="cursor-pointer transition-colors hover:bg-muted/20"
+                      onClick={() => router.push(`/dashboard/stations/${s.id}`)}
+                    >
                       <td className="px-4 py-3 font-medium">{s.name}</td>
                       <td className="px-4 py-3"><Badge variant="outline">{s.code}</Badge></td>
-                      <td className="px-4 py-3 text-muted-foreground">{s.type.replace(/_/g, " ")}</td>
+                      <td className="px-4 py-3 text-muted-foreground">{s.type.replace(/_/g, " ").toLowerCase()}</td>
                       <td className="px-4 py-3 text-muted-foreground">{[s.city, s.region, s.country].filter(Boolean).join(", ") || "—"}</td>
                       <td className="px-4 py-3 text-muted-foreground">{s.managerName || "—"}</td>
-                      <td className="px-4 py-3">{s._count?.inventory || 0}</td>
-                      <td className="px-4 py-3 text-muted-foreground">{s.capacityKg ? `${Number(s.capacityKg).toLocaleString()} kg` : "—"}</td>
+                      <td className="px-4 py-3 tabular-nums">{s._count?.inventory || 0}</td>
+                      <td className="px-4 py-3 text-muted-foreground tabular-nums">{s.capacityKg ? `${Number(s.capacityKg).toLocaleString()} kg` : "—"}</td>
                       <td className="px-4 py-3"><Badge variant={s.isActive ? "default" : "secondary"}>{s.isActive ? "Active" : "Inactive"}</Badge></td>
                       <td className="px-4 py-3">
                         <Button size="sm" variant="ghost" onClick={(e) => { e.stopPropagation(); handleToggle(s.id) }}>
@@ -173,8 +250,8 @@ export default function StationsPage() {
               </tbody>
             </table>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </DashboardLayout>
   )
 }
