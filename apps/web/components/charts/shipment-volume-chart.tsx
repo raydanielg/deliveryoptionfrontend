@@ -83,9 +83,8 @@ export function ShipmentVolumeChart({
         </div>
 
         <ToggleGroup
-          type="single"
-          value={range}
-          onValueChange={(value) => value && onRangeChange(value as Range)}
+          value={[range]}
+          onValueChange={(value) => value[0] && onRangeChange(value[0] as Range)}
           variant="outline"
           size="sm"
           className="shrink-0"
