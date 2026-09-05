@@ -284,7 +284,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   const sidebarUser = {
     name: user?.name || "User",
-    email: user?.email || "user@xerindelivery.com",
+    email: user?.email || "user@xerinexpress.com",
     avatar: user?.avatar || "",
   }
 

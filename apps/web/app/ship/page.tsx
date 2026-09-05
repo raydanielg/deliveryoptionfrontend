@@ -1180,7 +1180,7 @@ export default function ShipPage() {
 
         {/* Footer */}
         <p className="mt-8 text-center text-xs text-white/40">
-          &copy; {new Date().getFullYear()} Xerin Delivery Express. All rights reserved.
+          &copy; {new Date().getFullYear()} Xerin Express. All rights reserved.
         </p>
       </div>
 

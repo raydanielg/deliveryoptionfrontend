@@ -8,7 +8,7 @@ import { HugeiconsIcon } from "@hugeicons/react"
 import { UserGroupIcon, PlusIcon } from "@hugeicons/core-free-icons"
 
 const teamMembers = [
-  { name: "Ezra Daniel Gyunda", email: "ezra@xerindelivery.com", role: "SUPER_ADMIN", status: "Active" },
+  { name: "Ezra Daniel Gyunda", email: "ezra@xerinexpress.com", role: "SUPER_ADMIN", status: "Active" },
 ]
 
 export default function TeamPage() {

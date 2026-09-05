@@ -29,11 +29,11 @@ export default function SettingsPage() {
           <CardContent className="space-y-4">
             <div className="grid gap-2">
               <Label>Platform Name</Label>
-              <Input defaultValue="Xerin Delivery" />
+              <Input defaultValue="Xerin Express" />
             </div>
             <div className="grid gap-2">
               <Label>Support Email</Label>
-              <Input defaultValue="support@xerindelivery.com" />
+              <Input defaultValue="support@xerinexpress.com" />
             </div>
             <div className="grid gap-2">
               <Label>Default Currency</Label>

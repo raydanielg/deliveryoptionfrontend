@@ -72,7 +72,7 @@ export default function ForgotPasswordPage() {
         </div>
         <ForgotPasswordForm className="relative z-10 w-full max-w-md shadow-2xl" />
         <p className="relative z-10 mt-4 text-center text-xs text-muted-foreground">
-          &copy; {new Date().getFullYear()} Xerin Delivery Express. All rights reserved.
+          &copy; {new Date().getFullYear()} Xerin Express. All rights reserved.
         </p>
         <Toaster />
       </div>
