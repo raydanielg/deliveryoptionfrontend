@@ -393,4 +393,13 @@ export const api = {
   auditLogs: {
     list: (params?: string) => request(`/audit-logs${params ? `?${params}` : ""}`),
   },
+  marketplaceIntegrations: {
+    list: () => request("/marketplace-integrations"),
+    get: (id: string) => request(`/marketplace-integrations/${id}`),
+    create: (body: Record<string, any>) => request("/marketplace-integrations", { method: "POST", body }),
+    update: (id: string, body: Record<string, any>) => request(`/marketplace-integrations/${id}`, { method: "PUT", body }),
+    delete: (id: string) => request(`/marketplace-integrations/${id}`, { method: "DELETE" }),
+    toggle: (id: string) => request(`/marketplace-integrations/${id}/toggle`, { method: "PATCH" }),
+    test: (id: string) => request(`/marketplace-integrations/${id}/test`, { method: "POST" }),
+  },
 }

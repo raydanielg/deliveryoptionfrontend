@@ -328,6 +328,7 @@ const ALL_NAV_ITEMS = [
     items: [
       { titleKey: "nav.general", url: "/dashboard/settings" },
       { titleKey: "nav.mapApiKeys", url: "/dashboard/settings/map" },
+      { titleKey: "nav.marketplaceIntegrations", url: "/dashboard/settings/marketplace-integrations" },
       { titleKey: "nav.team", url: "/dashboard/settings/team" },
       { titleKey: "nav.notifications", url: "/dashboard/settings/notifications" },
     ],

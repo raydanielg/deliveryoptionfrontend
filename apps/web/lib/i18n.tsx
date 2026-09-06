@@ -133,6 +133,7 @@ const en: Dictionary = {
   "nav.notifications": "Notifications",
   "nav.general": "General",
   "nav.mapApiKeys": "Map & API Keys",
+  "nav.marketplaceIntegrations": "Marketplace Integrations",
   "nav.team": "Team",
 
   // Sidebar - quick access
@@ -585,6 +586,7 @@ const sw: Dictionary = {
   "nav.notifications": "Arifa",
   "nav.general": "Mkuu",
   "nav.mapApiKeys": "Ramani & Funguo za API",
+  "nav.marketplaceIntegrations": "Unganisho wa Soko",
   "nav.team": "Timu",
 
   // Sidebar - quick access
