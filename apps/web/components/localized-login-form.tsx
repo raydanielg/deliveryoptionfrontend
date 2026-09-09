@@ -25,6 +25,12 @@ export function LoginForm() {
         successMessage={t("auth.loginSuccess")}
         errorMessage={t("auth.loginFailed")}
       />
+      <div className="mt-4 text-center text-sm text-muted-foreground">
+        {t("auth.noAccount")}{" "}
+        <a href="/auth/sign-up" className="font-medium text-primary hover:underline">
+          {t("auth.signUp")}
+        </a>
+      </div>
       <Toaster />
     </div>
   )

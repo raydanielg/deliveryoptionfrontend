@@ -124,7 +124,7 @@ export function OtpForm({
                 />
                 <h1 className="text-2xl font-bold">Verify Your Account</h1>
                 <p className="text-balance text-muted-foreground">
-                  We sent a 6-digit code to your {method === "email" ? "email" : "phone"}. Enter it below.
+                  We sent a 6-digit code to your <strong>email</strong>, <strong>SMS</strong>, and <strong>WhatsApp</strong>. Enter it below.
                 </p>
               </div>
 

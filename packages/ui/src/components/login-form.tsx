@@ -106,7 +106,7 @@ export function LoginForm({
                   />
                   <Input
                     id="email"
-                    type="email"
+                    type="text"
                     placeholder={emailPlaceholder}
                     required
                     className="h-12 ps-10 text-base"
