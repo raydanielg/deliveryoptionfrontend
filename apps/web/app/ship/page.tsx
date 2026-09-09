@@ -101,6 +101,7 @@ export default function ShipPage() {
   const [stations, setStations] = useState<any[]>([])
   const [paymentPhase, setPaymentPhase] = useState<"idle" | "processing" | "confirmed" | "failed" | "skipped">("idle")
   const [paymentError, setPaymentError] = useState<string | null>(null)
+  const [confirmedPaymentId, setConfirmedPaymentId] = useState<string | null>(null)
 
   useEffect(() => {
     fetch(`${API_BASE_URL}/stations?isActive=true`)
@@ -376,9 +377,10 @@ export default function ShipPage() {
         window.open(initiateData.data.redirectUrl, "_blank", "noopener,noreferrer")
       }
 
-      const finalStatus = await pollPaymentStatus(token, paymentRequestId)
+      const { status: finalStatus, paymentId } = await pollPaymentStatus(token, paymentRequestId)
       if (finalStatus === "PAID") {
         setPaymentPhase("confirmed")
+        setConfirmedPaymentId(paymentId)
         toast.success("Payment confirmed!")
       } else if (finalStatus === "FAILED") {
         setPaymentPhase("failed")
@@ -395,8 +397,27 @@ export default function ShipPage() {
     }
   }
 
+  async function viewReceipt() {
+    if (!confirmedPaymentId) return
+    try {
+      const token = typeof window !== "undefined" ? localStorage.getItem("token") : null
+      const res = await fetch(`${API_BASE_URL}/payments/${confirmedPaymentId}/receipt`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => null)
+        throw new Error(data?.message || "Failed to load receipt")
+      }
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      window.open(url, "_blank", "noopener,noreferrer")
+    } catch (err: any) {
+      toast.error(err.message || "Failed to load receipt")
+    }
+  }
+
   async function pollPaymentStatus(token: string, paymentRequestId: string, timeoutMs = 90000, intervalMs = 3000) {
-    if (!paymentRequestId) return "UNKNOWN"
+    if (!paymentRequestId) return { status: "UNKNOWN", paymentId: null as string | null }
     const deadline = Date.now() + timeoutMs
     while (Date.now() < deadline) {
       try {
@@ -405,13 +426,13 @@ export default function ShipPage() {
         })
         const data = await res.json()
         const status = data?.data?.status
-        if (status === "PAID" || status === "FAILED") return status
+        if (status === "PAID" || status === "FAILED") return { status, paymentId: data?.data?.paymentId ?? null }
       } catch {
         // transient network error — keep polling until the deadline
       }
       await new Promise((resolve) => setTimeout(resolve, intervalMs))
     }
-    return "TIMEOUT"
+    return { status: "TIMEOUT", paymentId: null as string | null }
   }
 
   async function handleAuth(e: React.FormEvent) {
@@ -1320,9 +1341,12 @@ export default function ShipPage() {
                 </div>
               </CardContent>
             </Card>
-            <div className="flex gap-3">
+            <div className="flex flex-wrap justify-center gap-3">
               <Button variant="outline" className="text-white border-white/20 hover:bg-white/10 hover:text-white" onClick={() => router.push("/dashboard/shipments")}>View All Shipments</Button>
               <Button onClick={() => router.push(`/track?number=${encodeURIComponent(createdShipment.shipment?.trackingNumber || "")}`)}>Track This Shipment</Button>
+              {paymentPhase === "confirmed" && confirmedPaymentId && (
+                <Button variant="outline" className="text-white border-white/20 hover:bg-white/10 hover:text-white" onClick={viewReceipt}>Download Receipt</Button>
+              )}
             </div>
           </div>
         )}
