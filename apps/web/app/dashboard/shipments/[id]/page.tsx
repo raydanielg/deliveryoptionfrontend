@@ -8,6 +8,8 @@ import { Button } from "@workspace/ui/components/button"
 import { Badge } from "@workspace/ui/components/badge"
 import { Separator } from "@workspace/ui/components/separator"
 import { Skeleton } from "@workspace/ui/components/skeleton"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@workspace/ui/components/dialog"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@workspace/ui/components/select"
 import { api } from "@/lib/api"
 import { toast } from "sonner"
 import { formatMoney } from "@/lib/format"
@@ -19,6 +21,12 @@ export default function ShipmentDetailPage() {
   const router = useRouter()
   const [shipment, setShipment] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [assignOpen, setAssignOpen] = useState(false)
+  const [drivers, setDrivers] = useState<any[]>([])
+  const [vehicles, setVehicles] = useState<any[]>([])
+  const [selectedDriverId, setSelectedDriverId] = useState<string>("")
+  const [selectedVehicleId, setSelectedVehicleId] = useState<string>("")
+  const [assigning, setAssigning] = useState(false)
 
   useEffect(() => {
     if (params?.id) loadShipment(params.id as string)
@@ -44,6 +52,41 @@ export default function ShipmentDetailPage() {
       loadShipment(shipment.id)
     } catch (err: any) {
       toast.error(err.message || "Failed to cancel shipment")
+    }
+  }
+
+  async function openAssignDialog() {
+    setSelectedDriverId(shipment?.driverId || "")
+    setSelectedVehicleId(shipment?.vehicleId || "")
+    setAssignOpen(true)
+    try {
+      const [driversRes, vehiclesRes] = await Promise.all([api.drivers.list(), api.vehicles.list()])
+      setDrivers(driversRes.data || [])
+      setVehicles(vehiclesRes.data || [])
+    } catch (err: any) {
+      toast.error(err.message || "Failed to load drivers/vehicles")
+    }
+  }
+
+  async function submitAssign() {
+    if (!shipment || !selectedDriverId) {
+      toast.error("Select a driver first")
+      return
+    }
+    setAssigning(true)
+    try {
+      const body: Record<string, any> = { driverId: selectedDriverId }
+      if (selectedVehicleId) body.vehicleId = selectedVehicleId
+      await api.shipments.assign(shipment.id, body)
+      toast.success("Driver assigned")
+      setAssignOpen(false)
+      loadShipment(shipment.id)
+    } catch (err: any) {
+      // Backend validation (driver unavailable, license expired, vehicle over capacity, etc.)
+      // surfaces here verbatim — don't swallow it behind a generic message.
+      toast.error(err.message || "Failed to assign driver")
+    } finally {
+      setAssigning(false)
     }
   }
 
@@ -293,20 +336,82 @@ export default function ShipmentDetailPage() {
             </CardContent>
           </Card>
 
-          {shipment.driver && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Assigned Driver</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <HugeiconsIcon icon={UserIcon} strokeWidth={2} className="size-4 text-muted-foreground" />
-                  <span className="text-sm font-medium">{shipment.driver.user?.name}</span>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="text-base">Driver & Vehicle</CardTitle>
+              <Button size="sm" variant="outline" onClick={openAssignDialog}>
+                {shipment.driver ? "Reassign" : "Assign"}
+              </Button>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {shipment.driver ? (
+                <>
+                  <div className="flex items-center gap-2">
+                    <HugeiconsIcon icon={UserIcon} strokeWidth={2} className="size-4 text-muted-foreground" />
+                    <span className="text-sm font-medium">{shipment.driver.user?.name}</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground">{shipment.driver.user?.phone}</p>
+                  {shipment.vehicle && (
+                    <div className="flex items-center gap-2 pt-1">
+                      <HugeiconsIcon icon={TruckIcon} strokeWidth={2} className="size-4 text-muted-foreground" />
+                      <span className="text-sm">{shipment.vehicle.registrationNo}</span>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <p className="text-sm text-muted-foreground">No driver assigned yet</p>
+              )}
+            </CardContent>
+          </Card>
+
+          <Dialog open={assignOpen} onOpenChange={setAssignOpen}>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>Assign Driver</DialogTitle>
+                <DialogDescription>
+                  The backend validates driver availability, license expiry, and vehicle capacity before confirming.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-2">
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium">Driver</label>
+                  <Select value={selectedDriverId} onValueChange={(v) => setSelectedDriverId(v || "")}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select a driver" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {drivers.map((d) => (
+                        <SelectItem key={d.id} value={d.id} disabled={d.status !== "AVAILABLE" || !d.isActive}>
+                          {d.user?.name} — {d.status}{!d.isActive ? " (inactive)" : ""}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
-                <p className="text-sm text-muted-foreground">{shipment.driver.user?.phone}</p>
-              </CardContent>
-            </Card>
-          )}
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium">Vehicle (optional)</label>
+                  <Select value={selectedVehicleId} onValueChange={(v) => setSelectedVehicleId(v || "")}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="No vehicle" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {vehicles.map((v) => (
+                        <SelectItem key={v.id} value={v.id} disabled={v.status !== "AVAILABLE" || !v.isActive}>
+                          {v.registrationNo} — {v.type} · {Number(v.capacityKg)}kg cap{!v.isActive ? " (inactive)" : ""}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setAssignOpen(false)}>Cancel</Button>
+                <Button onClick={submitAssign} disabled={assigning || !selectedDriverId}>
+                  {assigning ? "Assigning..." : "Confirm Assignment"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
     </DashboardLayout>
