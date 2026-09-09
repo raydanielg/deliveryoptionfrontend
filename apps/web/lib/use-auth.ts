@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
+import { clearAuthCookies } from "@workspace/ui/lib/auth-cookies"
 
 export interface AuthUser {
   id: string
@@ -47,8 +48,9 @@ export function useAuth() {
     if (typeof window !== "undefined") {
       localStorage.removeItem("token")
       localStorage.removeItem("user")
+      clearAuthCookies()
       setUser(null)
-      window.location.href = "/login"
+      window.location.href = "/auth"
     }
   }, [])
 

@@ -15,6 +15,7 @@ import {
   FieldLabel,
 } from "@workspace/ui/components/field"
 import { Input } from "@workspace/ui/components/input"
+import { setAuthCookies } from "@workspace/ui/lib/auth-cookies"
 
 export function LoginForm({
   className,
@@ -28,8 +29,6 @@ export function LoginForm({
   submitLabel = "Login",
   successMessage = "Welcome back! Redirecting to dashboard...",
   errorMessage = "Login failed. Please try again.",
-  noAccountText = "Don't have an account?",
-  signUpText = "Sign up",
   ...props
 }: React.ComponentProps<"div"> & {
   title?: string
@@ -42,8 +41,6 @@ export function LoginForm({
   submitLabel?: string
   successMessage?: string
   errorMessage?: string
-  noAccountText?: string
-  signUpText?: string
 }) {
   const [isLoading, setIsLoading] = React.useState(false)
 
@@ -70,6 +67,7 @@ export function LoginForm({
       if (typeof window !== "undefined") {
         localStorage.setItem("token", data.data.token)
         localStorage.setItem("user", JSON.stringify(data.data.user))
+        setAuthCookies(data.data.token, data.data.user?.role)
       }
 
       toast.success(successMessage)
@@ -147,12 +145,6 @@ export function LoginForm({
               <FieldDescription className="text-center text-muted-foreground">
                 Authorized personnel only. Contact your administrator for access.
               </FieldDescription>
-              <div className="text-center text-sm text-muted-foreground">
-                {noAccountText}{" "}
-                <a href="/auth/sign-up" className="font-medium text-primary hover:underline">
-                  {signUpText}
-                </a>
-              </div>
             </FieldGroup>
           </form>
         </CardContent>

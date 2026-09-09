@@ -135,8 +135,8 @@ export function ResetPasswordForm({
                   Reset Password
                 </Button>
               </Field>
-              <FieldDescription className="text-center">
-                Remember your password? <a href="/auth">Back to login</a>
+              <FieldDescription className="text-center text-muted-foreground">
+                Authorized personnel only. Contact your administrator for access.
               </FieldDescription>
             </FieldGroup>
           </form>

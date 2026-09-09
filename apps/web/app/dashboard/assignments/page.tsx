@@ -180,7 +180,7 @@ export default function AssignmentsPage() {
                         {s.fromAddress?.city || "—"} <span className="text-muted-foreground/50">→</span> {s.toAddress?.city || "—"}
                       </td>
                       <td className="px-4 py-3 text-muted-foreground">
-                        {s.vehicle?.plateNumber || s.vehicle?.model || "—"}
+                        {s.vehicle?.registrationNo || s.vehicle?.model || "—"}
                       </td>
                       <td className="px-4 py-3">
                         <StatusBadge status={s.status} size="sm" />

@@ -14,6 +14,7 @@ import { Separator } from "@workspace/ui/components/separator"
 import { Toaster } from "@workspace/ui/components/sonner"
 import { toast } from "sonner"
 import { formatMoney } from "@/lib/format"
+import { setAuthCookies } from "@workspace/ui/lib/auth-cookies"
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://swg.xerinexpress.com/api/v1"
 
@@ -95,8 +96,11 @@ export default function ShipPage() {
   const [quoteResult, setQuoteResult] = useState<any>(null)
   const [authMode, setAuthMode] = useState<"signup" | "login">("signup")
   const [paymentMethod, setPaymentMethod] = useState("MOBILE_MONEY")
+  const [payerPhone, setPayerPhone] = useState("")
   const [createdShipment, setCreatedShipment] = useState<any>(null)
   const [stations, setStations] = useState<any[]>([])
+  const [paymentPhase, setPaymentPhase] = useState<"idle" | "processing" | "confirmed" | "failed" | "skipped">("idle")
+  const [paymentError, setPaymentError] = useState<string | null>(null)
 
   useEffect(() => {
     fetch(`${API_BASE_URL}/stations?isActive=true`)
@@ -302,13 +306,104 @@ export default function ShipPage() {
       const data = await res.json()
       if (!res.ok || !data.success) throw new Error(data.message || "Failed to create shipment")
       setCreatedShipment(data.data)
-      setStep(7)
-      toast.success("Shipment created successfully!")
+
+      const requiresOnlinePayment = paymentMethod === "MOBILE_MONEY" || paymentMethod === "CARD"
+      const orderId = data.data?.order?.id
+      if (requiresOnlinePayment && orderId) {
+        setLoading(false)
+        await processOnlinePayment(token, orderId, data.data?.order?.totalAmount ?? quoteResult?.total)
+      } else {
+        // Bank transfer / cash on delivery are settled outside this flow — the shipment
+        // stays PAYMENT_PENDING until finance/driver reconciles it.
+        setPaymentPhase("skipped")
+        setStep(7)
+        toast.success("Shipment created successfully!")
+        setLoading(false)
+      }
     } catch (err: any) {
       toast.error(err.message || "Failed to create shipment")
-    } finally {
       setLoading(false)
     }
+  }
+
+  async function processOnlinePayment(token: string, orderId: string, amount: number) {
+    setPaymentPhase("processing")
+    setPaymentError(null)
+    setStep(6)
+    try {
+      const gatewaysRes = await fetch(`${API_BASE_URL}/payment-gateways/active`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      const gatewaysData = await gatewaysRes.json()
+      const gateways: any[] = gatewaysData?.data || []
+      if (!gatewaysRes.ok || gateways.length === 0) {
+        throw new Error("No payment gateway is currently available. Please choose Bank Transfer or Cash on Delivery.")
+      }
+
+      const wantsCard = paymentMethod === "CARD"
+      const gateway =
+        gateways.find((g) => (wantsCard ? g.gateway === "selcom" : true)) || gateways[0]
+
+      const initiateRes = await fetch(`${API_BASE_URL}/payment-gateways/initiate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          orderId,
+          gateway: gateway.gateway,
+          amount: Number(amount) || 0,
+          currency: "TZS",
+          payerPhone: payerPhone || form.fromPhone,
+          paymentChannel: gateway.gateway === "selcom" ? (wantsCard ? "selcompesa" : "wallet") : undefined,
+        }),
+      })
+      const initiateData = await initiateRes.json()
+      if (!initiateRes.ok || !initiateData.success) {
+        throw new Error(initiateData.message || "Failed to initiate payment")
+      }
+
+      const paymentRequestId = initiateData.data?.paymentRequestId
+      if (initiateData.data?.redirectUrl) {
+        // A hosted checkout page can't be polled the same way — send the customer there
+        // and let them return to track the shipment once they've completed payment.
+        window.open(initiateData.data.redirectUrl, "_blank", "noopener,noreferrer")
+      }
+
+      const finalStatus = await pollPaymentStatus(token, paymentRequestId)
+      if (finalStatus === "PAID") {
+        setPaymentPhase("confirmed")
+        toast.success("Payment confirmed!")
+      } else if (finalStatus === "FAILED") {
+        setPaymentPhase("failed")
+        setPaymentError("The payment was not completed. Your shipment is booked but marked unpaid — you can retry payment or choose another method from your shipment details.")
+      } else {
+        setPaymentPhase("failed")
+        setPaymentError("We couldn't confirm your payment yet. Your shipment is booked — check its status from your dashboard once the payment completes.")
+      }
+      setStep(7)
+    } catch (err: any) {
+      setPaymentPhase("failed")
+      setPaymentError(err.message || "Payment failed")
+      setStep(7)
+    }
+  }
+
+  async function pollPaymentStatus(token: string, paymentRequestId: string, timeoutMs = 90000, intervalMs = 3000) {
+    if (!paymentRequestId) return "UNKNOWN"
+    const deadline = Date.now() + timeoutMs
+    while (Date.now() < deadline) {
+      try {
+        const res = await fetch(`${API_BASE_URL}/payment-gateways/requests/${paymentRequestId}/status`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        const data = await res.json()
+        const status = data?.data?.status
+        if (status === "PAID" || status === "FAILED") return status
+      } catch {
+        // transient network error — keep polling until the deadline
+      }
+      await new Promise((resolve) => setTimeout(resolve, intervalMs))
+    }
+    return "TIMEOUT"
   }
 
   async function handleAuth(e: React.FormEvent) {
@@ -340,6 +435,7 @@ export default function ShipPage() {
         if (typeof window !== "undefined") {
           localStorage.setItem("token", regData.data.token)
           localStorage.setItem("user", JSON.stringify(regData.data.user))
+          setAuthCookies(regData.data.token, regData.data.user?.role)
         }
 
         await createShipmentAfterAuth(regData.data.token)
@@ -358,6 +454,7 @@ export default function ShipPage() {
         if (typeof window !== "undefined") {
           localStorage.setItem("token", loginData.data.token)
           localStorage.setItem("user", JSON.stringify(loginData.data.user))
+          setAuthCookies(loginData.data.token, loginData.data.user?.role)
         }
 
         await createShipmentAfterAuth(loginData.data.token)
@@ -1053,9 +1150,39 @@ export default function ShipPage() {
                     </button>
                   ))}
                 </div>
+                {(paymentMethod === "MOBILE_MONEY" || paymentMethod === "CARD") && (
+                  <div className="mt-4 grid gap-2">
+                    <Label htmlFor="payer-phone">Payment Phone Number</Label>
+                    <Input
+                      id="payer-phone"
+                      type="tel"
+                      placeholder="e.g. 0712345678"
+                      value={payerPhone}
+                      onChange={(e) => setPayerPhone(e.target.value)}
+                      className="h-12 text-base"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      We&apos;ll send a payment prompt to this number after your shipment is booked.
+                    </p>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
+            {createdShipment && paymentPhase === "processing" ? (
+              <Card className="border-border bg-card/95 backdrop-blur-xl">
+                <CardHeader>
+                  <CardTitle>Confirming Payment</CardTitle>
+                  <CardDescription>Approve the payment prompt on your phone. This can take up to a minute.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center gap-3 rounded-lg bg-primary/5 p-4 text-sm">
+                    <span className="size-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                    Waiting for payment confirmation…
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
             <Card className="border-border bg-card/95 backdrop-blur-xl">
               <CardHeader>
                 <CardTitle>{authMode === "signup" ? "Create Your Account" : "Sign In"}</CardTitle>
@@ -1128,6 +1255,7 @@ export default function ShipPage() {
                 </form>
               </CardContent>
             </Card>
+            )}
 
             <div className="flex justify-between">
               <Button variant="ghost" className="text-white/60 hover:text-white" onClick={() => setStep(5)}>
@@ -1140,12 +1268,20 @@ export default function ShipPage() {
         {/* Step 7: Confirmation */}
         {step === 7 && createdShipment && (
           <div className="flex flex-col items-center justify-center gap-6 py-12">
-            <div className="flex size-20 items-center justify-center rounded-full bg-primary/10 text-3xl text-primary">
-              ✓
+            <div className={`flex size-20 items-center justify-center rounded-full text-3xl ${paymentPhase === "failed" ? "bg-destructive/10 text-destructive" : "bg-primary/10 text-primary"}`}>
+              {paymentPhase === "failed" ? "!" : "✓"}
             </div>
             <div className="text-center space-y-2">
-              <h2 className="text-2xl font-bold text-white">Shipment Created!</h2>
-              <p className="text-white/60">Your shipment has been booked successfully</p>
+              <h2 className="text-2xl font-bold text-white">
+                {paymentPhase === "failed" ? "Shipment Booked — Payment Not Confirmed" : "Shipment Created!"}
+              </h2>
+              <p className="text-white/60">
+                {paymentPhase === "confirmed"
+                  ? "Your shipment has been booked and payment confirmed"
+                  : paymentPhase === "failed"
+                    ? paymentError || "Your shipment is booked, but we couldn't confirm payment yet"
+                    : "Your shipment has been booked successfully"}
+              </p>
             </div>
             <Card className="w-full max-w-md border-border bg-card/95 backdrop-blur-xl">
               <CardContent className="space-y-3 p-6">
@@ -1168,7 +1304,11 @@ export default function ShipPage() {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">Payment</span>
-                  <Badge variant="secondary">{paymentMethod.replace(/_/g, " ")}</Badge>
+                  <Badge variant={paymentPhase === "failed" ? "destructive" : "secondary"}>
+                    {paymentMethod.replace(/_/g, " ")}
+                    {paymentPhase === "confirmed" && " · Confirmed"}
+                    {paymentPhase === "failed" && " · Unpaid"}
+                  </Badge>
                 </div>
               </CardContent>
             </Card>

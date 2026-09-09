@@ -24,12 +24,7 @@ export function LoginForm() {
         submitLabel={t("auth.login")}
         successMessage={t("auth.loginSuccess")}
         errorMessage={t("auth.loginFailed")}
-        noAccountText={t("auth.noAccount")}
-        signUpText={t("auth.signUp")}
       />
-      <p className="mt-4 text-center text-xs text-muted-foreground">
-        &copy; {new Date().getFullYear()} Xerin Express. {t("auth.rights")}
-      </p>
       <Toaster />
     </div>
   )

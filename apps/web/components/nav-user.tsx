@@ -5,6 +5,7 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "@workspace/ui/components/avatar"
+import { clearAuthCookies } from "@workspace/ui/lib/auth-cookies"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -90,6 +91,7 @@ export function NavUser({
               if (typeof window !== "undefined") {
                 localStorage.removeItem("token")
                 localStorage.removeItem("user")
+                clearAuthCookies()
               }
               router.push("/auth")
             }}>

@@ -77,6 +77,9 @@ export default function AuthPage() {
         <p className="relative z-10 mt-4 text-center text-xs text-muted-foreground">
           &copy; {new Date().getFullYear()} Xerin Express. {t("auth.rights")}
         </p>
+        <p className="relative z-10 mt-2 text-center text-xs text-muted-foreground">
+          Authorized personnel only. Contact your administrator for access.
+        </p>
       </div>
     </div>
   )

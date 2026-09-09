@@ -15,6 +15,7 @@ import {
   FieldLabel,
 } from "@workspace/ui/components/field"
 import { Input } from "@workspace/ui/components/input"
+import { setAuthCookies } from "@workspace/ui/lib/auth-cookies"
 
 export function SignUpForm({
   className,
@@ -55,6 +56,7 @@ export function SignUpForm({
       if (typeof window !== "undefined") {
         localStorage.setItem("token", data.data.token)
         localStorage.setItem("user", JSON.stringify(data.data.user))
+        setAuthCookies(data.data.token, data.data.user?.role)
         sessionStorage.setItem("resetEmail", email)
         sessionStorage.setItem("userName", name)
         sessionStorage.setItem("justRegistered", "true")
@@ -172,8 +174,8 @@ export function SignUpForm({
                   Create Account
                 </Button>
               </Field>
-              <FieldDescription className="text-center">
-                Already have an account? <a href="/auth">Sign in</a>
+              <FieldDescription className="text-center text-muted-foreground">
+                Authorized personnel only. Contact your administrator for access.
               </FieldDescription>
             </FieldGroup>
           </form>

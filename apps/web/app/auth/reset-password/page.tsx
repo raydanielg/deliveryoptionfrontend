@@ -74,6 +74,9 @@ export default function ResetPasswordPage() {
         <p className="relative z-10 mt-4 text-center text-xs text-muted-foreground">
           &copy; {new Date().getFullYear()} Xerin Express. All rights reserved.
         </p>
+        <p className="relative z-10 mt-2 text-center text-xs text-muted-foreground">
+          Authorized personnel only. Contact your administrator for access.
+        </p>
         <Toaster />
       </div>
     </div>
