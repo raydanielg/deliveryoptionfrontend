@@ -10,11 +10,30 @@ import { Label } from "@workspace/ui/components/label"
 import { Skeleton } from "@workspace/ui/components/skeleton"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@workspace/ui/components/select"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetDescription } from "@workspace/ui/components/sheet"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@workspace/ui/components/dialog"
 import { PageHeader } from "@/components/shared/page-header"
 import { MetricCard } from "@/components/shared/metric-card"
 import { api } from "@/lib/api"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { Message01Icon, PlusIcon, Search01Icon, RefreshIcon, CheckmarkCircle02Icon, AlertCircleIcon, ClockIcon, SendIcon, Cancel01Icon, PlayIcon, PauseIcon } from "@hugeicons/core-free-icons"
+import {
+  Message01Icon,
+  PlusIcon,
+  RefreshIcon,
+  CheckmarkCircle02Icon,
+  AlertCircleIcon,
+  ClockIcon,
+  SendIcon,
+  Cancel01Icon,
+  PlayIcon,
+  PauseIcon,
+  Logout01Icon,
+  Login01Icon,
+  WifiOff01Icon,
+  Wifi01Icon,
+  QrCode01Icon,
+  AlertDiamondIcon,
+  Settings02Icon,
+} from "@hugeicons/core-free-icons"
 import { toast } from "sonner"
 import { formatNumber, formatDate } from "@/lib/format"
 import QRCode from "qrcode"
@@ -25,18 +44,28 @@ function QRCodeImage({ data }: { data: string }) {
   useEffect(() => {
     QRCode.toDataURL(data, { width: 256, margin: 1 }).then(setSrc).catch(() => {})
   }, [data])
-  return src ? <img src={src} alt="WhatsApp QR Code" className="w-64 h-64" /> : <div className="w-64 h-64 animate-pulse bg-muted rounded" />
+  return src ? <img src={src} alt="WhatsApp QR Code" className="w-64 h-64 rounded-lg" /> : <div className="w-64 h-64 animate-pulse bg-muted rounded-lg" />
 }
 
-const STATUS_COLORS: Record<string, string> = {
-  CONNECTED: "bg-green-100 text-green-700",
-  QR_REQUIRED: "bg-orange-100 text-orange-700",
-  CONNECTING: "bg-blue-100 text-blue-700",
-  RECONNECTING: "bg-yellow-100 text-yellow-700",
-  DISCONNECTED: "bg-gray-100 text-gray-700",
-  SESSION_EXPIRED: "bg-red-100 text-red-700",
-  ERROR: "bg-red-100 text-red-700",
-  DISABLED: "bg-gray-100 text-gray-500",
+const STATUS_CONFIG: Record<string, { color: string; dot: string; icon: any }> = {
+  CONNECTED: { color: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400", dot: "bg-emerald-500", icon: Wifi01Icon },
+  QR_REQUIRED: { color: "bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400", dot: "bg-amber-500", icon: QrCode01Icon },
+  CONNECTING: { color: "bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:text-blue-400", dot: "bg-blue-500", icon: ClockIcon },
+  RECONNECTING: { color: "bg-yellow-100 text-yellow-700 dark:bg-yellow-950/40 dark:text-yellow-400", dot: "bg-yellow-500", icon: RefreshIcon },
+  DISCONNECTED: { color: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400", dot: "bg-gray-400", icon: WifiOff01Icon },
+  SESSION_EXPIRED: { color: "bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-400", dot: "bg-red-500", icon: AlertDiamondIcon },
+  ERROR: { color: "bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-400", dot: "bg-red-500", icon: AlertCircleIcon },
+  DISABLED: { color: "bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-500", dot: "bg-gray-300", icon: PauseIcon },
+}
+
+function StatusBadge({ status }: { status: string }) {
+  const config = STATUS_CONFIG[status] ?? STATUS_CONFIG.DISCONNECTED!
+  return (
+    <Badge className={`${config.color} gap-1.5`}>
+      <span className={`size-1.5 rounded-full ${config.dot} ${status === "CONNECTING" || status === "RECONNECTING" ? "animate-pulse" : ""}`} />
+      {status?.replace(/_/g, " ").toLowerCase()}
+    </Badge>
+  )
 }
 
 export default function WhatsAppPage() {
@@ -117,7 +146,7 @@ export default function WhatsAppPage() {
   }, [qrData?.connectionId])
 
   async function handleAction(action: string, conn: any) {
-    setActionLoading(conn.id)
+    setActionLoading(`${action}-${conn.id}`)
     try {
       if (action === "reconnect") await api.whatsapp.reconnect(conn.id)
       else if (action === "disconnect") await api.whatsapp.disconnect(conn.id, false)
@@ -146,14 +175,15 @@ export default function WhatsAppPage() {
     }
     setTestSending(true)
     try {
-      await api.whatsapp.sendTest({
+      const res = await api.whatsapp.sendTest({
         connectionId: testConn.id,
         recipient: testForm.recipient.trim(),
         message: testForm.message.trim() || undefined,
       })
-      toast.success("Test message queued — check the Messages tab for delivery status")
+      toast.success(res?.data?.status === "SENT" ? "Test message sent!" : `Test message ${res?.data?.status || "queued"}`)
       setTestOpen(false)
       setTestConn(null)
+      loadData()
     } catch (err: any) {
       toast.error(err.message || "Failed to send test message")
     } finally {
@@ -204,23 +234,44 @@ export default function WhatsAppPage() {
                             </SelectContent>
                           </Select>
                         </div>
+                        <div className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-900 dark:bg-amber-950/30">
+                          <HugeiconsIcon icon={AlertCircleIcon} className="size-4 shrink-0 text-amber-500" />
+                          <p className="text-xs text-amber-700 dark:text-amber-300">
+                            You'll need your phone with WhatsApp installed to scan the QR code.
+                            Make sure WhatsApp Web is not already linked on too many devices.
+                          </p>
+                        </div>
                         <Button className="w-full" onClick={handleCreate} disabled={addLoading}>
-                          {addLoading ? "Generating QR..." : "Generate QR Code"}
+                          {addLoading ? (
+                            <><HugeiconsIcon icon={ClockIcon} className="size-4 animate-pulse" /> Generating QR...</>
+                          ) : (
+                            <><HugeiconsIcon icon={QrCode01Icon} className="size-4" /> Generate QR Code</>
+                          )}
                         </Button>
                       </>
                     ) : (
                       <div className="flex flex-col items-center gap-4">
-                        <p className="text-sm text-muted-foreground text-center">
-                          Open WhatsApp on your phone → Settings → Linked Devices → Link a Device → Scan this QR
-                        </p>
-                        <div className="rounded-lg border p-4 bg-white">
+                        <div className="flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-4 py-1.5 dark:border-amber-900 dark:bg-amber-950/30">
+                          <span className="size-2 rounded-full bg-amber-500 animate-pulse" />
+                          <span className="text-xs font-medium text-amber-700 dark:text-amber-300">Waiting for scan...</span>
+                        </div>
+                        <div className="rounded-xl border-2 border-primary/20 bg-white p-4 shadow-lg">
                           <QRCodeImage data={qrData.qrCode} />
+                        </div>
+                        <div className="flex flex-col items-center gap-1">
+                          <p className="text-sm font-medium text-center">
+                            Open WhatsApp on your phone
+                          </p>
+                          <p className="text-xs text-muted-foreground text-center max-w-xs">
+                            Settings → Linked Devices → Link a Device → Scan this QR code
+                          </p>
                         </div>
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                           <HugeiconsIcon icon={ClockIcon} className="size-4 animate-pulse" />
-                          Waiting for scan...
+                          QR refreshes automatically every 3 seconds
                         </div>
-                        <Button variant="outline" onClick={() => { setQrData(null); setAddOpen(false) }}>
+                        <Button variant="outline" className="w-full" onClick={() => { setQrData(null); setAddOpen(false) }}>
+                          <HugeiconsIcon icon={Cancel01Icon} className="size-4" />
                           Cancel
                         </Button>
                       </div>
@@ -252,7 +303,7 @@ export default function WhatsAppPage() {
                   <div className="flex items-center gap-2 text-sm">
                     <HugeiconsIcon icon={Message01Icon} className="size-4 text-primary" />
                     <span className="font-medium">{testConn.name}</span>
-                    <Badge className={STATUS_COLORS[testConn.status] || ""}>{testConn.status?.replace(/_/g, " ").toLowerCase()}</Badge>
+                    <StatusBadge status={testConn.status} />
                   </div>
                   {testConn.accountId && (
                     <p className="mt-1 text-xs text-muted-foreground">Account: {testConn.accountId}</p>
@@ -342,56 +393,70 @@ export default function WhatsAppPage() {
                     </td>
                   </tr>
                 ) : (
-                  connections.map((c: any) => (
-                    <tr key={c.id} className="hover:bg-muted/20">
-                      <td className="px-4 py-3 font-medium">{c.name}</td>
-                      <td className="px-4 py-3 text-muted-foreground">{c.accountId || "—"}</td>
-                      <td className="px-4 py-3 text-muted-foreground capitalize">{c.purpose || "—"}</td>
-                      <td className="px-4 py-3">
-                        <Badge className={STATUS_COLORS[c.status] || "bg-gray-100 text-gray-700"}>
-                          {c.status?.replace(/_/g, " ").toLowerCase()}
-                        </Badge>
-                      </td>
-                      <td className="px-4 py-3 tabular-nums text-xs">
-                        <span className="text-green-600">{c.messagesSent} sent</span>
-                        {" / "}
-                        <span className="text-red-600">{c.messagesFailed} failed</span>
-                      </td>
-                      <td className="px-4 py-3 text-muted-foreground text-xs">{c.lastSeenAt ? formatDate(c.lastSeenAt) : "—"}</td>
-                      <td className="px-4 py-3">
-                        <div className="flex flex-wrap gap-1">
-                          {c.status === "CONNECTED" && (
-                            <Button size="sm" variant="outline" disabled={actionLoading === `test-${c.id}`}
-                              onClick={() => handleTestMessage(c)}>
-                              Test
+                  connections.map((c: any) => {
+                    const config = STATUS_CONFIG[c.status] ?? STATUS_CONFIG.DISCONNECTED!
+                    const isActive = actionLoading?.endsWith(c.id)
+                    return (
+                      <tr key={c.id} className="hover:bg-muted/20">
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-2">
+                            <div className={`flex size-8 items-center justify-center rounded-lg ${config.color}`}>
+                              <HugeiconsIcon icon={config.icon} className="size-4" />
+                            </div>
+                            <span className="font-medium">{c.name}</span>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-muted-foreground">{c.accountId || "—"}</td>
+                        <td className="px-4 py-3 text-muted-foreground capitalize">{c.purpose || "—"}</td>
+                        <td className="px-4 py-3">
+                          <StatusBadge status={c.status} />
+                        </td>
+                        <td className="px-4 py-3 tabular-nums text-xs">
+                          <span className="text-green-600">{c.messagesSent} sent</span>
+                          {" / "}
+                          <span className="text-red-600">{c.messagesFailed} failed</span>
+                        </td>
+                        <td className="px-4 py-3 text-muted-foreground text-xs">{c.lastSeenAt ? formatDate(c.lastSeenAt) : "—"}</td>
+                        <td className="px-4 py-3">
+                          <div className="flex flex-wrap gap-1">
+                            {c.status === "CONNECTED" && (
+                              <Button size="sm" variant="outline" disabled={isActive}
+                                onClick={() => handleTestMessage(c)}>
+                                <HugeiconsIcon icon={SendIcon} className="size-3.5" />
+                                Test
+                              </Button>
+                            )}
+                            {(c.status === "DISCONNECTED" || c.status === "ERROR" || c.status === "SESSION_EXPIRED") && c.isActive && (
+                              <Button size="sm" variant="outline" disabled={isActive}
+                                onClick={() => handleAction("reconnect", c)}>
+                                <HugeiconsIcon icon={Login01Icon} className="size-3.5" />
+                                Reconnect
+                              </Button>
+                            )}
+                            {c.status === "CONNECTED" && (
+                              <Button size="sm" variant="outline" disabled={isActive}
+                                onClick={() => handleAction("disconnect", c)}>
+                                <HugeiconsIcon icon={WifiOff01Icon} className="size-3.5" />
+                                Disconnect
+                              </Button>
+                            )}
+                            {c.status !== "DISABLED" && (
+                              <Button size="sm" variant="outline" disabled={isActive}
+                                onClick={() => handleAction("logout", c)}>
+                                <HugeiconsIcon icon={Logout01Icon} className="size-3.5" />
+                                Logout
+                              </Button>
+                            )}
+                            <Button size="sm" variant="ghost" disabled={isActive}
+                              onClick={() => handleAction("toggle", c)}>
+                              <HugeiconsIcon icon={c.isActive ? PauseIcon : PlayIcon} className="size-3.5" />
+                              {c.isActive ? "Disable" : "Enable"}
                             </Button>
-                          )}
-                          {(c.status === "DISCONNECTED" || c.status === "ERROR" || c.status === "SESSION_EXPIRED") && c.isActive && (
-                            <Button size="sm" variant="outline" disabled={actionLoading === c.id}
-                              onClick={() => handleAction("reconnect", c)}>
-                              Reconnect
-                            </Button>
-                          )}
-                          {c.status === "CONNECTED" && (
-                            <Button size="sm" variant="outline" disabled={actionLoading === c.id}
-                              onClick={() => handleAction("disconnect", c)}>
-                              Disconnect
-                            </Button>
-                          )}
-                          {c.status !== "DISABLED" && (
-                            <Button size="sm" variant="outline" disabled={actionLoading === c.id}
-                              onClick={() => handleAction("logout", c)}>
-                              Logout
-                            </Button>
-                          )}
-                          <Button size="sm" variant="ghost" disabled={actionLoading === c.id}
-                            onClick={() => handleAction("toggle", c)}>
-                            {c.isActive ? "Disable" : "Enable"}
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })
                 )}
               </tbody>
             </table>
