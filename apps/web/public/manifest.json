@@ -1,16 +1,25 @@
 {
   "name": "Xerin Express — Logistics & Delivery Platform",
   "short_name": "Xerin Express",
-  "description": "Multipurpose logistics & delivery management platform for domestic, international, and freight operations. Send parcels, track shipments, and manage deliveries with ease.",
+  "description": "Tanzania's leading logistics & delivery platform. Book road, SGR rail, air cargo, and international shipping. Track shipments in real-time with OTP-verified delivery across East Africa.",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
   "background_color": "#ffffff",
   "theme_color": "#F97316",
-  "categories": ["logistics", "delivery", "business", "productivity"],
+  "categories": ["logistics", "delivery", "business", "productivity", "shipping", "freight"],
   "lang": "en",
   "dir": "ltr",
   "scope": "/",
+  "screenshots": [
+    {
+      "src": "/assets/2149095941.jpg",
+      "sizes": "1200x630",
+      "type": "image/jpeg",
+      "form_factor": "wide",
+      "label": "Xerin Express — Logistics & Delivery Platform"
+    }
+  ],
   "icons": [
     {
       "src": "/assets/favicon.png",

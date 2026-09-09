@@ -227,8 +227,8 @@ export function TrustMarquee() {
 
 /* ───────────────────────────── Hero ───────────────────────────── */
 const heroImages = [
-  "/assets/2149095908.jpg",
   "/assets/2149095941.jpg",
+  "/assets/2149095908.jpg",
   "/assets/41714.jpg",
 ]
 

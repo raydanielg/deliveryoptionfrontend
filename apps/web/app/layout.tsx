@@ -15,27 +15,34 @@ const fontMono = Geist_Mono({
   variable: "--font-mono",
 })
 
+const SITE_URL = "https://swg.xerinexpress.com"
+
 export const metadata = {
-  metadataBase: new URL("https://swg.xerinexpress.com"),
+  metadataBase: new URL(SITE_URL),
   title: {
-    default: "Xerin Express — Logistics & Delivery Platform",
+    default: "Xerin Express — Logistics & Delivery Platform | Tanzania & East Africa",
     template: "%s — Xerin Express",
   },
   description:
-    "Xerin Express is a multipurpose logistics & delivery management platform for domestic, international, and freight operations. Send parcels, track shipments, and manage deliveries with ease.",
+    "Xerin Express is Tanzania's leading logistics & delivery platform. Book road, SGR rail, air cargo, and international shipping. Track shipments in real-time with OTP-verified delivery across East Africa.",
   keywords: [
     "Xerin Express",
-    "logistics",
-    "delivery",
-    "parcel delivery",
-    "shipment tracking",
-    "freight forwarding",
-    "SGR parcel",
-    "air cargo",
-    "Tanzania logistics",
-    "courier service",
+    "logistics Tanzania",
+    "delivery service Tanzania",
+    "parcel delivery Dar es Salaam",
+    "shipment tracking Tanzania",
+    "freight forwarding East Africa",
+    "SGR parcel service",
+    "air cargo Tanzania",
+    "courier service Tanzania",
+    "international shipping Tanzania",
+    "road delivery Tanzania",
+    "warehouse fulfillment Tanzania",
+    "boda boda delivery",
+    "last mile delivery Tanzania",
+    "cross-border logistics Africa",
   ],
-  authors: [{ name: "Xerin Express" }],
+  authors: [{ name: "Xerin Express", url: SITE_URL }],
   creator: "Xerin Express",
   publisher: "Xerin Express",
   applicationName: "Xerin Express",
@@ -43,6 +50,14 @@ export const metadata = {
     telephone: true,
     address: false,
     email: true,
+  },
+  alternates: {
+    canonical: SITE_URL,
+    languages: {
+      "en": SITE_URL,
+      "sw": `${SITE_URL}/?lang=sw`,
+      "x-default": SITE_URL,
+    },
   },
   icons: {
     icon: [
@@ -62,42 +77,53 @@ export const metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://swg.xerinexpress.com",
+    alternateLocale: ["sw_TZ"],
+    url: SITE_URL,
     siteName: "Xerin Express",
-    title: "Xerin Express — Logistics & Delivery Platform",
+    title: "Xerin Express — Logistics & Delivery Platform | Tanzania & East Africa",
     description:
-      "Multipurpose logistics & delivery management platform for domestic, international, and freight operations. Send parcels, track shipments, and manage deliveries with ease.",
+      "Tanzania's leading logistics & delivery platform. Book road, SGR rail, air cargo, and international shipping. Track shipments in real-time with OTP-verified delivery.",
     images: [
       {
-        url: "/assets/favicon.png",
-        width: 512,
-        height: 512,
-        alt: "Xerin Express Logo",
+        url: "/assets/2149095941.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Xerin Express — Logistics & Delivery Platform",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Xerin Express — Logistics & Delivery Platform",
+    title: "Xerin Express — Logistics & Delivery Platform | Tanzania & East Africa",
     description:
-      "Multipurpose logistics & delivery management platform for domestic, international, and freight operations.",
-    images: ["/assets/favicon.png"],
+      "Tanzania's leading logistics & delivery platform. Book road, SGR rail, air cargo, and international shipping. Track shipments in real-time.",
+    images: ["/assets/2149095941.jpg"],
     creator: "@xerinexpress",
+    site: "@xerinexpress",
   },
   robots: {
     index: true,
     follow: true,
+    nocache: false,
     googleBot: {
       index: true,
       follow: true,
+      noimageindex: false,
       "max-image-preview": "large",
       "max-snippet": -1,
+      "max-video-preview": -1,
     },
   },
   verification: {
     google: "",
   },
   category: "logistics",
+  other: {
+    "geo.region": "TZ",
+    "geo.placename": "Dar es Salaam",
+    "geo.position": "-6.79;39.28",
+    "ICBM": "-6.79, 39.28",
+  },
 }
 
 export const viewport: Viewport = {
@@ -108,6 +134,56 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
+}
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": `${SITE_URL}/#organization`,
+      "name": "Xerin Express",
+      "url": SITE_URL,
+      "logo": `${SITE_URL}/assets/favicon.png`,
+      "image": `${SITE_URL}/assets/2149095941.jpg`,
+      "description": "Tanzania's leading logistics & delivery platform. Book road, SGR rail, air cargo, and international shipping.",
+      "telephone": "+255792810292",
+      "email": "info@xerinexpress.co.tz",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Dar es Salaam",
+        "addressCountry": "TZ",
+      },
+      "areaServed": ["Tanzania", "Kenya", "Uganda", "Rwanda", "Burundi", "Zambia", "Malawi", "Mozambique", "DR Congo", "South Sudan", "Ethiopia"],
+      "sameAs": [
+        "https://www.facebook.com/xerinexpress",
+        "https://twitter.com/xerinexpress",
+        "https://www.instagram.com/xerinexpress",
+        "https://www.linkedin.com/company/xerinexpress",
+      ],
+    },
+    {
+      "@type": "WebSite",
+      "@id": `${SITE_URL}/#website`,
+      "url": SITE_URL,
+      "name": "Xerin Express — Logistics & Delivery Platform",
+      "publisher": { "@id": `${SITE_URL}/#organization` },
+      "inLanguage": ["en", "sw"],
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": `${SITE_URL}/track?number={search_term_string}`,
+        "query-input": "required name=search_term_string",
+      },
+    },
+    {
+      "@type": "Service",
+      "name": "Logistics & Delivery Services",
+      "provider": { "@id": `${SITE_URL}/#organization` },
+      "areaServed": "East Africa",
+      "serviceType": "Logistics, Delivery, Freight Forwarding, Parcel Delivery, SGR Rail Parcel, Air Cargo, International Shipping",
+      "url": SITE_URL,
+    },
+  ],
 }
 
 export default function RootLayout({
@@ -121,6 +197,12 @@ export default function RootLayout({
       suppressHydrationWarning
       className={cn("antialiased", fontMono.variable, "font-sans", inter.variable, robotoHeading.variable)}
     >
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      </head>
       <body>
         <ThemeProvider><LanguageProvider>{children}</LanguageProvider></ThemeProvider>
       </body>
