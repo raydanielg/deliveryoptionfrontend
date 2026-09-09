@@ -935,11 +935,16 @@ export function ReportViewerDashboard() {
 /* ---------- Customer Dashboard ---------- */
 export function CustomerDashboard() {
   const { user } = useAuth()
+  const stats = useShipmentStats()
   const recent = useRecentShipments(10)
 
   const shipments = recent.data
-  const active = shipments.filter((s) => !["DELIVERED", "CANCELLED"].includes(s.status))
-  const delivered = shipments.filter((s) => s.status === "DELIVERED")
+  // Stats come from GET /shipments/stats (now correctly scoped to this customer's own
+  // shipments — see back/src/modules/shipments/controller.js) so "Total"/"Active"/
+  // "Delivered" reflect the customer's real lifetime counts. Previously these were
+  // derived from only the 10 most-recently-fetched shipments, so "Total" silently capped
+  // at 10 for any customer with more shipments than that. "Pending" has no dedicated
+  // stats field yet, so it stays derived from the recent list.
   const pending = shipments.filter((s) => s.status === "BOOKED" || s.status === "PENDING")
 
   return (
@@ -953,9 +958,9 @@ export function CustomerDashboard() {
       />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <MetricCard label="Active" value={formatNumber(active.length)} icon={TruckIcon} loading={recent.isLoading} hint="In progress" />
-        <MetricCard label="Delivered" value={formatNumber(delivered.length)} icon={CheckmarkCircle02Icon} loading={recent.isLoading} />
-        <MetricCard label="Total" value={formatNumber(shipments.length)} icon={Package02Icon} loading={recent.isLoading} />
+        <MetricCard label="Active" value={formatNumber(stats.data?.active ?? 0)} icon={TruckIcon} loading={stats.isLoading} hint="In progress" />
+        <MetricCard label="Delivered" value={formatNumber(stats.data?.delivered ?? 0)} icon={CheckmarkCircle02Icon} loading={stats.isLoading} />
+        <MetricCard label="Total" value={formatNumber(stats.data?.total ?? 0)} icon={Package02Icon} loading={stats.isLoading} />
         <MetricCard label="Pending" value={formatNumber(pending.length)} icon={Clock01Icon} loading={recent.isLoading} hint="Waiting" />
       </div>
 

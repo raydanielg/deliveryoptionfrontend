@@ -5,6 +5,7 @@ import { DashboardLayout } from "@/components/dashboard-layout"
 import { Badge } from "@workspace/ui/components/badge"
 import { Button } from "@workspace/ui/components/button"
 import { Input } from "@workspace/ui/components/input"
+import { Textarea } from "@workspace/ui/components/textarea"
 import { Label } from "@workspace/ui/components/label"
 import { Skeleton } from "@workspace/ui/components/skeleton"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@workspace/ui/components/select"
@@ -46,6 +47,10 @@ export default function WhatsAppPage() {
   const [newConn, setNewConn] = React.useState({ name: "", purpose: "customer_care" })
   const [qrData, setQrData] = React.useState<{ connectionId: string; qrCode: string } | null>(null)
   const [actionLoading, setActionLoading] = React.useState<string | null>(null)
+  const [testOpen, setTestOpen] = React.useState(false)
+  const [testConn, setTestConn] = React.useState<any>(null)
+  const [testForm, setTestForm] = React.useState({ recipient: "", message: "" })
+  const [testSending, setTestSending] = React.useState(false)
 
   React.useEffect(() => { loadData() }, [])
 
@@ -128,16 +133,31 @@ export default function WhatsAppPage() {
   }
 
   async function handleTestMessage(conn: any) {
-    const phone = prompt("Enter test recipient phone number (e.g. 255700000000):")
-    if (!phone) return
-    setActionLoading(`test-${conn.id}`)
+    setTestConn(conn)
+    setTestForm({ recipient: "", message: "" })
+    setTestOpen(true)
+  }
+
+  async function sendTest() {
+    if (!testConn) return
+    if (!testForm.recipient.trim()) {
+      toast.error("Recipient phone number is required")
+      return
+    }
+    setTestSending(true)
     try {
-      await api.whatsapp.sendTest({ connectionId: conn.id, recipient: phone })
-      toast.success("Test message queued")
+      await api.whatsapp.sendTest({
+        connectionId: testConn.id,
+        recipient: testForm.recipient.trim(),
+        message: testForm.message.trim() || undefined,
+      })
+      toast.success("Test message queued — check the Messages tab for delivery status")
+      setTestOpen(false)
+      setTestConn(null)
     } catch (err: any) {
-      toast.error(err.message || "Failed to send test")
+      toast.error(err.message || "Failed to send test message")
     } finally {
-      setActionLoading(null)
+      setTestSending(false)
     }
   }
 
@@ -215,6 +235,66 @@ export default function WhatsAppPage() {
             </div>
           }
         />
+
+        {/* Test Message Dialog */}
+        <Sheet open={testOpen} onOpenChange={(v) => { setTestOpen(v); if (!v) setTestConn(null) }}>
+          <SheetContent side="right" className="w-full sm:max-w-md">
+            <SheetHeader>
+              <SheetTitle className="flex items-center gap-2">
+                <HugeiconsIcon icon={SendIcon} className="size-5 text-primary" />
+                Send Test Message
+              </SheetTitle>
+              <SheetDescription>Send a test WhatsApp message to verify your connection is working</SheetDescription>
+            </SheetHeader>
+            <div className="space-y-4 px-4 pb-6">
+              {testConn && (
+                <div className="rounded-lg border bg-muted/30 p-3">
+                  <div className="flex items-center gap-2 text-sm">
+                    <HugeiconsIcon icon={Message01Icon} className="size-4 text-primary" />
+                    <span className="font-medium">{testConn.name}</span>
+                    <Badge className={STATUS_COLORS[testConn.status] || ""}>{testConn.status?.replace(/_/g, " ").toLowerCase()}</Badge>
+                  </div>
+                  {testConn.accountId && (
+                    <p className="mt-1 text-xs text-muted-foreground">Account: {testConn.accountId}</p>
+                  )}
+                </div>
+              )}
+              <div className="grid gap-2">
+                <Label>Recipient Phone <span className="text-destructive">*</span></Label>
+                <Input
+                  value={testForm.recipient}
+                  onChange={(e) => setTestForm(prev => ({ ...prev, recipient: e.target.value }))}
+                  placeholder="255700000000"
+                />
+                <p className="text-xs text-muted-foreground">Enter full phone number with country code (e.g. 255 for Tanzania)</p>
+              </div>
+              <div className="grid gap-2">
+                <Label>Message (optional)</Label>
+                <Textarea
+                  value={testForm.message}
+                  onChange={(e) => setTestForm(prev => ({ ...prev, message: e.target.value }))}
+                  placeholder="XERIN Express test message — this is a test from the WhatsApp Engine."
+                  rows={4}
+                />
+                <p className="text-xs text-muted-foreground">Leave empty to use default test message</p>
+              </div>
+              <div className="flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-900 dark:bg-blue-950/30">
+                <HugeiconsIcon icon={AlertCircleIcon} className="size-4 shrink-0 text-blue-500" />
+                <p className="text-xs text-blue-700 dark:text-blue-300">
+                  Make sure the recipient has WhatsApp installed and the phone number is active.
+                  The message will be sent via your connected WhatsApp account.
+                </p>
+              </div>
+              <Button className="w-full" onClick={sendTest} disabled={testSending}>
+                {testSending ? (
+                  <><HugeiconsIcon icon={ClockIcon} className="size-4 animate-pulse" /> Sending...</>
+                ) : (
+                  <><HugeiconsIcon icon={SendIcon} className="size-4" /> Send Test Message</>
+                )}
+              </Button>
+            </div>
+          </SheetContent>
+        </Sheet>
 
         {/* Summary Stats */}
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-6">
