@@ -125,9 +125,11 @@ export default function TicketsPage() {
     })
   }
 
-  const statusFilters = ["ALL", "OPEN", "ASSIGNED", "IN_PROGRESS", "REOPENED", "RESOLVED", "CLOSED"]
+  // Matches back/src/modules/tickets — the backend has no priority field and only these
+  // four statuses; offering ASSIGNED/REOPENED here would submit a status the API rejects.
+  const statusFilters = ["ALL", "OPEN", "IN_PROGRESS", "RESOLVED", "CLOSED"]
   const priorityFilters = ["ALL", "LOW", "MEDIUM", "HIGH", "URGENT"]
-  const STATUS_OPTIONS = ["OPEN", "ASSIGNED", "IN_PROGRESS", "REOPENED", "RESOLVED", "CLOSED"]
+  const STATUS_OPTIONS = ["OPEN", "IN_PROGRESS", "RESOLVED", "CLOSED"]
 
   const priorityColors: Record<string, string> = {
     URGENT: "bg-red-500/15 text-red-600 border-red-500/30",
@@ -297,10 +299,10 @@ export default function TicketsPage() {
                   </div>
                 </div>
 
-                {selected.description && (
+                {(selected.message || selected.description) && (
                   <div className="rounded-lg border p-3">
-                    <p className="text-xs text-muted-foreground mb-1">Description</p>
-                    <p className="text-sm">{selected.description}</p>
+                    <p className="text-xs text-muted-foreground mb-1">Message</p>
+                    <p className="text-sm">{selected.message || selected.description}</p>
                   </div>
                 )}
 

@@ -39,6 +39,8 @@ import {
   Search01Icon,
   PlusIcon,
   ShoppingBag01Icon,
+  PlugSocketIcon,
+  Message01Icon,
 } from "@hugeicons/core-free-icons"
 
 /* ---------- Customer-specific nav items ---------- */
@@ -103,6 +105,7 @@ const CUSTOMER_NAV_ITEMS = [
     items: [
       { titleKey: "nav.helpCenter", url: "/dashboard/support" },
       { titleKey: "nav.contactUs", url: "/dashboard/support/tickets" },
+      { titleKey: "nav.claims", url: "/dashboard/support/claims" },
     ],
   },
 ]
@@ -205,6 +208,8 @@ const ALL_NAV_ITEMS = [
       { titleKey: "nav.towerOverview", url: "/dashboard/control-tower" },
       { titleKey: "nav.byMode", url: "/dashboard/control-tower/modes" },
       { titleKey: "nav.towerExceptions", url: "/dashboard/control-tower/exceptions" },
+      { titleKey: "nav.dispatch", url: "/dashboard/dispatch" },
+      { titleKey: "nav.trips", url: "/dashboard/trips" },
     ],
   },
   {
@@ -296,6 +301,7 @@ const ALL_NAV_ITEMS = [
     icon: <HugeiconsIcon icon={HeadphonesIcon} className="size-4" />,
     items: [
       { titleKey: "nav.tickets", url: "/dashboard/support/tickets" },
+      { titleKey: "nav.claims", url: "/dashboard/support/claims" },
       { titleKey: "nav.ratings", url: "/dashboard/support/ratings" },
     ],
   },
@@ -318,6 +324,25 @@ const ALL_NAV_ITEMS = [
       { titleKey: "nav.allExceptions", url: "/dashboard/exceptions" },
       { titleKey: "nav.returns", url: "/dashboard/exceptions/returns" },
       { titleKey: "nav.notifications", url: "/dashboard/notifications" },
+    ],
+  },
+  {
+    titleKey: "nav.integrations",
+    navKey: "integrations",
+    url: "/dashboard/integrations",
+    icon: <HugeiconsIcon icon={PlugSocketIcon} className="size-4" />,
+    items: [] as { titleKey: string; url: string }[],
+  },
+  {
+    titleKey: "nav.whatsapp",
+    navKey: "whatsapp",
+    url: "/dashboard/whatsapp",
+    icon: <HugeiconsIcon icon={Message01Icon} className="size-4" />,
+    items: [
+      { titleKey: "nav.whatsappConnections", url: "/dashboard/whatsapp" },
+      { titleKey: "nav.whatsappTemplates", url: "/dashboard/whatsapp/templates" },
+      { titleKey: "nav.whatsappCampaigns", url: "/dashboard/whatsapp/campaigns" },
+      { titleKey: "nav.whatsappMessages", url: "/dashboard/whatsapp/messages" },
     ],
   },
   {

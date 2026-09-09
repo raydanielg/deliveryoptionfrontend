@@ -31,6 +31,7 @@ const PATH_NAV_KEYS: Array<{ prefix: string; navKey: string }> = [
   { prefix: "/dashboard/blog", navKey: "blog" },
   { prefix: "/dashboard/exceptions", navKey: "exceptions" },
   { prefix: "/dashboard/settings", navKey: "settings" },
+  { prefix: "/dashboard/integrations", navKey: "integrations" },
   { prefix: "/dashboard/orders", navKey: "operations" },
   { prefix: "/dashboard/shipments", navKey: "operations" },
   { prefix: "/dashboard/packages", navKey: "operations" },

@@ -30,7 +30,7 @@ import { RevealOnScroll } from "@/components/reveal-on-scroll"
 
 /* ───────────────────────────── Header ───────────────────────────── */
 const navLinks = [
-  { label: "Ship a Package", href: "/ship", icon: Package02Icon },
+  { label: "Book a Shipment", href: "/ship", icon: Package02Icon },
   { label: "Services", href: "#services", icon: TruckIcon },
   { label: "Coverage", href: "#coverage", icon: Globe02Icon },
   { label: "How It Works", href: "#how-it-works", icon: Route02Icon },
@@ -51,7 +51,7 @@ function ThemeToggle() {
       onClick={() => setTheme(isDark ? "light" : "dark")}
       className="group relative flex size-9 items-center justify-center rounded-lg border border-border text-foreground transition-all duration-300 hover:border-primary/40 hover:bg-muted/40"
       aria-label="Toggle theme"
-      title={isDark ? "Switch to light mode" : "Switch to dark mode"}
+      title={mounted ? (isDark ? "Switch to light mode" : "Switch to dark mode") : undefined}
     >
       {mounted && (
         <HugeiconsIcon
@@ -71,9 +71,9 @@ export function LandingHeader() {
     <header className="sticky top-0 z-50 w-full border-b border-border/60 bg-background/90 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
         {/* Logo */}
-        <a href="/" className="flex items-center gap-3 transition-opacity hover:opacity-90">
-          <div className="relative flex size-10 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-tr from-primary/20 via-primary/10 to-transparent p-1 ring-1 ring-primary/30 shadow-sm">
-            <img src="/assets/m%20app2.png" alt="Xerin Express" className="size-full rounded-lg object-contain" />
+        <a href="/" className="flex items-center gap-3">
+          <div className="flex size-10 items-center justify-center">
+            <img src="/assets/m%20app2.png" alt="Xerin Express" className="size-full object-contain" />
           </div>
           <div className="flex flex-col leading-none">
             <span className="text-base font-extrabold tracking-tight text-foreground">
@@ -111,7 +111,7 @@ export function LandingHeader() {
             className="inline-flex h-9 items-center gap-1.5 justify-center rounded-lg bg-primary px-5 text-sm font-semibold text-primary-foreground shadow-sm transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-primary/25"
           >
             <HugeiconsIcon icon={Package02Icon} strokeWidth={2} className="size-4" />
-            Ship Now
+            Book Now
           </a>
         </div>
 
@@ -174,7 +174,7 @@ export function LandingHeader() {
               className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground shadow-sm transition-all duration-300 hover:shadow-lg hover:shadow-primary/25"
             >
               <HugeiconsIcon icon={Package02Icon} strokeWidth={2} className="size-4" />
-              Ship Now
+              Book Now
             </a>
           </div>
         </nav>
@@ -316,7 +316,7 @@ export function Hero() {
               href="/ship"
               className="inline-flex h-11 items-center gap-2 rounded-lg bg-primary px-6 text-sm font-medium text-primary-foreground transition-all duration-300 hover:scale-[1.02] hover:shadow-lg"
             >
-              Ship a Package
+              Book a Shipment
             </a>
             <a
               href="#services"
@@ -366,21 +366,18 @@ export function Services() {
         <div className="grid gap-5 sm:grid-cols-2">
           {services.map((service, idx) => (
             <RevealOnScroll key={service.number} delay={idx * 50} className="h-full">
-              <div className="group relative flex h-full flex-col gap-5 overflow-hidden rounded-2xl border border-border bg-card p-7 transition-all duration-300 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/5 lg:p-8">
-                {/* Hover gradient glow */}
-                <div className="pointer-events-none absolute -right-12 -top-12 size-32 rounded-full bg-primary/5 blur-3xl transition-opacity duration-500 group-hover:bg-primary/10" />
-
-                <div className="relative flex items-center justify-between">
-                  <div className="flex size-12 items-center justify-center rounded-xl bg-gradient-to-br from-primary/15 to-primary/5 ring-1 ring-primary/10 transition-all duration-300 group-hover:scale-110 group-hover:from-primary/20 group-hover:to-primary/10 group-hover:ring-primary/20">
+              <div className="flex h-full flex-col gap-5 rounded-2xl border border-border bg-card p-7 lg:p-8">
+                <div className="flex items-center justify-between">
+                  <div className="flex size-12 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/10">
                     <HugeiconsIcon icon={service.icon} strokeWidth={2} className="size-6 text-primary" />
                   </div>
-                  <span className="text-3xl font-bold tabular-nums text-muted-foreground/15 transition-colors duration-300 group-hover:text-primary/20">
+                  <span className="text-3xl font-bold tabular-nums text-muted-foreground/15">
                     {service.number}
                   </span>
                 </div>
 
-                <div className="relative flex flex-col gap-2">
-                  <h3 className="text-lg font-semibold tracking-tight transition-colors duration-200 group-hover:text-primary">
+                <div className="flex flex-col gap-2">
+                  <h3 className="text-lg font-semibold tracking-tight">
                     {service.title}
                   </h3>
                   <p className="text-sm leading-relaxed text-muted-foreground">
@@ -389,9 +386,9 @@ export function Services() {
                 </div>
 
                 {/* Bottom accent line */}
-                <div className="relative mt-auto flex items-center gap-2 pt-3">
-                  <span className="h-px flex-1 bg-border transition-all duration-300 group-hover:bg-primary/30" />
-                  <HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={2} className="size-4 text-muted-foreground/40 transition-all duration-300 group-hover:translate-x-1 group-hover:text-primary" />
+                <div className="mt-auto flex items-center gap-2 pt-3">
+                  <span className="h-px flex-1 bg-border" />
+                  <HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={2} className="size-4 text-muted-foreground/40" />
                 </div>
               </div>
             </RevealOnScroll>
@@ -770,7 +767,7 @@ const reasons = [
   { title: "Flexible Payment Options", desc: "Pay with Selcom, Azampesa, or mobile money. Sender-pays or receiver-pays options available." },
   { title: "Multi-carrier Fleet", desc: "Vans, trucks, and bikes — automatically matched to your shipment size and urgency for optimal delivery." },
   { title: "Scalable for Business", desc: "From single parcels to bulk freight, our platform scales with your business needs and volume." },
-  { title: "24/7 Customer Support", desc: "Dedicated support team available round the clock via phone, email, and in-app chat for all your needs." },
+  { title: "Dedicated Customer Support", desc: "Reach our support team via phone, email, and in-app chat whenever you need help with a shipment." },
 ]
 
 export function WhyChooseUs() {
@@ -834,8 +831,8 @@ export function CTASection() {
               Ready to ship smarter?
             </h2>
             <p className="max-w-xl text-lg text-white/60 text-pretty">
-              Join thousands of businesses and individuals who trust Xerin Express for their delivery
-              needs. Create your free account in minutes.
+              Book your shipment in minutes and track it every step of the way.
+              Create your free account to get started.
             </p>
             <div className="flex flex-row flex-nowrap items-center justify-center gap-4">
               <a
@@ -864,7 +861,7 @@ const footerSections = [
   {
     title: "Services",
     links: [
-      { label: "Ship a Package", href: "/ship" },
+      { label: "Book a Shipment", href: "/ship" },
       { label: "Road Delivery", href: "/services/road-delivery" },
       { label: "SGR Parcel Service", href: "/services/sgr-parcel" },
       { label: "Air Cargo", href: "/services/air-cargo" },

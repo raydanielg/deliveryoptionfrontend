@@ -76,6 +76,8 @@ type NavKey =
   | "blog"
   | "exceptions"
   | "settings"
+  | "integrations"
+  | "whatsapp"
 
 const ALL_NAV_KEYS: NavKey[] = [
   "dashboard",
@@ -96,6 +98,8 @@ const ALL_NAV_KEYS: NavKey[] = [
   "blog",
   "exceptions",
   "settings",
+  "integrations",
+  "whatsapp",
 ]
 
 export const ROLE_NAV_PERMISSIONS: Record<Role, NavKey[]> = {
@@ -116,6 +120,8 @@ export const ROLE_NAV_PERMISSIONS: Record<Role, NavKey[]> = {
     "support",
     "exceptions",
     "settings",
+    "integrations",
+    "whatsapp",
   ],
   DISPATCHER: [
     "dashboard",
@@ -168,6 +174,7 @@ export const ROLE_NAV_PERMISSIONS: Record<Role, NavKey[]> = {
   ],
   REPORT_VIEWER: [
     "dashboard",
+    "integrations",
   ],
   CUSTOMER: [
     "dashboard",

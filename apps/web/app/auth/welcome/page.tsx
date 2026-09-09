@@ -81,11 +81,6 @@ export default function WelcomePage() {
               </div>
             </div>
           </div>
-
-          <div className="flex items-center gap-2 text-sm text-white/60">
-            <div className="size-2 rounded-full bg-emerald-500 animate-pulse" />
-            All systems operational
-          </div>
         </div>
       </div>
 

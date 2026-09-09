@@ -12,7 +12,7 @@ const en: Dictionary = {
   "brand.tagline": "Logistics & Delivery",
 
   // Auth
-  "auth.title": "Xerin Delivery Express",
+  "auth.title": "Xerin Express",
   "auth.subtitle": "Sign in to your account to continue",
   "auth.email": "Email",
   "auth.emailPlaceholder": "you@example.com",
@@ -29,8 +29,7 @@ const en: Dictionary = {
   "auth.heroDesc": "Manage shipments, track deliveries in real-time, and grow your logistics business with a powerful platform built for Africa.",
   "auth.feature1": "Real-time shipment tracking with GPS precision",
   "auth.feature2": "Comprehensive analytics and delivery reports",
-  "auth.feature3": "Bank-grade security for every shipment",
-  "auth.systemsOnline": "All systems operational",
+  "auth.feature3": "Encrypted, secure shipment data",
   "auth.rights": "All rights reserved.",
 
   // Sidebar - labels
@@ -69,6 +68,12 @@ const en: Dictionary = {
   "nav.customers": "Customers",
   "nav.blog": "Blog",
   "nav.exceptions": "Exceptions",
+  "nav.integrations": "Integrations",
+  "nav.whatsapp": "WhatsApp Engine",
+  "nav.whatsappConnections": "Connections",
+  "nav.whatsappTemplates": "Templates",
+  "nav.whatsappCampaigns": "Campaigns",
+  "nav.whatsappMessages": "Messages",
   "nav.settings": "Settings",
 
   // Sidebar - sub items
@@ -100,6 +105,8 @@ const en: Dictionary = {
   "nav.towerOverview": "Overview",
   "nav.byMode": "By Mode",
   "nav.towerExceptions": "Exceptions",
+  "nav.dispatch": "Smart Dispatch",
+  "nav.trips": "Trip Control",
   "nav.liveMap": "Live Map",
   "nav.trackingEvents": "Tracking Events",
   "nav.driverLocations": "Driver Locations",
@@ -125,6 +132,7 @@ const en: Dictionary = {
   "nav.allCustomers": "All Customers",
   "nav.corporateAccounts": "Corporate Accounts",
   "nav.tickets": "Tickets",
+  "nav.claims": "Claims",
   "nav.ratings": "Ratings",
   "nav.allPosts": "All Posts",
   "nav.blogCategories": "Categories",
@@ -465,7 +473,7 @@ const sw: Dictionary = {
   "brand.tagline": "Usafirishaji & Uwasilishaji",
 
   // Auth
-  "auth.title": "Xerin Delivery Express",
+  "auth.title": "Xerin Express",
   "auth.subtitle": "Ingia kwenye akaunti yako kuendelea",
   "auth.email": "Barua pepe",
   "auth.emailPlaceholder": "wewe@mfano.com",
@@ -482,8 +490,7 @@ const sw: Dictionary = {
   "auth.heroDesc": "Dhibiti mashimenti, fuatilia uwasilishaji kwa wakati halisi, na kuza biashara yako ya usafirishaji kwa jukwaa lenye nguvu lililojengwa kwa Afrika.",
   "auth.feature1": "Ufuatiliaji wa mashimenti kwa wakati halisi kwa usahihi wa GPS",
   "auth.feature2": "Takwimu kamili na ripoti za uwasilishaji",
-  "auth.feature3": "Usalama wa kiwango cha benki kwa kila mashimenti",
-  "auth.systemsOnline": "Mifumo yote inafanya kazi",
+  "auth.feature3": "Data ya mizigo iliyosimbwa kwa usalama",
   "auth.rights": "Haki zote zimehifadhiwa.",
 
   // Sidebar - labels
@@ -522,6 +529,12 @@ const sw: Dictionary = {
   "nav.customers": "Wateja",
   "nav.blog": "Blogu",
   "nav.exceptions": "Vipeo",
+  "nav.integrations": "Muunganisho",
+  "nav.whatsapp": "WhatsApp",
+  "nav.whatsappConnections": "Miunganisho",
+  "nav.whatsappTemplates": "Violezo",
+  "nav.whatsappCampaigns": "Kampeni",
+  "nav.whatsappMessages": "Ujumbe",
   "nav.settings": "Mipangilio",
 
   // Sidebar - sub items
@@ -553,6 +566,8 @@ const sw: Dictionary = {
   "nav.towerOverview": "Muhtasari",
   "nav.byMode": "Kwa Njia",
   "nav.towerExceptions": "Vipeo",
+  "nav.dispatch": "Upelelezi Otomatiki",
+  "nav.trips": "Udhibiti wa Safari",
   "nav.liveMap": "Ramani Hai",
   "nav.trackingEvents": "Matukio ya Ufuatiliaji",
   "nav.driverLocations": "Mahali pa Madereva",
@@ -578,6 +593,7 @@ const sw: Dictionary = {
   "nav.allCustomers": "Wateja Wote",
   "nav.corporateAccounts": "Akaunti za Kampuni",
   "nav.tickets": "Tiketi",
+  "nav.claims": "Madai",
   "nav.ratings": "Makadirio",
   "nav.allPosts": "Machapisho Yote",
   "nav.blogCategories": "Makundi",

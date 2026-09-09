@@ -19,7 +19,7 @@ import { setAuthCookies } from "@workspace/ui/lib/auth-cookies"
 
 export function LoginForm({
   className,
-  title = "Xerin Delivery Express",
+  title = "Xerin Express",
   subtitle = "Sign in to your account to continue",
   emailLabel = "Email",
   emailPlaceholder = "you@example.com",
@@ -89,7 +89,7 @@ export function LoginForm({
               <div className="flex flex-col items-center gap-2 text-center">
                 <img
                   src="/assets/social-media (1).png"
-                  alt="Xerin Delivery Express"
+                  alt="Xerin Express"
                   className="size-16 object-contain"
                 />
                 <h1 className="text-2xl font-bold">{title}</h1>

@@ -52,15 +52,9 @@ export default function OtpPage() {
                     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                   </svg>
                 </div>
-                <span className="text-sm text-white/70">Bank-grade security for every shipment</span>
+                <span className="text-sm text-white/70">Encrypted, secure shipment data</span>
               </div>
             </div>
-          </div>
-
-          {/* Status */}
-          <div className="flex items-center gap-2 text-sm text-white/60">
-            <div className="size-2 rounded-full bg-emerald-500 animate-pulse" />
-            All systems operational
           </div>
         </div>
       </div>
