@@ -305,13 +305,21 @@ export default function ShipPage() {
       })
       const data = await res.json()
       if (!res.ok || !data.success) throw new Error(data.message || "Failed to create shipment")
-      setCreatedShipment(data.data)
+
+      // /shipments responds { shipment, order, pricing }; /sgr/booking and /air-cargo/booking
+      // respond the shipment record directly with `order` nested inside it. Normalize to the
+      // { shipment, order } shape the confirmation screen below expects, regardless of which
+      // endpoint was hit — otherwise SGR/Air Cargo bookings showed a blank tracking number and
+      // a dead "Track This Shipment" link.
+      const raw = data.data
+      const normalized = raw?.shipment ? raw : { shipment: raw, order: raw?.order }
+      setCreatedShipment(normalized)
 
       const requiresOnlinePayment = paymentMethod === "MOBILE_MONEY" || paymentMethod === "CARD"
-      const orderId = data.data?.order?.id
+      const orderId = normalized.order?.id
       if (requiresOnlinePayment && orderId) {
         setLoading(false)
-        await processOnlinePayment(token, orderId, data.data?.order?.totalAmount ?? quoteResult?.total)
+        await processOnlinePayment(token, orderId, normalized.order?.totalAmount ?? quoteResult?.total)
       } else {
         // Bank transfer / cash on delivery are settled outside this flow — the shipment
         // stays PAYMENT_PENDING until finance/driver reconciles it.
