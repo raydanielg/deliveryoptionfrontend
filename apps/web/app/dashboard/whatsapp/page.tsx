@@ -16,6 +16,16 @@ import { HugeiconsIcon } from "@hugeicons/react"
 import { Message01Icon, PlusIcon, Search01Icon, RefreshIcon, CheckmarkCircle02Icon, AlertCircleIcon, ClockIcon, SendIcon, Cancel01Icon, PlayIcon, PauseIcon } from "@hugeicons/core-free-icons"
 import { toast } from "sonner"
 import { formatNumber, formatDate } from "@/lib/format"
+import QRCode from "qrcode"
+import { useEffect, useState } from "react"
+
+function QRCodeImage({ data }: { data: string }) {
+  const [src, setSrc] = useState<string>("")
+  useEffect(() => {
+    QRCode.toDataURL(data, { width: 256, margin: 1 }).then(setSrc).catch(() => {})
+  }, [data])
+  return src ? <img src={src} alt="WhatsApp QR Code" className="w-64 h-64" /> : <div className="w-64 h-64 animate-pulse bg-muted rounded" />
+}
 
 const STATUS_COLORS: Record<string, string> = {
   CONNECTED: "bg-green-100 text-green-700",
@@ -184,7 +194,7 @@ export default function WhatsAppPage() {
                           Open WhatsApp on your phone → Settings → Linked Devices → Link a Device → Scan this QR
                         </p>
                         <div className="rounded-lg border p-4 bg-white">
-                          <img src={qrData.qrCode} alt="WhatsApp QR Code" className="w-64 h-64" />
+                          <QRCodeImage data={qrData.qrCode} />
                         </div>
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                           <HugeiconsIcon icon={ClockIcon} className="size-4 animate-pulse" />
