@@ -10,6 +10,9 @@ import { Label } from "@workspace/ui/components/label"
 import { Switch } from "@workspace/ui/components/switch"
 import { Skeleton } from "@workspace/ui/components/skeleton"
 import { Separator } from "@workspace/ui/components/separator"
+import { Badge } from "@workspace/ui/components/badge"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@workspace/ui/components/select"
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@workspace/ui/components/sheet"
 import { toast } from "sonner"
 import { api } from "@/lib/api"
 import { HugeiconsIcon } from "@hugeicons/react"
@@ -17,10 +20,11 @@ import {
   Settings02Icon, Building02Icon, SecurityCheckIcon, TruckIcon,
   Notification03Icon, QrCodeIcon, SaveIcon, Refresh01Icon,
   MapIcon, ArrowRight01Icon, UserGroupIcon,
-  LockIcon, Globe02Icon,
+  LockIcon, Globe02Icon, Location01Icon, PlusIcon, Delete02Icon,
+  PencilEdit01Icon, Clock01Icon,
 } from "@hugeicons/core-free-icons"
 
-type TabId = "business" | "security" | "delivery" | "notifications" | "system"
+type TabId = "business" | "security" | "delivery" | "deliveryConfig" | "notifications" | "system"
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = React.useState<TabId>("business")
@@ -28,7 +32,122 @@ export default function SettingsPage() {
   const [saving, setSaving] = React.useState(false)
   const [settings, setSettings] = React.useState<any>(null)
 
+  // Delivery Config tab: consolidation-domain zones + storage settings, loaded separately
+  // and lazily since they live on their own endpoints, not the business-settings blob above.
+  const [zones, setZones] = React.useState<any[]>([])
+  const [zonesLoading, setZonesLoading] = React.useState(true)
+  const [zonesLoaded, setZonesLoaded] = React.useState(false)
+  const [storageSettings, setStorageSettings] = React.useState<any>(null)
+  const [storageSaving, setStorageSaving] = React.useState(false)
+  const [zoneSheet, setZoneSheet] = React.useState<any>(null)
+  const [zoneForm, setZoneForm] = React.useState({ name: "", code: "", feeAmount: "", currency: "TZS", isActive: true })
+  const [savingZone, setSavingZone] = React.useState(false)
+
   React.useEffect(() => { load() }, [])
+
+  // Deep-link support (e.g. the sidebar's "Delivery Config" entry links to ?tab=deliveryConfig)
+  React.useEffect(() => {
+    const tab = new URLSearchParams(window.location.search).get("tab")
+    const validTabs: TabId[] = ["business", "security", "delivery", "deliveryConfig", "notifications", "system"]
+    if (tab && validTabs.includes(tab as TabId)) setActiveTab(tab as TabId)
+  }, [])
+
+  React.useEffect(() => {
+    if (activeTab === "deliveryConfig" && !zonesLoaded) {
+      loadDeliveryConfig()
+    }
+  }, [activeTab, zonesLoaded])
+
+  async function loadDeliveryConfig() {
+    setZonesLoading(true)
+    try {
+      const [zonesRes, storageRes] = await Promise.all([
+        api.deliveryConfig.zones(),
+        api.deliveryConfig.getStorageSettings(),
+      ])
+      const rawZones = zonesRes.data?.zones || zonesRes.data
+      setZones(Array.isArray(rawZones) ? rawZones : [])
+      setStorageSettings(storageRes.data)
+      setZonesLoaded(true)
+    } catch (err: any) {
+      toast.error(err.message || "Failed to load delivery config")
+    } finally {
+      setZonesLoading(false)
+    }
+  }
+
+  function openZoneSheet(zone?: any) {
+    if (zone) {
+      setZoneForm({
+        name: zone.name || "",
+        code: zone.code || "",
+        feeAmount: String(zone.feeAmount ?? ""),
+        currency: zone.currency || "TZS",
+        isActive: zone.isActive ?? true,
+      })
+    } else {
+      setZoneForm({ name: "", code: "", feeAmount: "", currency: "TZS", isActive: true })
+    }
+    setZoneSheet(zone || {})
+  }
+
+  async function handleSaveZone() {
+    if (!zoneForm.name || !zoneForm.code || !zoneForm.feeAmount) {
+      toast.error("Name, code and fee are required")
+      return
+    }
+    setSavingZone(true)
+    try {
+      const body = {
+        name: zoneForm.name,
+        code: zoneForm.code,
+        feeAmount: Number(zoneForm.feeAmount),
+        currency: zoneForm.currency,
+        isActive: zoneForm.isActive,
+      }
+      if (zoneSheet?.id) {
+        await api.deliveryConfig.updateZone(zoneSheet.id, body)
+        toast.success("Zone updated")
+      } else {
+        await api.deliveryConfig.createZone(body)
+        toast.success("Zone created")
+      }
+      setZoneSheet(null)
+      loadDeliveryConfig()
+    } catch (err: any) {
+      toast.error(err.message || "Failed to save zone")
+    } finally {
+      setSavingZone(false)
+    }
+  }
+
+  async function handleDeleteZone(id: string) {
+    if (!confirm("Delete this delivery zone?")) return
+    try {
+      await api.deliveryConfig.deleteZone(id)
+      toast.success("Zone deleted")
+      loadDeliveryConfig()
+    } catch (err: any) {
+      toast.error(err.message || "Failed to delete zone")
+    }
+  }
+
+  async function handleSaveStorageSettings() {
+    if (!storageSettings) return
+    setStorageSaving(true)
+    try {
+      await api.deliveryConfig.updateStorageSettings({
+        storageRatePerDayTzs: Number(storageSettings.storageRatePerDayTzs),
+        freeStorageDays: Number(storageSettings.freeStorageDays),
+        defaultBoxTargetKg: Number(storageSettings.defaultBoxTargetKg),
+      })
+      toast.success("Storage settings saved")
+    } catch (err: any) {
+      toast.error(err.message || "Failed to save storage settings")
+    } finally {
+      setStorageSaving(false)
+    }
+  }
 
   async function load() {
     try {
@@ -62,6 +181,7 @@ export default function SettingsPage() {
     { id: "business", label: "Business Info", icon: Building02Icon },
     { id: "security", label: "Security & Rate Limits", icon: SecurityCheckIcon },
     { id: "delivery", label: "Delivery & Operations", icon: TruckIcon },
+    { id: "deliveryConfig", label: "Delivery Config", icon: Location01Icon },
     { id: "notifications", label: "Notifications", icon: Notification03Icon },
     { id: "system", label: "System Management", icon: Settings02Icon },
   ]
@@ -148,8 +268,70 @@ export default function SettingsPage() {
           ))}
         </div>
 
-        {/* Tab content */}
-        {loading || !settings ? (
+        {/* Delivery Config tab has its own data source, independent of the business-settings blob */}
+        {activeTab === "deliveryConfig" ? (
+          zonesLoading ? (
+            <div className="space-y-4">
+              {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-20 w-full rounded-lg" />)}
+            </div>
+          ) : (
+            <div className="grid gap-4 lg:grid-cols-2">
+              <SettingsCard title="Storage Settings" icon={Clock01Icon}>
+                <NumberField
+                  label="Storage Rate (TZS / day)"
+                  value={storageSettings?.storageRatePerDayTzs ?? 0}
+                  onChange={(v) => setStorageSettings((prev: any) => ({ ...prev, storageRatePerDayTzs: v }))}
+                />
+                <NumberField
+                  label="Free Storage Days"
+                  value={storageSettings?.freeStorageDays ?? 0}
+                  onChange={(v) => setStorageSettings((prev: any) => ({ ...prev, freeStorageDays: v }))}
+                />
+                <NumberField
+                  label="Default Box Target Weight (kg)"
+                  value={storageSettings?.defaultBoxTargetKg ?? 0}
+                  onChange={(v) => setStorageSettings((prev: any) => ({ ...prev, defaultBoxTargetKg: v }))}
+                />
+                <Button size="sm" onClick={handleSaveStorageSettings} loading={storageSaving}>
+                  <HugeiconsIcon icon={SaveIcon} className="size-4" />
+                  Save Storage Settings
+                </Button>
+              </SettingsCard>
+
+              <SettingsCard title="Delivery Zones" icon={Location01Icon}>
+                <div className="flex justify-end">
+                  <Button size="sm" variant="outline" onClick={() => openZoneSheet()}>
+                    <HugeiconsIcon icon={PlusIcon} className="size-4" />
+                    Add Zone
+                  </Button>
+                </div>
+                {zones.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No delivery zones configured yet.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {zones.map((z: any) => (
+                      <div key={z.id} className="flex items-center justify-between rounded-lg border p-3">
+                        <div>
+                          <p className="text-sm font-medium">{z.name} <span className="text-xs text-muted-foreground">({z.code})</span></p>
+                          <p className="text-xs text-muted-foreground">{z.feeAmount} {z.currency}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge variant={z.isActive ? "default" : "secondary"}>{z.isActive ? "Active" : "Inactive"}</Badge>
+                          <Button size="icon-sm" variant="ghost" onClick={() => openZoneSheet(z)}>
+                            <HugeiconsIcon icon={PencilEdit01Icon} className="size-3.5" />
+                          </Button>
+                          <Button size="icon-sm" variant="ghost" onClick={() => handleDeleteZone(z.id)}>
+                            <HugeiconsIcon icon={Delete02Icon} className="size-3.5" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </SettingsCard>
+            </div>
+          )
+        ) : loading || !settings ? (
           <div className="space-y-4">
             {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-20 w-full rounded-lg" />)}
           </div>
@@ -309,6 +491,50 @@ export default function SettingsPage() {
           </>
         )}
       </div>
+
+      {/* Delivery Zone create/edit Sheet */}
+      <Sheet open={!!zoneSheet} onOpenChange={(v) => !v && setZoneSheet(null)}>
+        <SheetContent side="right" className="w-full sm:max-w-sm overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle className="flex items-center gap-2">
+              <HugeiconsIcon icon={Location01Icon} className="size-5 text-primary" />
+              {zoneSheet?.id ? "Edit Delivery Zone" : "Add Delivery Zone"}
+            </SheetTitle>
+            <SheetDescription>Zones back the "Collect at Other Point" and "Home/Office Delivery" options</SheetDescription>
+          </SheetHeader>
+          <div className="space-y-4 px-4 pb-6">
+            <div className="grid gap-2">
+              <Label>Name <span className="text-destructive">*</span></Label>
+              <Input value={zoneForm.name} onChange={(e) => setZoneForm({ ...zoneForm, name: e.target.value })} />
+            </div>
+            <div className="grid gap-2">
+              <Label>Code <span className="text-destructive">*</span></Label>
+              <Input value={zoneForm.code} onChange={(e) => setZoneForm({ ...zoneForm, code: e.target.value })} placeholder="e.g. DAR-CENTRAL" />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="grid gap-2">
+                <Label>Fee Amount <span className="text-destructive">*</span></Label>
+                <Input type="number" value={zoneForm.feeAmount} onChange={(e) => setZoneForm({ ...zoneForm, feeAmount: e.target.value })} />
+              </div>
+              <div className="grid gap-2">
+                <Label>Currency</Label>
+                <Select value={zoneForm.currency} onValueChange={(v) => setZoneForm({ ...zoneForm, currency: v ?? "TZS" })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="TZS">TZS</SelectItem>
+                    <SelectItem value="USD">USD</SelectItem>
+                    <SelectItem value="AED">AED</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <ToggleField label="Active" description="Available for selection at checkout" checked={zoneForm.isActive} onChange={(v) => setZoneForm({ ...zoneForm, isActive: v })} />
+            <Button className="w-full" onClick={handleSaveZone} loading={savingZone}>
+              {zoneSheet?.id ? "Save Changes" : "Create Zone"}
+            </Button>
+          </div>
+        </SheetContent>
+      </Sheet>
     </DashboardLayout>
   )
 }

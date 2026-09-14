@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import QRCode from "qrcode"
 
 interface QrCodeProps {
   value: string
@@ -14,11 +15,21 @@ export function QrCode({ value, size = 120, className = "" }: QrCodeProps) {
 
   React.useEffect(() => {
     if (!value) return
+    let cancelled = false
     setLoading(true)
-    const encoded = encodeURIComponent(value)
-    const url = `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encoded}&bgcolor=ffffff&color=0f172a&margin=8`
-    setImgSrc(url)
-    setLoading(false)
+    getQrCodeUrl(value, size)
+      .then((url) => {
+        if (!cancelled) setImgSrc(url)
+      })
+      .catch(() => {
+        if (!cancelled) setImgSrc("")
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
+    return () => {
+      cancelled = true
+    }
   }, [value, size])
 
   if (loading) {
@@ -36,7 +47,11 @@ export function QrCode({ value, size = 120, className = "" }: QrCodeProps) {
   )
 }
 
-export function getQrCodeUrl(value: string, size = 200) {
-  const encoded = encodeURIComponent(value)
-  return `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encoded}&bgcolor=ffffff&color=0f172a&margin=8`
+/**
+ * Generates a QR code locally (no third-party image service) as a data: URI.
+ * Now async since it renders client-side — call sites should `await` it or resolve
+ * it inside an effect, same as the QrCode component above does.
+ */
+export function getQrCodeUrl(value: string, size = 200): Promise<string> {
+  return QRCode.toDataURL(value, { width: size, margin: 1 })
 }

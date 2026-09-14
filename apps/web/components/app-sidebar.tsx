@@ -200,14 +200,27 @@ const ALL_NAV_ITEMS = [
     ],
   },
   {
+    titleKey: "nav.cargoConsolidation",
+    navKey: "consolidation",
+    url: "/dashboard/consolidation-boxes",
+    icon: <HugeiconsIcon icon={Package02Icon} className="size-4" />,
+    items: [
+      { titleKey: "nav.consolidationBoxes", url: "/dashboard/consolidation-boxes" },
+      { titleKey: "nav.tripManifests", url: "/dashboard/trip-manifests" },
+      { titleKey: "nav.shelfMap", url: "/dashboard/shelf-map" },
+      { titleKey: "nav.paymentApprovals", url: "/dashboard/payment-approvals" },
+      { titleKey: "nav.deliveryConfig", url: "/dashboard/settings?tab=deliveryConfig" },
+    ],
+  },
+  {
     titleKey: "nav.controlTower",
     navKey: "controlTower",
     url: "/dashboard/control-tower",
     icon: <HugeiconsIcon icon={Radar01Icon} className="size-4" />,
     items: [
       { titleKey: "nav.towerOverview", url: "/dashboard/control-tower" },
-      { titleKey: "nav.byMode", url: "/dashboard/control-tower/modes" },
-      { titleKey: "nav.towerExceptions", url: "/dashboard/control-tower/exceptions" },
+      { titleKey: "nav.byMode", url: "/dashboard/control-tower" },
+      { titleKey: "nav.towerExceptions", url: "/dashboard/control-tower" },
       { titleKey: "nav.dispatch", url: "/dashboard/dispatch" },
       { titleKey: "nav.trips", url: "/dashboard/trips" },
     ],
@@ -240,7 +253,7 @@ const ALL_NAV_ITEMS = [
     url: "/dashboard/pricing",
     icon: <HugeiconsIcon icon={Dollar01Icon} className="size-4" />,
     items: [
-      { titleKey: "nav.pricingRules", url: "/dashboard/pricing/rules" },
+      { titleKey: "nav.pricingRules", url: "/dashboard/pricing" },
       { titleKey: "nav.routes", url: "/dashboard/pricing/routes" },
       { titleKey: "nav.zones", url: "/dashboard/pricing/zones" },
       { titleKey: "nav.surcharges", url: "/dashboard/pricing/surcharges" },
@@ -312,7 +325,7 @@ const ALL_NAV_ITEMS = [
     icon: <HugeiconsIcon icon={LogsIcon} className="size-4" />,
     items: [
       { titleKey: "nav.allPosts", url: "/dashboard/blog" },
-      { titleKey: "nav.blogCategories", url: "/dashboard/blog/categories" },
+      { titleKey: "nav.blogCategories", url: "/dashboard/blog" },
     ],
   },
   {

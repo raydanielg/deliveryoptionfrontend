@@ -64,6 +64,7 @@ type NavKey =
   | "sgr"
   | "airCargo"
   | "warehouse"
+  | "consolidation"
   | "controlTower"
   | "tracking"
   | "fleet"
@@ -86,6 +87,7 @@ const ALL_NAV_KEYS: NavKey[] = [
   "sgr",
   "airCargo",
   "warehouse",
+  "consolidation",
   "controlTower",
   "tracking",
   "fleet",
@@ -110,6 +112,7 @@ export const ROLE_NAV_PERMISSIONS: Record<Role, NavKey[]> = {
     "sgr",
     "airCargo",
     "warehouse",
+    "consolidation",
     "controlTower",
     "tracking",
     "fleet",
@@ -137,6 +140,7 @@ export const ROLE_NAV_PERMISSIONS: Record<Role, NavKey[]> = {
     "dashboard",
     "pricing",
     "payments",
+    "consolidation",
     "customers",
     "settings",
   ],
@@ -151,6 +155,7 @@ export const ROLE_NAV_PERMISSIONS: Record<Role, NavKey[]> = {
   WAREHOUSE_MANAGER: [
     "dashboard",
     "warehouse",
+    "consolidation",
     "operations",
     "tracking",
   ],

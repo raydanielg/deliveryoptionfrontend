@@ -15,6 +15,21 @@ function getToken(): string | null {
   return localStorage.getItem("token")
 }
 
+// Some endpoints (e.g. the box QR label) return a raw image, not the {success,data} JSON
+// envelope, so they can't go through request(). This fetches it with the same bearer auth
+// and hands back an object URL an <img> can use directly.
+export async function fetchAuthorizedBlobUrl(endpoint: string): Promise<string> {
+  const token = getToken()
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  })
+  if (!response.ok) {
+    throw new ApiError("Failed to load image", response.status)
+  }
+  const blob = await response.blob()
+  return URL.createObjectURL(blob)
+}
+
 async function request<T = any>(endpoint: string, options: Record<string, any> = {}): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`
   const token = options.token ?? getToken()
@@ -503,5 +518,53 @@ export const api = {
     resumeCampaign: (id: string) => request(`/whatsapp/campaigns/${id}/resume`, { method: "POST" }),
     cancelCampaign: (id: string) => request(`/whatsapp/campaigns/${id}/cancel`, { method: "POST" }),
     getCampaignAnalytics: (id: string) => request(`/whatsapp/campaigns/${id}/analytics`),
+  },
+  // Dubai -> Tanzania consolidation-box workflow: cargo packed into ~23kg boxes,
+  // handed to a passenger on a trip manifest, shelved on arrival, released after
+  // any required payment approval.
+  consolidationBoxes: {
+    list: (params?: string) => request(`/consolidation-boxes${params ? `?${params}` : ""}`),
+    get: (id: string) => request(`/consolidation-boxes/${id}`),
+    create: (body: Record<string, any>) => request("/consolidation-boxes", { method: "POST", body }),
+    addItem: (id: string, body: Record<string, any>) => request(`/consolidation-boxes/${id}/items`, { method: "POST", body }),
+    removeItem: (id: string, shipmentId: string) => request(`/consolidation-boxes/${id}/items/${shipmentId}`, { method: "DELETE" }),
+    close: (id: string, body: Record<string, any>) => request(`/consolidation-boxes/${id}/close`, { method: "POST", body }),
+    setStatus: (id: string, body: Record<string, any>) => request(`/consolidation-boxes/${id}/status`, { method: "POST", body }),
+    fetchLabelBlobUrl: (id: string) => fetchAuthorizedBlobUrl(`/consolidation-boxes/${id}/label.png`),
+  },
+  tripManifests: {
+    list: (params?: string) => request(`/trip-manifests${params ? `?${params}` : ""}`),
+    get: (id: string) => request(`/trip-manifests/${id}`),
+    create: (body: Record<string, any>) => request("/trip-manifests", { method: "POST", body }),
+    pairBox: (id: string, body: Record<string, any>) => request(`/trip-manifests/${id}/boxes`, { method: "POST", body }),
+    unpairBox: (id: string, boxId: string) => request(`/trip-manifests/${id}/boxes/${boxId}`, { method: "DELETE" }),
+    updateStatus: (id: string, body: Record<string, any>) => request(`/trip-manifests/${id}/status`, { method: "PATCH", body }),
+  },
+  shelfLocations: {
+    list: (params?: string) => request(`/shelf-locations${params ? `?${params}` : ""}`),
+    search: (params: string) => request(`/shelf-locations/search${params ? `?${params}` : ""}`),
+    create: (body: Record<string, any>) => request("/shelf-locations", { method: "POST", body }),
+    assignBox: (id: string, body: Record<string, any>) => request(`/shelf-locations/${id}/assign-box`, { method: "POST", body }),
+    assignShipment: (id: string, body: Record<string, any>) => request(`/shelf-locations/${id}/assign-shipment`, { method: "POST", body }),
+  },
+  cargoIntake: {
+    receiveTz: (body: Record<string, any>) => request("/cargo-intake/tz/receive", { method: "POST", body }),
+    pendingTz: () => request("/cargo-intake/tz/pending"),
+  },
+  deliveryConfig: {
+    options: () => request("/delivery-config/options"),
+    zones: () => request("/delivery-config/zones"),
+    createZone: (body: Record<string, any>) => request("/delivery-config/zones", { method: "POST", body }),
+    updateZone: (id: string, body: Record<string, any>) => request(`/delivery-config/zones/${id}`, { method: "PUT", body }),
+    deleteZone: (id: string) => request(`/delivery-config/zones/${id}`, { method: "DELETE" }),
+    getStorageSettings: () => request("/delivery-config/storage-settings"),
+    updateStorageSettings: (body: Record<string, any>) => request("/delivery-config/storage-settings", { method: "PUT", body }),
+  },
+  paymentApprovals: {
+    list: (params?: string) => request(`/payment-approvals${params ? `?${params}` : ""}`),
+    get: (id: string) => request(`/payment-approvals/${id}`),
+    create: (body: Record<string, any>) => request("/payment-approvals", { method: "POST", body }),
+    approve: (id: string) => request(`/payment-approvals/${id}/approve`, { method: "POST" }),
+    reject: (id: string, body: Record<string, any>) => request(`/payment-approvals/${id}/reject`, { method: "POST", body }),
   },
 }
