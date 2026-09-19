@@ -421,6 +421,9 @@ const coverageLocations = [
   { name: "Kinshasa", lat: -4.32, lng: 15.31, type: "international" as const, flag: "🇨🇩" },
   { name: "Juba", lat: 4.86, lng: 31.57, type: "international" as const, flag: "🇸🇸" },
   { name: "Addis Ababa", lat: 9.03, lng: 38.74, type: "international" as const, flag: "🇪🇹" },
+  { name: "Mumbai", lat: 19.08, lng: 72.88, type: "international" as const, flag: "🇮🇳" },
+  { name: "Dubai", lat: 25.20, lng: 55.27, type: "international" as const, flag: "🇦🇪" },
+  { name: "Guangzhou", lat: 23.13, lng: 113.26, type: "international" as const, flag: "🇨🇳" },
 ]
 
 const DAR_HUB = { lat: -6.79, lng: 39.28 }
@@ -447,14 +450,15 @@ export function Coverage() {
       if (!mounted || !mapRef.current) return
 
       const map = L.map(mapRef.current, {
-        center: [DAR_HUB.lat, DAR_HUB.lng],
-        zoom: 5,
         zoomControl: false,
         scrollWheelZoom: false,
         attributionControl: false,
         dragging: true,
         doubleClickZoom: true,
       })
+
+      const bounds = L.latLngBounds(coverageLocations.map((l) => [l.lat, l.lng]))
+      map.fitBounds(bounds, { padding: [40, 40] })
 
       const gKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ""
       L.tileLayer(`https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&key=${gKey}`, {
@@ -481,7 +485,7 @@ export function Coverage() {
         const midLat = (lat1 + lat2) / 2 + (lat2 - lat1) * 0.15
         const midLng = (lng1 + lng2) / 2 + (lng2 - lng1) * 0.15
 
-        const polyline = L.polyline(
+        L.polyline(
           [
             [lat1, lng1],
             [midLat, midLng],
@@ -491,57 +495,34 @@ export function Coverage() {
             color,
             weight: 1.5,
             opacity,
-            dashArray: "6 8",
-            className: "coverage-route",
           }
         ).addTo(map)
-
-        // Animate dash offset
-        let offset = 0
-        const animate = () => {
-          offset -= 0.5
-          const el = (polyline as any)._path
-          if (el) {
-            el.style.strokeDashoffset = String(offset)
-          }
-        }
-        setInterval(animate, 50)
 
         // Marker for the location
         const markerHtml =
           loc.type === "international"
-            ? `<div style="position:relative;display:flex;flex-direction:column;align-items:center;cursor:pointer;">
-                 <div style="width:10px;height:10px;border-radius:50%;background:#10b981;border:2px solid #064e3b;box-shadow:0 0 8px rgba(16,185,129,0.6);"></div>
-                 <div style="margin-top:4px;font-size:10px;font-weight:600;color:#10b981;white-space:nowrap;text-shadow:0 1px 4px rgba(0,0,0,0.8);">${loc.flag} ${loc.name}</div>
-               </div>`
-            : `<div style="position:relative;display:flex;flex-direction:column;align-items:center;cursor:pointer;">
-                 <div style="width:8px;height:8px;border-radius:50%;background:#f59e0b;border:2px solid #78350f;box-shadow:0 0 6px rgba(245,158,11,0.5);"></div>
-                 <div style="margin-top:3px;font-size:10px;font-weight:500;color:#fbbf24;white-space:nowrap;text-shadow:0 1px 4px rgba(0,0,0,0.8);">${loc.name}</div>
-               </div>`
+            ? `<div style="width:10px;height:10px;border-radius:50%;background:#10b981;border:2px solid #064e3b;"></div>`
+            : `<div style="width:8px;height:8px;border-radius:50%;background:#f59e0b;border:2px solid #78350f;"></div>`
 
         L.marker([loc.lat, loc.lng], {
           icon: L.divIcon({
             className: "coverage-marker",
             html: markerHtml,
-            iconSize: [60, 30],
-            iconAnchor: [30, 15],
+            iconSize: [14, 14],
+            iconAnchor: [7, 7],
           }),
         }).addTo(map)
       })
 
-      // Pulsing hub marker for Dar es Salaam
-      const hubHtml = `<div style="position:relative;display:flex;flex-direction:column;align-items:center;">
-        <div style="position:absolute;width:28px;height:28px;border-radius:50%;background:rgba(245,158,11,0.2);animation:coverage-pulse 2s ease-out infinite;"></div>
-        <div style="position:relative;width:14px;height:14px;border-radius:50%;background:#f59e0b;border:3px solid #fff;box-shadow:0 0 16px rgba(245,158,11,0.8);"></div>
-        <div style="margin-top:4px;font-size:11px;font-weight:700;color:#f59e0b;white-space:nowrap;text-shadow:0 1px 6px rgba(0,0,0,0.9);">Dar es Salaam</div>
-      </div>`
+      // Hub marker for Dar es Salaam
+      const hubHtml = `<div style="width:14px;height:14px;border-radius:50%;background:#f59e0b;border:3px solid #fff;"></div>`
 
       L.marker([DAR_HUB.lat, DAR_HUB.lng], {
         icon: L.divIcon({
           className: "coverage-hub-marker",
           html: hubHtml,
-          iconSize: [80, 40],
-          iconAnchor: [40, 20],
+          iconSize: [20, 20],
+          iconAnchor: [10, 10],
         }),
       }).addTo(map)
 
@@ -557,8 +538,6 @@ export function Coverage() {
 
   return (
     <section id="coverage" className="relative overflow-hidden bg-slate-950 py-20 lg:py-28">
-      <div className="pointer-events-none absolute left-1/4 top-1/3 size-[400px] rounded-full bg-amber-500/8 blur-[120px]" />
-      <div className="pointer-events-none absolute right-1/4 bottom-1/3 size-[350px] rounded-full bg-emerald-500/6 blur-[100px]" />
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <RevealOnScroll>
@@ -593,9 +572,9 @@ export function Coverage() {
             )}
 
             {/* Top-left legend overlay */}
-            <div className="pointer-events-none absolute left-4 top-4 z-[400] flex flex-col gap-2 rounded-xl border border-white/10 bg-slate-950/80 p-3 backdrop-blur-md">
+            <div className="pointer-events-none absolute left-4 top-4 z-[400] flex flex-col gap-2 rounded-lg border border-white/10 bg-slate-950/80 px-3 py-2.5 backdrop-blur-md">
               <div className="flex items-center gap-2">
-                <div className="size-2.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.6)]" />
+                <div className="size-2.5 rounded-full bg-amber-500" />
                 <span className="text-xs font-medium text-white/80">Tanzania Hub</span>
               </div>
               <div className="flex items-center gap-2">
@@ -607,9 +586,6 @@ export function Coverage() {
                 <span className="text-xs text-white/60">International Routes</span>
               </div>
             </div>
-
-            {/* Bottom gradient fade */}
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-slate-950/60 to-transparent" />
           </div>
         </RevealOnScroll>
 
@@ -649,24 +625,8 @@ export function Coverage() {
       </div>
 
       <style>{`
-        @keyframes coverage-pulse {
-          0% { transform: scale(0.8); opacity: 0.8; }
-          100% { transform: scale(2.5); opacity: 0; }
-        }
-        .coverage-route {
-          animation: coverage-dash 1.5s linear infinite;
-        }
-        @keyframes coverage-dash {
-          to { stroke-dashoffset: -14; }
-        }
         .leaflet-container {
           background: #0f172a;
-        }
-        .coverage-marker > div > div:first-child {
-          transition: transform 0.2s;
-        }
-        .coverage-marker:hover > div > div:first-child {
-          transform: scale(1.4);
         }
       `}</style>
     </section>
@@ -837,7 +797,7 @@ export function CTASection() {
             <div className="flex flex-row flex-nowrap items-center justify-center gap-4">
               <a
                 href="/auth/sign-up"
-                className="inline-flex h-12 items-center gap-2 rounded-xl bg-primary px-7 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition-all duration-300 hover:scale-[1.03] hover:shadow-xl hover:shadow-primary/30 sm:px-8"
+                className="inline-flex h-12 items-center gap-2 rounded-xl bg-primary px-7 text-sm font-semibold text-primary-foreground transition-colors duration-300 hover:bg-primary/90 sm:px-8"
               >
                 Create Free Account
                 <HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={2} className="size-4" />
@@ -886,8 +846,8 @@ const footerSections = [
     links: [
       { label: "Sign In", href: "/auth" },
       { label: "Sign Up", href: "/auth/sign-up" },
-      { label: "Dashboard", href: "/dashboard" },
-      { label: "Notifications", href: "/dashboard/notifications" },
+      { label: "Track Shipment", href: "/track" },
+      { label: "Account Deletion", href: "/account-deletion" },
     ],
   },
   {
@@ -941,9 +901,7 @@ export function LandingFooter() {
           <RevealOnScroll>
             <div className="flex flex-col gap-5">
               <a href="/" className="flex items-center gap-3 transition-opacity hover:opacity-90">
-                <div className="flex size-9 items-center justify-center rounded-xl bg-white/10 p-1 ring-1 ring-white/20">
-                  <img src="/assets/m%20app2.png" alt="Xerin Express" className="size-full rounded-lg object-contain" />
-                </div>
+                <img src="/assets/m%20app2.png" alt="Xerin Express" className="size-10 object-contain" />
                 <span className="text-lg font-bold tracking-tight text-white">
                   Xerin <span className="text-primary">Express</span>
                 </span>

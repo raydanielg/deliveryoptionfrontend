@@ -18,30 +18,29 @@ import {
   PhoneIcon,
   LockPasswordIcon,
   CheckmarkCircle02Icon,
-  TruckIcon,
-  Package02Icon,
   ArrowRight01Icon,
   EyeIcon,
   EyeOffIcon,
 } from "@hugeicons/core-free-icons"
 
-const ROLES = [
-  {
-    value: "CUSTOMER",
-    label: "Customer",
-    description: "Send & track shipments",
-    icon: Package02Icon,
-    color: "border-orange-300 bg-orange-50 dark:border-orange-800 dark:bg-orange-950/30",
-    selectedColor: "border-orange-500 bg-orange-50 dark:bg-orange-950/50 ring-2 ring-orange-500/30",
-  },
-  {
-    value: "DRIVER",
-    label: "Driver",
-    description: "Deliver & earn money",
-    icon: TruckIcon,
-    color: "border-blue-300 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/30",
-    selectedColor: "border-blue-500 bg-blue-50 dark:bg-blue-950/50 ring-2 ring-blue-500/30",
-  },
+const COUNTRY_CODES = [
+  { code: "+255", country: "Tanzania", flag: "TZ" },
+  { code: "+254", country: "Kenya", flag: "KE" },
+  { code: "+256", country: "Uganda", flag: "UG" },
+  { code: "+250", country: "Rwanda", flag: "RW" },
+  { code: "+257", country: "Burundi", flag: "BI" },
+  { code: "+260", country: "Zambia", flag: "ZM" },
+  { code: "+265", country: "Malawi", flag: "MW" },
+  { code: "+258", country: "Mozambique", flag: "MZ" },
+  { code: "+27", country: "South Africa", flag: "ZA" },
+  { code: "+234", country: "Nigeria", flag: "NG" },
+  { code: "+233", country: "Ghana", flag: "GH" },
+  { code: "+251", country: "Ethiopia", flag: "ET" },
+  { code: "+971", country: "UAE", flag: "AE" },
+  { code: "+44", country: "UK", flag: "GB" },
+  { code: "+1", country: "USA", flag: "US" },
+  { code: "+91", country: "India", flag: "IN" },
+  { code: "+86", country: "China", flag: "CN" },
 ]
 
 export default function SignUpPage() {
@@ -50,6 +49,7 @@ export default function SignUpPage() {
   const [isLoading, setIsLoading] = React.useState(false)
   const [showPassword, setShowPassword] = React.useState(false)
   const [showConfirm, setShowConfirm] = React.useState(false)
+  const [countryCode, setCountryCode] = React.useState("+255")
   const [form, setForm] = React.useState({
     name: "",
     email: "",
@@ -64,7 +64,8 @@ export default function SignUpPage() {
     const errs: Record<string, string> = {}
     if (!form.name || form.name.length < 2) errs.name = "Name must be at least 2 characters"
     if (!form.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errs.email = "Enter a valid email"
-    if (!form.phone || form.phone.length < 10) errs.phone = "Enter a valid phone number"
+    const localPhone = form.phone.replace(/\D/g, "").replace(/^0+/, "")
+    if (!localPhone || localPhone.length < 9) errs.phone = "Enter a valid phone number"
     if (!form.password || form.password.length < 8) errs.password = "Password must be at least 8 characters"
     else if (!/[A-Z]/.test(form.password)) errs.password = "Must contain an uppercase letter"
     else if (!/[a-z]/.test(form.password)) errs.password = "Must contain a lowercase letter"
@@ -86,7 +87,7 @@ export default function SignUpPage() {
         body: JSON.stringify({
           name: form.name,
           email: form.email.toLowerCase().trim(),
-          phone: form.phone.trim(),
+          phone: `${countryCode}${form.phone.replace(/\D/g, "").replace(/^0+/, "")}`,
           password: form.password,
           confirmPassword: form.confirmPassword,
           role: form.role,
@@ -122,7 +123,6 @@ export default function SignUpPage() {
         <AuthBackground />
         <div className="relative z-10 flex h-full flex-col justify-between p-12">
           <div className="flex items-center gap-2.5 text-lg font-semibold text-white">
-            <img src="/assets/m%20app2.png" alt="Xerin" className="size-9 rounded-lg object-cover" />
             <span>Xerin Express</span>
           </div>
 
@@ -175,36 +175,12 @@ export default function SignUpPage() {
             <CardContent className="p-0">
               <form className="p-6 md:p-8 space-y-4" onSubmit={handleSubmit}>
                 <div className="flex flex-col items-center gap-2 text-center mb-2">
-                  <img src="/assets/social-media (1).png" alt="Xerin Express" className="size-16 object-contain" />
                   <h1 className="text-2xl font-bold">Create Account</h1>
                   <p className="text-balance text-muted-foreground text-sm">
                     Join Xerin Express — send shipments, track deliveries, and grow your business.
                   </p>
                 </div>
 
-                {/* Role Selection */}
-                <div className="space-y-2">
-                  <Label>I want to register as</Label>
-                  <div className="grid grid-cols-2 gap-3">
-                    {ROLES.map((role) => {
-                      const isSelected = form.role === role.value
-                      return (
-                        <button
-                          key={role.value}
-                          type="button"
-                          onClick={() => setForm(prev => ({ ...prev, role: role.value }))}
-                          className={`flex flex-col items-center gap-2 rounded-xl border-2 p-4 text-center transition-all ${isSelected ? role.selectedColor : role.color}`}
-                        >
-                          <HugeiconsIcon icon={role.icon} className={`size-7 ${isSelected ? "text-primary" : "text-muted-foreground"}`} />
-                          <div>
-                            <p className={`text-sm font-semibold ${isSelected ? "text-primary" : ""}`}>{role.label}</p>
-                            <p className="text-xs text-muted-foreground">{role.description}</p>
-                          </div>
-                        </button>
-                      )
-                    })}
-                  </div>
-                </div>
 
                 {/* Name */}
                 <div className="space-y-1.5">
@@ -243,18 +219,28 @@ export default function SignUpPage() {
                 {/* Phone */}
                 <div className="space-y-1.5">
                   <Label htmlFor="phone">Phone Number</Label>
-                  <div className="relative">
-                    <HugeiconsIcon icon={PhoneIcon} className="pointer-events-none absolute top-1/2 left-3 size-5 -translate-y-1/2 text-muted-foreground" />
+                  <div className="relative flex items-center">
+                    <select
+                      value={countryCode}
+                      onChange={(e) => setCountryCode(e.target.value)}
+                      className="absolute left-1 top-1/2 h-10 -translate-y-1/2 appearance-none rounded-md border-0 bg-transparent ps-2 pe-6 text-sm font-medium focus:outline-none focus:ring-0 cursor-pointer"
+                    >
+                      {COUNTRY_CODES.map((c) => (
+                        <option key={c.code} value={c.code}>
+                          {c.flag} {c.code}
+                        </option>
+                      ))}
+                    </select>
+                    <HugeiconsIcon icon={PhoneIcon} className="pointer-events-none absolute top-1/2 left-[4.5rem] size-4 -translate-y-1/2 text-muted-foreground" />
                     <Input
                       id="phone"
                       type="tel"
-                      placeholder="255700000000"
+                      placeholder="700 000 000"
                       value={form.phone}
                       onChange={(e) => setForm(prev => ({ ...prev, phone: e.target.value }))}
-                      className="h-12 ps-10 text-base"
+                      className="h-12 ps-[6.5rem] text-base"
                     />
                   </div>
-                  <p className="text-xs text-muted-foreground">Include country code (e.g. 255 for Tanzania)</p>
                   {errors.phone && <p className="text-xs text-destructive">{errors.phone}</p>}
                 </div>
 

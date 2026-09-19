@@ -79,11 +79,6 @@ export function SignUpForm({
           <form className="p-6 md:p-8" onSubmit={handleSubmit}>
             <FieldGroup>
               <div className="flex flex-col items-center gap-2 text-center">
-                <img
-                  src="/assets/m app2.png"
-                  alt="Xerin Express"
-                  className="size-16 object-contain"
-                />
                 <h1 className="text-2xl font-bold">Create Account</h1>
                 <p className="text-balance text-muted-foreground">
                   Sign up to start shipping with Xerin Express
@@ -174,9 +169,6 @@ export function SignUpForm({
                   Create Account
                 </Button>
               </Field>
-              <FieldDescription className="text-center text-muted-foreground">
-                Authorized personnel only. Contact your administrator for access.
-              </FieldDescription>
             </FieldGroup>
           </form>
         </CardContent>
