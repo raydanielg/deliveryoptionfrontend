@@ -38,7 +38,7 @@ const TYPE_LABELS: Record<string, string> = {
   WRONG_DELIVERY: "Wrong Delivery", DELAYED: "Delayed", OTHER: "Other",
 }
 
-const STAFF_ROLES = ["SUPER_ADMIN", "OPERATIONS_MANAGER", "CUSTOMER_SUPPORT"]
+const STAFF_ROLES = ["SUPER_ADMIN", "OPERATIONS_MANAGER"]
 
 export default function ClaimsPage() {
   const { user } = useAuth()

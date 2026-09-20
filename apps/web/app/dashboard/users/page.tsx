@@ -43,20 +43,10 @@ import {
   AlertCircleIcon,
 } from "@hugeicons/core-free-icons"
 import { api } from "@/lib/api"
+import { ALL_ROLES, ROLE_LABELS, ROLE_BADGE_COLORS, BRANCH_BOUND_ROLES, AGENT_KINDS } from "@/lib/role-nav"
 import { toast } from "sonner"
 
-const ROLES = [
-  { value: "SUPER_ADMIN", label: "Super Admin", color: "bg-red-100 text-red-700" },
-  { value: "OPERATIONS_MANAGER", label: "Operations Manager", color: "bg-blue-100 text-blue-700" },
-  { value: "DISPATCHER", label: "Dispatcher", color: "bg-purple-100 text-purple-700" },
-  { value: "FINANCE", label: "Finance", color: "bg-green-100 text-green-700" },
-  { value: "CUSTOMER_SUPPORT", label: "Customer Support", color: "bg-orange-100 text-orange-700" },
-  { value: "WAREHOUSE_MANAGER", label: "Warehouse Manager", color: "bg-indigo-100 text-indigo-700" },
-  { value: "CUSTOMS_OFFICER", label: "Customs Officer", color: "bg-teal-100 text-teal-700" },
-  { value: "REPORT_VIEWER", label: "Report Viewer", color: "bg-gray-100 text-gray-700" },
-  { value: "CUSTOMER", label: "Customer", color: "bg-cyan-100 text-cyan-700" },
-  { value: "DRIVER", label: "Driver", color: "bg-amber-100 text-amber-700" },
-]
+const ROLES = ALL_ROLES.map((r) => ({ value: r, label: ROLE_LABELS[r], color: ROLE_BADGE_COLORS[r] }))
 
 export default function UsersPage() {
   const [users, setUsers] = useState<any[]>([])
@@ -69,9 +59,11 @@ export default function UsersPage() {
   const [editing, setEditing] = useState<any>(null)
   const [deleteTarget, setDeleteTarget] = useState<any>(null)
   const [deleting, setDeleting] = useState(false)
+  const [branches, setBranches] = useState<any[]>([])
   const [form, setForm] = useState({
-    name: "", email: "", phone: "", password: "", role: "CUSTOMER", isActive: true,
+    name: "", email: "", phone: "", password: "", role: "CUSTOMER", isActive: true, branchId: "", agentKind: "",
   })
+  useEffect(() => { api.branches.list().then((r: any) => setBranches(r.data || [])).catch(() => {}) }, [])
 
   useEffect(() => { loadUsers() }, [page, roleFilter])
 
@@ -96,7 +88,7 @@ export default function UsersPage() {
 
   function openCreate() {
     setEditing(null)
-    setForm({ name: "", email: "", phone: "", password: "", role: "CUSTOMER", isActive: true })
+    setForm({ name: "", email: "", phone: "", password: "", role: "CUSTOMER", isActive: true, branchId: "", agentKind: "" })
     setSheetOpen(true)
   }
 
@@ -105,6 +97,7 @@ export default function UsersPage() {
     setForm({
       name: user.name, email: user.email, phone: user.phone || "",
       password: "", role: user.role, isActive: user.isActive,
+      branchId: user.branchId || "", agentKind: user.agentKind || "",
     })
     setSheetOpen(true)
   }
@@ -114,6 +107,10 @@ export default function UsersPage() {
     try {
       if (editing) {
         const data: any = { name: form.name, email: form.email, phone: form.phone || undefined, role: form.role, isActive: form.isActive }
+        if ((BRANCH_BOUND_ROLES as string[]).includes(form.role)) {
+          data.branchId = form.branchId || undefined
+          if (form.role === "AGENT") data.agentKind = form.agentKind || undefined
+        }
         await api.users.update(editing.id, data)
         toast.success("User updated")
       } else {
@@ -124,6 +121,8 @@ export default function UsersPage() {
         await api.users.create({
           name: form.name, email: form.email, phone: form.phone || undefined,
           password: form.password, role: form.role, isActive: form.isActive,
+          ...((BRANCH_BOUND_ROLES as string[]).includes(form.role) ? { branchId: form.branchId || undefined } : {}),
+          ...(form.role === "AGENT" ? { agentKind: form.agentKind || undefined } : {}),
         })
         toast.success("User created")
       }
@@ -306,6 +305,29 @@ export default function UsersPage() {
                   </SelectContent>
                 </Select>
               </div>
+              {(BRANCH_BOUND_ROLES as string[]).includes(form.role) && (
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Branch <span className="text-destructive">*</span></Label>
+                  <Select value={form.branchId || undefined} onValueChange={(v: string | null) => setForm({ ...form, branchId: v || "" })}>
+                    <SelectTrigger><SelectValue placeholder={branches.length ? "Choose a branch" : "No branches yet — add one under Administration → Branches"} /></SelectTrigger>
+                    <SelectContent>
+                      {branches.map((b: any) => <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">This person only ever sees this branch's work.</p>
+                </div>
+              )}
+              {form.role === "AGENT" && (
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Kind of work <span className="text-destructive">*</span></Label>
+                  <Select value={form.agentKind || undefined} onValueChange={(v: string | null) => setForm({ ...form, agentKind: v || "" })}>
+                    <SelectTrigger><SelectValue placeholder="Clearing, forwarding or receiving" /></SelectTrigger>
+                    <SelectContent>
+                      {AGENT_KINDS.map((k) => <SelectItem key={k.value} value={k.value}>{k.label}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
               <div className="flex items-center justify-between rounded-lg border border-border/60 px-3 py-2.5">
                 <div className="flex flex-col">
                   <Label className="text-sm font-medium">Active</Label>

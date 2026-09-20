@@ -59,60 +59,56 @@ import {
 import {
   ROLE_LABELS,
   ROLE_BADGE_COLORS,
+  ROLE_DESCRIPTIONS,
   ROLE_NAV_PERMISSIONS,
+  type NavKey,
   type Role,
 } from "@/lib/role-nav"
 import { api } from "@/lib/api"
 import { formatNumber } from "@/lib/format"
 import { toast } from "sonner"
 
-const MODULES = [
-  { key: "dashboard", label: "Dashboard", description: "Overview & analytics", icon: DashboardSpeed01Icon },
-  { key: "administration", label: "Administration", description: "Users & roles management", icon: UserGroupIcon },
-  { key: "operations", label: "Operations", description: "Shipments & orders", icon: TruckIcon },
-  { key: "sgr", label: "SGR Rail", description: "Rail cargo management", icon: TrainIcon },
-  { key: "airCargo", label: "Air Cargo", description: "Air freight management", icon: AirplaneIcon },
-  { key: "warehouse", label: "Warehouse", description: "Inventory & storage", icon: WarehouseIcon },
-  { key: "controlTower", label: "Control Tower", description: "Dispatch coordination", icon: Radar01Icon },
+// Every module a role can be granted. Keys match NavKey in lib/role-nav.ts — the matrix below
+// is read straight from ROLE_NAV_PERMISSIONS, the same table that drives the sidebar and the
+// route guard, so what this page shows is exactly what each role gets.
+const MODULES: ReadonlyArray<{ key: NavKey; label: string; description: string; icon: IconSvgElement }> = [
+  { key: "dashboard", label: "Dashboard", description: "Role overview", icon: DashboardSpeed01Icon },
+  { key: "analytics", label: "Analytics & Reports", description: "Business analytics and exports", icon: BarChartIcon },
+  { key: "administration", label: "Administration", description: "Users & roles", icon: UserGroupIcon },
+  { key: "shipments", label: "Orders & Shipments", description: "Shipment and order records", icon: TruckIcon },
+  { key: "booking", label: "Booking", description: "Create a booking", icon: Package02Icon },
+  { key: "packages", label: "Packages & Manifests", description: "Package scans, manifests, stations", icon: Package02Icon },
+  { key: "deliveries", label: "Deliveries", description: "Delivery jobs", icon: DeliverySentIcon },
+  { key: "dispatch", label: "Dispatch & Control Tower", description: "Assignments, trips, live control", icon: Radar01Icon },
+  { key: "fleet", label: "Fleet", description: "Drivers, vehicles, carriers", icon: VanIcon },
   { key: "tracking", label: "Tracking", description: "Live tracking & maps", icon: Location01Icon },
-  { key: "fleet", label: "Fleet", description: "Vehicles & carriers", icon: VanIcon },
-  { key: "pricing", label: "Pricing", description: "Rules & surcharges", icon: Dollar01Icon },
-  { key: "parcelManagement", label: "Parcel Management", description: "Categories & fares", icon: Package02Icon },
+  { key: "sgr", label: "SGR Rail", description: "Rail cargo & train capacity", icon: TrainIcon },
+  { key: "airCargo", label: "Air Cargo", description: "Air freight", icon: AirplaneIcon },
+  { key: "warehouse", label: "Warehouse", description: "Receiving, consolidation, shelves, manifests", icon: WarehouseIcon },
+  { key: "deliveryRegister", label: "Delivery Register", description: "Release & hand-over control", icon: DeliverySentIcon },
   { key: "international", label: "International", description: "Customs & cross-border", icon: Globe02Icon },
-  { key: "payments", label: "Payments", description: "Transactions & gateways", icon: CreditCardIcon },
-  { key: "customers", label: "Customers", description: "Customer management", icon: CustomerService01Icon },
-  { key: "support", label: "Support", description: "Tickets & help center", icon: HeadphonesIcon },
-  { key: "blog", label: "Blog", description: "Content management", icon: LogsIcon },
+  { key: "pricing", label: "Pricing", description: "Rules, fares, zones, surcharges", icon: Dollar01Icon },
+  { key: "payments", label: "Payments", description: "Transactions, invoices, refunds", icon: CreditCardIcon },
+  { key: "paymentControl", label: "Payment Control", description: "Approvals, invoicing, gateways", icon: Shield01Icon },
+  { key: "customers", label: "Customers", description: "Customer accounts", icon: CustomerService01Icon },
+  { key: "support", label: "Support", description: "Tickets & claims", icon: HeadphonesIcon },
   { key: "exceptions", label: "Exceptions", description: "Issue management", icon: AlertCircleIcon },
+  { key: "blog", label: "Blog", description: "Content management", icon: LogsIcon },
+  { key: "integrations", label: "Integrations", description: "Partner API & webhooks", icon: Settings01Icon },
+  { key: "whatsapp", label: "WhatsApp Engine", description: "Connections, templates, campaigns", icon: Settings01Icon },
+  { key: "broadcast", label: "Broadcast", description: "Announcements", icon: LogsIcon },
   { key: "settings", label: "Settings", description: "System configuration", icon: Settings02Icon },
-] as const
-
-const ROLE_DESCRIPTIONS: Record<Role, string> = {
-  SUPER_ADMIN: "Full system access with all permissions",
-  OPERATIONS_MANAGER: "Manage operations, logistics, and fleet",
-  SGR_STATION_OFFICER: "Manage SGR rail station operations",
-  DISPATCHER: "Handle dispatch, tracking, and exceptions",
-  FINANCE: "Manage pricing, payments, and invoices",
-  CUSTOMER_SUPPORT: "Handle customer inquiries and support tickets",
-  WAREHOUSE_MANAGER: "Manage warehouse inventory and operations",
-  CUSTOMS_OFFICER: "Handle customs and international shipments",
-  PRICING_MANAGER: "Manage pricing rules and parcel fares",
-  REPORT_VIEWER: "View reports and analytics only",
-  CUSTOMER: "Customer-facing portal access",
-  DRIVER: "Driver app delivery management",
-}
+  { key: "notifications", label: "Notifications", description: "Own notifications", icon: AlertCircleIcon },
+  { key: "branchWork", label: "Tasks & Emergencies", description: "Agent tasks and urgent reports", icon: AlertCircleIcon },
+]
 
 const ROLE_ICONS: Record<Role, IconSvgElement> = {
   SUPER_ADMIN: Shield01Icon,
   OPERATIONS_MANAGER: Settings01Icon,
-  SGR_STATION_OFFICER: TrainIcon,
-  DISPATCHER: TruckIcon,
   FINANCE: Dollar01Icon,
-  CUSTOMER_SUPPORT: HeadphonesIcon,
   WAREHOUSE_MANAGER: WarehouseIcon,
-  CUSTOMS_OFFICER: Globe02Icon,
-  PRICING_MANAGER: Dollar01Icon,
-  REPORT_VIEWER: BarChartIcon,
+  BRANCH_MANAGER: Location01Icon,
+  AGENT: UserGroupIcon,
   CUSTOMER: UserCircleIcon,
   DRIVER: DeliverySentIcon,
 }
@@ -204,9 +200,9 @@ export default function RolesPage() {
         />
 
         {/* Role Cards Grid */}
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
           {loading ? (
-            Array.from({ length: 10 }).map((_, i) => (
+            Array.from({ length: 6 }).map((_, i) => (
               <Card key={i} className="p-4">
                 <Skeleton className="size-10 rounded-lg" />
                 <Skeleton className="mt-3 h-4 w-24" />
@@ -290,7 +286,7 @@ export default function RolesPage() {
                       </div>
                     </td>
                     {roles.map((role) => {
-                      const hasAccess = (ROLE_NAV_PERMISSIONS[role] || []).includes(mod.key as any)
+                      const hasAccess = (ROLE_NAV_PERMISSIONS[role] || []).includes(mod.key)
                       return (
                         <td key={role} className="px-3 py-3 text-center">
                           {hasAccess ? (

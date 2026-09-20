@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { clearAuthCookies } from "@workspace/ui/lib/auth-cookies"
+import { normalizeRole } from "@/lib/role-nav"
 
 export interface AuthUser {
   id: string
@@ -11,6 +12,8 @@ export interface AuthUser {
   avatar?: string
   isVerified?: boolean
   isActive?: boolean
+  branchId?: string | null
+  agentKind?: string | null
 }
 
 export function useAuth() {
@@ -27,7 +30,8 @@ export function useAuth() {
     if (stored && token) {
       try {
         const parsed = JSON.parse(stored)
-        setUser(parsed)
+        // A session saved before the role consolidation may still carry a retired role.
+        setUser({ ...parsed, role: normalizeRole(parsed.role) ?? parsed.role })
       } catch {
         setUser(null)
       }

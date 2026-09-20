@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { Mail01Icon, LockPasswordIcon } from "@hugeicons/core-free-icons"
+import { Mail01Icon, LockPasswordIcon, ViewIcon, ViewOffIcon } from "@hugeicons/core-free-icons"
 import { toast } from "sonner"
 
 import { cn } from "@workspace/ui/lib/utils"
@@ -43,6 +43,7 @@ export function LoginForm({
   errorMessage?: string
 }) {
   const [isLoading, setIsLoading] = React.useState(false)
+  const [showPassword, setShowPassword] = React.useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -82,7 +83,7 @@ export function LoginForm({
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card className="overflow-hidden p-0">
+      <Card className="overflow-hidden border border-border/70 bg-card p-0 shadow-2xl">
         <CardContent className="p-0">
           <form className="p-6 md:p-8" onSubmit={handleSubmit}>
             <FieldGroup>
@@ -125,11 +126,19 @@ export function LoginForm({
                   />
                   <Input
                     id="password"
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     placeholder={passwordPlaceholder}
                     required
-                    className="h-12 ps-10 text-base"
+                    className="h-12 ps-10 pe-11 text-base"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((v) => !v)}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    <HugeiconsIcon icon={showPassword ? ViewOffIcon : ViewIcon} className="size-5" />
+                  </button>
                 </div>
               </Field>
               <Field>

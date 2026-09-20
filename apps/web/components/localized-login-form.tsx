@@ -9,7 +9,7 @@ export function LoginForm() {
   const { t } = useLang()
 
   return (
-    <div className="relative z-10 w-full max-w-md shadow-2xl">
+    <div className="relative z-10 w-full max-w-md">
       <div className="mb-3 flex justify-end">
         <LanguageSwitcher />
       </div>

@@ -32,7 +32,8 @@ const ROLE_OPTIONS = [
   { value: "DRIVER", label: "Drivers" },
   { value: "SUPER_ADMIN", label: "Super Admins" },
   { value: "OPERATIONS_MANAGER", label: "Operations" },
-  { value: "DISPATCHER", label: "Dispatchers" },
+  { value: "FINANCE", label: "Finance team" },
+  { value: "WAREHOUSE_MANAGER", label: "Warehouse team" },
 ]
 
 export default function BroadcastPage() {

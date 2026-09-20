@@ -83,6 +83,47 @@ export const api = {
     assign: (id: string, body: Record<string, any>) => request(`/shipments/${id}/assign`, { method: "PUT", body }),
     cancel: (id: string) => request(`/shipments/${id}/cancel`, { method: "PUT" }),
   },
+  // Real per-role dashboard feeds (back/src/modules/dashboard).
+  dashboard: {
+    finance: () => request("/dashboard/finance"),
+    warehouse: () => request("/dashboard/warehouse"),
+    operations: () => request("/dashboard/operations"),
+  },
+  // Branches, agent tasks and emergencies (back/src/modules/branches).
+  branches: {
+    list: () => request("/branches"),
+    get: (id: string) => request(`/branches/${id}`),
+    create: (body: Record<string, any>) => request("/branches", { method: "POST", body }),
+    update: (id: string, body: Record<string, any>) => request(`/branches/${id}`, { method: "PUT", body }),
+    agents: () => request("/branches/agents"),
+    tasks: (params = "") => request(`/branches/tasks${params ? `?${params}` : ""}`),
+    createTask: (body: Record<string, any>) => request("/branches/tasks", { method: "POST", body }),
+    updateTask: (id: string, body: Record<string, any>) => request(`/branches/tasks/${id}/status`, { method: "PATCH", body }),
+  },
+  emergencies: {
+    list: (params = "") => request(`/emergencies${params ? `?${params}` : ""}`),
+    raise: (body: Record<string, any>) => request("/emergencies", { method: "POST", body }),
+    update: (id: string, body: Record<string, any>) => request(`/emergencies/${id}`, { method: "PATCH", body }),
+  },
+  // Destinations, airports, vehicle classes and journey estimates (back/src/modules/logistics).
+  logistics: {
+    destinations: (params = "") => request(`/logistics/destinations${params ? `?${params}` : ""}`),
+    regions: (params = "") => request(`/logistics/regions${params ? `?${params}` : ""}`),
+    airports: (params = "") => request(`/logistics/airports${params ? `?${params}` : ""}`),
+    vehicleClasses: (all = false) => request(`/logistics/vehicle-classes${all ? "?all=1" : ""}`),
+    serviceLevels: () => request("/logistics/service-levels"),
+    estimate: (body: Record<string, any>) => request("/logistics/estimate", { method: "POST", body }),
+    updateVehicleClass: (id: string, body: Record<string, any>) => request(`/logistics/vehicle-classes/${id}`, { method: "PUT", body }),
+    createVehicleClass: (body: Record<string, any>) => request("/logistics/vehicle-classes", { method: "POST", body }),
+    updateServiceLevel: (level: string, body: Record<string, any>) => request(`/logistics/service-levels/${level}`, { method: "PUT", body }),
+    updateCity: (id: string, body: Record<string, any>) => request(`/logistics/cities/${id}`, { method: "PUT", body }),
+    blockCity: (id: string, body: Record<string, any>) => request(`/logistics/cities/${id}/block`, { method: "PATCH", body }),
+    setCityActive: (id: string, isActive: boolean) => request(`/logistics/cities/${id}/active`, { method: "PATCH", body: { isActive } }),
+    blockRegion: (id: string, body: Record<string, any>) => request(`/logistics/regions/${id}/block`, { method: "PATCH", body }),
+    blockAirport: (id: string, body: Record<string, any>) => request(`/logistics/airports/${id}/block`, { method: "PATCH", body }),
+    setAirportActive: (id: string, isActive: boolean) => request(`/logistics/airports/${id}/active`, { method: "PATCH", body: { isActive } }),
+    createAirport: (body: Record<string, any>) => request("/logistics/airports", { method: "POST", body }),
+  },
   orders: {
     list: (params?: string) => request(`/orders${params ? `?${params}` : ""}`),
     stats: () => request("/orders/stats"),
@@ -566,5 +607,41 @@ export const api = {
     create: (body: Record<string, any>) => request("/payment-approvals", { method: "POST", body }),
     approve: (id: string) => request(`/payment-approvals/${id}/approve`, { method: "POST" }),
     reject: (id: string, body: Record<string, any>) => request(`/payment-approvals/${id}/reject`, { method: "POST", body }),
+  },
+  // Dubai Receiving (Module 1) — parcels received at Dubai Office / Dubai Warehouse
+  // with auto-generated XRN tracking numbers, suppliers and item types config.
+  dubaiReceiving: {
+    list: (params?: string) => request(`/dubai-receiving/shipments${params ? `?${params}` : ""}`),
+    get: (id: string) => request(`/dubai-receiving/shipments/${id}`),
+    receive: (body: Record<string, any>) => request("/dubai-receiving/receive", { method: "POST", body }),
+    update: (id: string, body: Record<string, any>) => request(`/dubai-receiving/shipments/${id}`, { method: "PATCH", body }),
+    itemTypes: () => request("/dubai-receiving/item-types"),
+    suppliers: () => request("/dubai-receiving/suppliers"),
+    createSupplier: (body: Record<string, any>) => request("/dubai-receiving/suppliers", { method: "POST", body }),
+    updateSupplier: (id: string, body: Record<string, any>) => request(`/dubai-receiving/suppliers/${id}`, { method: "PATCH", body }),
+    deleteSupplier: (id: string) => request(`/dubai-receiving/suppliers/${id}`, { method: "DELETE" }),
+  },
+  // XERIN Invoicing (Module 7) — Accountant prepares per-shipment invoices with a
+  // freight/storage/delivery/other charge breakdown, records payments, reopens.
+  invoicing: {
+    list: (params?: string) => request(`/invoicing${params ? `?${params}` : ""}`),
+    get: (id: string) => request(`/invoicing/${id}`),
+    preview: (shipmentId: string) => request(`/invoicing/preview/${shipmentId}`),
+    create: (body: Record<string, any>) => request("/invoicing", { method: "POST", body }),
+    bulkCreate: (body: Record<string, any>) => request("/invoicing/bulk", { method: "POST", body }),
+    recordPayment: (id: string, body: Record<string, any>) => request(`/invoicing/${id}/payment`, { method: "POST", body }),
+    reopen: (id: string, body: Record<string, any>) => request(`/invoicing/${id}/reopen`, { method: "POST", body }),
+  },
+  // XERIN Delivery Register (Module 9) — dispatcher assigns a driver + vehicle to a
+  // shipment, driver marks out-for-delivery / complete / fail, manager approves fee overrides.
+  deliveryRegister: {
+    list: (params?: string) => request(`/delivery-register${params ? `?${params}` : ""}`),
+    my: () => request("/delivery-register/my"),
+    get: (id: string) => request(`/delivery-register/${id}`),
+    create: (body: Record<string, any>) => request("/delivery-register", { method: "POST", body }),
+    outForDelivery: (id: string) => request(`/delivery-register/${id}/out-for-delivery`, { method: "POST" }),
+    complete: (id: string, body: Record<string, any>) => request(`/delivery-register/${id}/complete`, { method: "POST", body }),
+    fail: (id: string, body: Record<string, any>) => request(`/delivery-register/${id}/fail`, { method: "POST", body }),
+    approveFeeOverride: (id: string, body: Record<string, any>) => request(`/delivery-register/${id}/fee-approval`, { method: "POST", body }),
   },
 }

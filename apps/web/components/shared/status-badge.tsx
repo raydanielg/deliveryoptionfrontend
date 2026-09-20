@@ -47,6 +47,19 @@ const STATUS: Record<string, StatusMeta> = {
   FAILED: { tone: "critical", icon: Cancel01Icon },
   ON_HOLD: { tone: "warning", icon: Clock01Icon, label: "On hold" },
 
+  // Dubai<->Tanzania consolidation workflow statuses
+  RECEIVED_DUBAI: { tone: "info", icon: CheckmarkCircle02Icon, label: "Received Dubai" },
+  AWAITING_CONSOLIDATION: { tone: "warning", icon: HourglassIcon, label: "Awaiting consolidation" },
+  CONSOLIDATED: { tone: "info", icon: CheckmarkCircle02Icon },
+  DEPARTED_DUBAI: { tone: "info", icon: Clock01Icon, label: "Departed Dubai" },
+  ARRIVED_TANZANIA: { tone: "info", icon: CheckmarkCircle02Icon, label: "Arrived Tanzania" },
+  ON_SHELF: { tone: "info", icon: CheckmarkCircle02Icon, label: "On shelf" },
+  INVOICED: { tone: "warning", icon: HourglassIcon },
+  READY_FOR_COLLECTION: { tone: "good", icon: CheckmarkCircle02Icon, label: "Ready for collection" },
+  COLLECTED: { tone: "good", icon: CheckmarkCircle02Icon },
+  OLD_STOCK: { tone: "serious", icon: AlertCircleIcon, label: "Old stock" },
+  CLOSED: { tone: "neutral", icon: CheckmarkCircle02Icon },
+
   // payment statuses
   PAID: { tone: "good", icon: CheckmarkCircle02Icon },
   PENDING_PAYMENT: { tone: "warning", icon: HourglassIcon, label: "Pending payment" },

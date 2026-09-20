@@ -129,6 +129,11 @@
   button:not(:disabled), [role="button"]:not(:disabled) {
     cursor: pointer;
     }
+  @keyframes hero-push {
+    from { transform: scale(1.06); }
+    to { transform: scale(1.14); }
+  }
+
   @keyframes fade-in {
     from {
       opacity: 0;

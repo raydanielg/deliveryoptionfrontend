@@ -14,23 +14,15 @@ import {
   Clock01Icon,
   CheckmarkCircle02Icon,
   UserGroupIcon,
-  Globe02Icon,
-  WarehouseIcon,
-  Train01Icon,
-  Airplane01Icon,
   ArrowRight01Icon,
-  CustomerService01Icon,
-  File02Icon,
   AlertCircleIcon,
   PackageReceiveIcon,
   Route02Icon,
   ChartIcon,
-  Download01Icon,
   Cancel01Icon,
   DashboardSquare02Icon,
   ReceiptIcon,
   SendIcon,
-  DeliverySent01Icon,
 } from "@hugeicons/core-free-icons"
 import { api } from "@/lib/api"
 import { useAuth } from "@/lib/use-auth"
@@ -50,6 +42,13 @@ import {
   useCapacityOverview,
 } from "@/lib/use-dashboard"
 import { formatMoney, formatNumber, formatPercent, formatRelative } from "@/lib/format"
+import { useSearchParams } from "next/navigation"
+import { normalizeRole, ROLE_LABELS } from "@/lib/role-nav"
+import { BranchManagerDashboard, AgentDashboard } from "@/components/dashboards/branch-dashboards"
+import { Skeleton } from "@workspace/ui/components/skeleton"
+import { FinanceDashboard } from "@/components/dashboards/finance-dashboard"
+import { WarehouseDashboard } from "@/components/dashboards/warehouse-dashboard"
+import { OperationsDashboard } from "@/components/dashboards/operations-dashboard"
 
 /* ---------- Shared Components ---------- */
 function RoleHeader({ title, description, actions }: {
@@ -110,7 +109,7 @@ function EmptyRow({ icon, title, subtitle }: { icon: any; title: string; subtitl
   )
 }
 
-/* ---------- Super Admin / Operations Manager Dashboard ---------- */
+/* ---------- Super Admin — executive overview ---------- */
 export function AdminDashboard() {
   const [range, setRange] = React.useState<Range>("30d")
   const stats = useShipmentStats()
@@ -192,8 +191,8 @@ export function AdminDashboard() {
   return (
     <div className="flex flex-col gap-6">
       <RoleHeader
-        title="Operations Command Center"
-        description="Full platform overview — shipments, revenue, users, and performance."
+        title="Executive Overview"
+        description="How the whole business is performing — shipments, revenue, people, and capacity."
         actions={
           <>
             <Link href="/dashboard/analytics" className={buttonVariants({ variant: "outline", size: "sm" })}>
@@ -261,12 +260,8 @@ export function AdminDashboard() {
       <div className="grid gap-4 xl:grid-cols-[3fr_2fr]">
         <RoutePerformanceChart data={routes.data} isLoading={routes.isLoading} />
         <Card className="gap-0 p-5">
-          <h2 className="text-base font-semibold tracking-tight">System status</h2>
+          <h2 className="text-base font-semibold tracking-tight">People & capacity</h2>
           <div className="mt-4 space-y-3">
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">API</span>
-              <Badge className="bg-emerald-100 text-emerald-700">Operational</Badge>
-            </div>
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">Total users</span>
               <span className="font-medium tabular-nums">{formatNumber(userStats.data?.total)}</span>
@@ -403,131 +398,6 @@ export function AdminDashboard() {
   )
 }
 
-/* ---------- Dispatcher Dashboard ---------- */
-export function DispatcherDashboard() {
-  const [range, setRange] = React.useState<Range>("7d")
-  const stats = useShipmentStats()
-  const volume = useShipmentVolume(range)
-  const recent = useRecentShipments(10)
-
-  const dispatchQueue = recent.data.filter((s) =>
-    ["BOOKED", "PENDING", "DRIVER_ASSIGNED", "ACCEPTED"].includes(s.status)
-  )
-  const inTransit = recent.data.filter((s) =>
-    ["IN_TRANSIT", "OUT_FOR_DELIVERY", "PICKED_UP", "ONGOING"].includes(s.status)
-  )
-
-  return (
-    <div className="flex flex-col gap-6">
-      <RoleHeader
-        title="Dispatch Center"
-        description="Manage shipment assignments across all transport modes."
-        actions={
-          <>
-            <ActionLink href="/dashboard/shipments" icon={Package02Icon} label="All Shipments" />
-            <ActionLink href="/dashboard/control-tower" icon={MapIcon} label="Control Tower" />
-            <ActionLink href="/dashboard/manifests" icon={Route02Icon} label="Manifests" variant="default" />
-          </>
-        }
-      />
-
-      {/* KPIs */}
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <MetricCard label="Awaiting assignment" value={formatNumber(dispatchQueue.length)} icon={Package02Icon} loading={recent.isLoading} hint="Needs driver" />
-        <MetricCard label="In transit" value={formatNumber(stats.data?.inTransit)} icon={TruckIcon} loading={stats.isLoading} hint="On the move" />
-        <MetricCard label="Active" value={formatNumber(stats.data?.active)} icon={DeliverySent01Icon} loading={stats.isLoading} />
-        <MetricCard label="Delivered" value={formatNumber(stats.data?.delivered)} icon={CheckmarkCircle02Icon} loading={stats.isLoading} />
-      </div>
-
-      {/* Volume chart */}
-      <ShipmentVolumeChart
-        data={volume.data}
-        isLoading={volume.isLoading}
-        error={volume.error}
-        range={range}
-        onRangeChange={setRange}
-        title="Dispatch volume"
-        description="Shipments flowing through the dispatch queue."
-      />
-
-      {/* Dispatch queue + In transit */}
-      <div className="grid gap-4 xl:grid-cols-2">
-        <Card className="gap-0 overflow-hidden p-0">
-          <div className="flex items-center justify-between gap-3 border-b border-border/60 px-5 py-4">
-            <div>
-              <h2 className="text-base font-semibold tracking-tight">Dispatch queue</h2>
-              <p className="text-xs text-muted-foreground">Shipments needing driver assignment</p>
-            </div>
-            <Badge variant="secondary">{dispatchQueue.length}</Badge>
-          </div>
-          {recent.isLoading ? (
-            <div className="divide-y divide-border/60">
-              {Array.from({ length: 5 }).map((_, i) => <div key={i} className="h-14 animate-pulse bg-muted/30" />)}
-            </div>
-          ) : dispatchQueue.length === 0 ? (
-            <EmptyRow icon={Package02Icon} title="Queue is clear" subtitle="All shipments have been assigned" />
-          ) : (
-            <ul className="divide-y divide-border/60">
-              {dispatchQueue.map((ship) => (
-                <li key={ship.id}>
-                  <Link href={`/dashboard/shipments/${ship.id}`} className="flex items-center gap-3 px-5 py-3 transition-colors hover:bg-muted/40">
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium">{ship.trackingNumber}</p>
-                      <p className="mt-0.5 truncate text-xs text-muted-foreground">{ship.fromCity} → {ship.toCity}</p>
-                    </div>
-                    <StatusBadge status={ship.status} size="sm" />
-                    <HugeiconsIcon icon={ArrowRight01Icon} className="size-4 text-muted-foreground" />
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
-        </Card>
-
-        <Card className="gap-0 overflow-hidden p-0">
-          <div className="flex items-center justify-between gap-3 border-b border-border/60 px-5 py-4">
-            <div>
-              <h2 className="text-base font-semibold tracking-tight">In transit</h2>
-              <p className="text-xs text-muted-foreground">Currently being delivered</p>
-            </div>
-            <Badge variant="secondary">{inTransit.length}</Badge>
-          </div>
-          {recent.isLoading ? (
-            <div className="divide-y divide-border/60">
-              {Array.from({ length: 5 }).map((_, i) => <div key={i} className="h-14 animate-pulse bg-muted/30" />)}
-            </div>
-          ) : inTransit.length === 0 ? (
-            <EmptyRow icon={TruckIcon} title="Nothing in transit" subtitle="No active deliveries right now" />
-          ) : (
-            <ul className="divide-y divide-border/60">
-              {inTransit.map((ship) => (
-                <li key={ship.id}>
-                  <Link href={`/dashboard/shipments/${ship.id}`} className="flex items-center gap-3 px-5 py-3 transition-colors hover:bg-muted/40">
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium">{ship.trackingNumber}</p>
-                      <p className="mt-0.5 truncate text-xs text-muted-foreground">{ship.fromCity} → {ship.toCity}</p>
-                    </div>
-                    <StatusBadge status={ship.status} size="sm" />
-                    <HugeiconsIcon icon={ArrowRight01Icon} className="size-4 text-muted-foreground" />
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
-        </Card>
-      </div>
-
-      {/* Mode overview */}
-      <ActionCard title="Transport modes" description="Quick access to mode-specific operations">
-        <ActionLink href="/dashboard/shipments" icon={TruckIcon} label="Road" />
-        <ActionLink href="/dashboard/sgr" icon={Train01Icon} label="SGR Rail" />
-        <ActionLink href="/dashboard/air-cargo" icon={Airplane01Icon} label="Air Cargo" />
-        <ActionLink href="/dashboard/exceptions" icon={AlertCircleIcon} label="Exceptions" />
-      </ActionCard>
-    </div>
-  )
-}
-
 /* ---------- Driver Dashboard ---------- */
 export function DriverDashboard() {
   const { user } = useAuth()
@@ -622,316 +492,6 @@ export function DriverDashboard() {
   )
 }
 
-/* ---------- Warehouse Manager Dashboard ---------- */
-export function WarehouseDashboard() {
-  const [stats, setStats] = React.useState<any>(null)
-  const [loading, setLoading] = React.useState(true)
-
-  React.useEffect(() => {
-    api.warehouse.stats().then((res) => { setStats(res.data); setLoading(false) }).catch(() => setLoading(false))
-  }, [])
-
-  return (
-    <div className="flex flex-col gap-6">
-      <RoleHeader
-        title="Warehouse Operations"
-        description="Inventory, receiving, and dispatch management."
-        actions={
-          <>
-            <ActionLink href="/dashboard/warehouse" icon={WarehouseIcon} label="Inventory" variant="default" />
-            <ActionLink href="/dashboard/warehouse/receiving" icon={PackageReceiveIcon} label="Receiving" />
-          </>
-        }
-      />
-
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <MetricCard label="Items in storage" value={formatNumber(stats?.totalItems)} icon={WarehouseIcon} loading={loading} />
-        <MetricCard label="Pending receiving" value={formatNumber(stats?.pendingReceiving)} icon={PackageReceiveIcon} loading={loading} hint="Awaiting check-in" />
-        <MetricCard label="Ready for dispatch" value={formatNumber(stats?.readyForDispatch)} icon={TruckIcon} loading={loading} />
-        <MetricCard label="Consolidations" value={formatNumber(stats?.consolidations)} icon={Package02Icon} loading={loading} />
-      </div>
-
-      <div className="grid gap-4 xl:grid-cols-2">
-        <Card className="gap-0 p-5">
-          <h2 className="text-base font-semibold tracking-tight">Recent activity</h2>
-          <div className="mt-4 space-y-3 text-sm">
-            <div className="flex items-center justify-between border-b border-border/60 pb-3">
-              <span className="text-muted-foreground">Packages received today</span>
-              <Badge variant="secondary">{stats?.receivedToday || 0}</Badge>
-            </div>
-            <div className="flex items-center justify-between border-b border-border/60 pb-3">
-              <span className="text-muted-foreground">Packages dispatched today</span>
-              <Badge variant="secondary">{stats?.dispatchedToday || 0}</Badge>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">Total weight handled</span>
-              <span className="font-medium tabular-nums">{stats?.totalWeightKg ? `${stats.totalWeightKg} kg` : "0 kg"}</span>
-            </div>
-          </div>
-        </Card>
-
-        <ActionCard title="Warehouse actions" description="Manage inventory and dispatch">
-          <ActionLink href="/dashboard/warehouse" icon={WarehouseIcon} label="Inventory" />
-          <ActionLink href="/dashboard/warehouse/receiving" icon={PackageReceiveIcon} label="Receiving" />
-          <ActionLink href="/dashboard/warehouse/consolidation" icon={Package02Icon} label="Consolidation" />
-          <ActionLink href="/dashboard/tracking" icon={MapIcon} label="Tracking" />
-        </ActionCard>
-      </div>
-    </div>
-  )
-}
-
-/* ---------- Finance Dashboard ---------- */
-export function FinanceDashboard() {
-  const [stats, setStats] = React.useState<any>(null)
-  const [loading, setLoading] = React.useState(true)
-
-  React.useEffect(() => {
-    Promise.allSettled([
-      api.orders.stats(),
-      api.payments.list(),
-    ]).then(([orderRes, payRes]) => {
-      setStats({
-        orders: orderRes.status === "fulfilled" ? orderRes.value.data : null,
-        payments: payRes.status === "fulfilled" ? payRes.value.data : null,
-      })
-      setLoading(false)
-    })
-  }, [])
-
-  const totalRevenue = stats?.orders?.totalRevenue || 0
-  const pendingPayments = stats?.orders?.pendingPayments || 0
-
-  return (
-    <div className="flex flex-col gap-6">
-      <RoleHeader
-        title="Finance Overview"
-        description="Revenue, payments, and pricing management."
-        actions={
-          <>
-            <ActionLink href="/dashboard/pricing/rules" icon={CoinsIcon} label="Pricing Rules" />
-            <ActionLink href="/dashboard/payments/transactions" icon={File02Icon} label="Transactions" variant="default" />
-          </>
-        }
-      />
-
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <MetricCard label="Total revenue" value={formatMoney(totalRevenue, "TZS", { compact: true })} icon={CoinsIcon} loading={loading} />
-        <MetricCard label="Pending payments" value={formatMoney(pendingPayments, "TZS", { compact: true })} icon={File02Icon} loading={loading} hint="Awaiting payment" />
-        <MetricCard label="Transactions" value={formatNumber(stats?.payments?.length || 0)} icon={ReceiptIcon} loading={loading} />
-        <MetricCard label="Refunds" value="0" icon={Cancel01Icon} loading={loading} />
-      </div>
-
-      <div className="grid gap-4 xl:grid-cols-2">
-        <Card className="gap-0 p-5">
-          <h2 className="text-base font-semibold tracking-tight">Revenue by mode</h2>
-          <div className="mt-4 space-y-3 text-sm">
-            {[
-              { mode: "Road", icon: TruckIcon, revenue: stats?.orders?.revenueByMode?.ROAD || 0 },
-              { mode: "Rail (SGR)", icon: Train01Icon, revenue: stats?.orders?.revenueByMode?.RAIL || 0 },
-              { mode: "Air Cargo", icon: Airplane01Icon, revenue: stats?.orders?.revenueByMode?.AIR || 0 },
-            ].map((m) => (
-              <div key={m.mode} className="flex items-center justify-between border-b border-border/60 last:border-0 pb-3">
-                <div className="flex items-center gap-2">
-                  <HugeiconsIcon icon={m.icon} className="size-4 text-primary" />
-                  <span className="font-medium">{m.mode}</span>
-                </div>
-                <span className="font-semibold tabular-nums">{formatMoney(m.revenue, "TZS", { compact: true })}</span>
-              </div>
-            ))}
-          </div>
-        </Card>
-
-        <ActionCard title="Finance actions" description="Manage pricing and payments">
-          <ActionLink href="/dashboard/pricing/rules" icon={CoinsIcon} label="Pricing Rules" />
-          <ActionLink href="/dashboard/payments/transactions" icon={File02Icon} label="Transactions" />
-          <ActionLink href="/dashboard/payments/invoices" icon={ReceiptIcon} label="Invoices" />
-          <ActionLink href="/dashboard/payment-gateways" icon={CoinsIcon} label="Gateways" />
-        </ActionCard>
-      </div>
-    </div>
-  )
-}
-
-/* ---------- Customer Support Dashboard ---------- */
-export function CustomerSupportDashboard() {
-  const [stats, setStats] = React.useState<any>(null)
-  const [loading, setLoading] = React.useState(true)
-
-  React.useEffect(() => {
-    Promise.allSettled([
-      api.exceptions.stats(),
-      api.shipments.stats(),
-    ]).then(([excRes, shipRes]) => {
-      setStats({
-        exceptions: excRes.status === "fulfilled" ? excRes.value.data : null,
-        shipments: shipRes.status === "fulfilled" ? shipRes.value.data : null,
-      })
-      setLoading(false)
-    })
-  }, [])
-
-  return (
-    <div className="flex flex-col gap-6">
-      <RoleHeader
-        title="Support Center"
-        description="Handle exceptions, tickets, and customer issues."
-        actions={
-          <>
-            <ActionLink href="/dashboard/exceptions" icon={AlertCircleIcon} label="Exceptions" variant="default" />
-            <ActionLink href="/dashboard/support/tickets" icon={CustomerService01Icon} label="Tickets" />
-          </>
-        }
-      />
-
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <MetricCard label="Open exceptions" value={formatNumber(stats?.exceptions?.open)} icon={AlertCircleIcon} loading={loading} hint="Needs attention" />
-        <MetricCard label="Resolved today" value={formatNumber(stats?.exceptions?.resolvedToday)} icon={CheckmarkCircle02Icon} loading={loading} />
-        <MetricCard label="Active shipments" value={formatNumber(stats?.shipments?.inTransit)} icon={TruckIcon} loading={loading} />
-        <MetricCard label="Returns" value={formatNumber(stats?.exceptions?.returns)} icon={Cancel01Icon} loading={loading} />
-      </div>
-
-      <div className="grid gap-4 xl:grid-cols-2">
-        <Card className="gap-0 p-5">
-          <h2 className="text-base font-semibold tracking-tight">Exception breakdown</h2>
-          <div className="mt-4 space-y-3 text-sm">
-            <div className="flex items-center justify-between border-b border-border/60 pb-3">
-              <span className="text-muted-foreground">High priority</span>
-              <Badge className="bg-red-100 text-red-700">{stats?.exceptions?.highPriority || 0}</Badge>
-            </div>
-            <div className="flex items-center justify-between border-b border-border/60 pb-3">
-              <span className="text-muted-foreground">Medium priority</span>
-              <Badge className="bg-amber-100 text-amber-700">{stats?.exceptions?.mediumPriority || 0}</Badge>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">Low priority</span>
-              <Badge variant="secondary">{stats?.exceptions?.lowPriority || 0}</Badge>
-            </div>
-          </div>
-        </Card>
-
-        <ActionCard title="Support actions" description="Handle customer issues">
-          <ActionLink href="/dashboard/exceptions" icon={AlertCircleIcon} label="Exceptions" />
-          <ActionLink href="/dashboard/support/tickets" icon={CustomerService01Icon} label="Tickets" />
-          <ActionLink href="/dashboard/shipments" icon={Package02Icon} label="Shipments" />
-          <ActionLink href="/dashboard/tracking" icon={MapIcon} label="Tracking" />
-        </ActionCard>
-      </div>
-    </div>
-  )
-}
-
-/* ---------- Customs Officer Dashboard ---------- */
-export function CustomsDashboard() {
-  const [shipments, setShipments] = React.useState<any[]>([])
-  const [loading, setLoading] = React.useState(true)
-
-  React.useEffect(() => {
-    api.shipments.list("category=INTERNATIONAL&status=CUSTOMS_REVIEW,CUSTOMS_HOLD")
-      .then((res) => { const d = res.data?.shipments || res.data; setShipments(Array.isArray(d) ? d : []); setLoading(false) })
-      .catch(() => setLoading(false))
-  }, [])
-
-  return (
-    <div className="flex flex-col gap-6">
-      <RoleHeader
-        title="Customs Clearance"
-        description="International shipments requiring customs processing."
-        actions={
-          <ActionLink href="/dashboard/international/customs" icon={Globe02Icon} label="Customs Portal" variant="default" />
-        }
-      />
-
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <MetricCard label="Customs review" value={formatNumber(shipments.length)} icon={Globe02Icon} loading={loading} hint="Awaiting clearance" />
-        <MetricCard label="Cleared today" value="0" icon={CheckmarkCircle02Icon} loading={loading} />
-        <MetricCard label="On hold" value="0" icon={AlertCircleIcon} loading={loading} />
-        <MetricCard label="Documents pending" value="0" icon={File02Icon} loading={loading} />
-      </div>
-
-      <Card className="gap-0 overflow-hidden p-0">
-        <div className="flex items-center justify-between gap-3 border-b border-border/60 px-5 py-4">
-          <div>
-            <h2 className="text-base font-semibold tracking-tight">International shipments</h2>
-            <p className="text-xs text-muted-foreground">Shipments requiring customs processing</p>
-          </div>
-          <Badge variant="secondary">{shipments.length}</Badge>
-        </div>
-        {loading ? (
-          <div className="divide-y divide-border/60">
-            {Array.from({ length: 5 }).map((_, i) => <div key={i} className="h-14 animate-pulse bg-muted/30" />)}
-          </div>
-        ) : shipments.length === 0 ? (
-          <EmptyRow icon={Globe02Icon} title="No shipments awaiting customs" subtitle="All international shipments are cleared" />
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b text-left">
-                  <th className="px-5 py-3 font-medium text-muted-foreground">Tracking #</th>
-                  <th className="px-5 py-3 font-medium text-muted-foreground">Route</th>
-                  <th className="px-5 py-3 font-medium text-muted-foreground">Status</th>
-                  <th className="px-5 py-3 font-medium text-muted-foreground"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {shipments.map((ship: any) => (
-                  <tr key={ship.id} className="border-b last:border-0 transition-colors hover:bg-muted/40">
-                    <td className="px-5 py-3 font-medium">{ship.trackingNumber}</td>
-                    <td className="px-5 py-3 text-muted-foreground">{ship.fromAddress?.country} → {ship.toAddress?.country}</td>
-                    <td className="px-5 py-3"><StatusBadge status={ship.status} size="sm" /></td>
-                    <td className="px-5 py-3">
-                      <Link href="/dashboard/international/customs" className={buttonVariants({ variant: "ghost", size: "sm" })}>
-                        Review
-                        <HugeiconsIcon icon={ArrowRight01Icon} className="size-3" />
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </Card>
-    </div>
-  )
-}
-
-/* ---------- Report Viewer Dashboard ---------- */
-export function ReportViewerDashboard() {
-  const stats = useShipmentStats()
-  const routes = useRoutePerformance()
-
-  return (
-    <div className="flex flex-col gap-6">
-      <RoleHeader
-        title="Reports & Analytics"
-        description="View and download operational reports."
-        actions={
-          <>
-            <ActionLink href="/dashboard/analytics" icon={ChartIcon} label="Analytics" />
-            <ActionLink href="/dashboard/reports" icon={Download01Icon} label="Export" variant="default" />
-          </>
-        }
-      />
-
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <MetricCard label="Total shipments" value={formatNumber(stats.data?.total)} icon={Package02Icon} loading={stats.isLoading} />
-        <MetricCard label="Delivered" value={formatNumber(stats.data?.delivered)} icon={CheckmarkCircle02Icon} loading={stats.isLoading} />
-        <MetricCard label="In transit" value={formatNumber(stats.data?.inTransit)} icon={Clock01Icon} loading={stats.isLoading} />
-        <MetricCard label="Cancelled" value={formatNumber(stats.data?.cancelled)} icon={Cancel01Icon} loading={stats.isLoading} positiveIsGood={false} />
-      </div>
-
-      <RoutePerformanceChart data={routes.data} isLoading={routes.isLoading} />
-
-      <ActionCard title="Reports" description="View and download operational reports">
-        <ActionLink href="/dashboard/reports" icon={ChartIcon} label="View Reports" />
-        <ActionLink href="/dashboard/analytics" icon={ChartIcon} label="Analytics" />
-      </ActionCard>
-    </div>
-  )
-}
-
 /* ---------- Customer Dashboard ---------- */
 export function CustomerDashboard() {
   const { user } = useAuth()
@@ -1017,23 +577,57 @@ export function CustomerDashboard() {
   )
 }
 
+/* Shown when the route guard bounced the user here from a page their role can't open. */
+function AccessDeniedNotice({ roleLabel }: { roleLabel: string }) {
+  const params = useSearchParams()
+  const [dismissed, setDismissed] = React.useState(false)
+  const denied = params.get("denied")
+  if (!denied || dismissed) return null
+  return (
+    <Card className="flex-row items-center gap-3 border-amber-500/30 bg-amber-500/5 p-4">
+      <HugeiconsIcon icon={AlertCircleIcon} className="size-5 shrink-0 text-amber-600" />
+      <p className="min-w-0 flex-1 text-sm">
+        <span className="font-medium">No access to {denied}.</span>{" "}
+        <span className="text-muted-foreground">The {roleLabel} role doesn&apos;t include that page.</span>
+      </p>
+      <button type="button" onClick={() => setDismissed(true)} className={buttonVariants({ variant: "ghost", size: "sm" })}>Dismiss</button>
+    </Card>
+  )
+}
+
 /* ---------- Main Role Dashboard Router ---------- */
+// One dashboard per role. Each shows only what that role acts on.
 export function RoleDashboard() {
-  const { user } = useAuth()
-  const role = user?.role || "CUSTOMER"
+  const { user, loading } = useAuth()
+  const role = normalizeRole(user?.role)
+
+  if (loading || !user) {
+    return (
+      <div className="flex flex-col gap-6 p-4 lg:p-6">
+        <Skeleton className="h-10 w-72" />
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24 w-full" />)}
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="flex flex-col gap-6 p-4 lg:p-6">
+      <React.Suspense fallback={null}>
+        <AccessDeniedNotice roleLabel={role ? ROLE_LABELS[role] : "current"} />
+      </React.Suspense>
       {role === "SUPER_ADMIN" && <AdminDashboard />}
-      {role === "OPERATIONS_MANAGER" && <AdminDashboard />}
-      {role === "DISPATCHER" && <DispatcherDashboard />}
-      {role === "DRIVER" && <DriverDashboard />}
-      {role === "WAREHOUSE_MANAGER" && <WarehouseDashboard />}
+      {role === "OPERATIONS_MANAGER" && <OperationsDashboard />}
       {role === "FINANCE" && <FinanceDashboard />}
-      {role === "CUSTOMER_SUPPORT" && <CustomerSupportDashboard />}
-      {role === "CUSTOMS_OFFICER" && <CustomsDashboard />}
-      {role === "REPORT_VIEWER" && <ReportViewerDashboard />}
+      {role === "WAREHOUSE_MANAGER" && <WarehouseDashboard />}
+      {role === "BRANCH_MANAGER" && <BranchManagerDashboard />}
+      {role === "AGENT" && <AgentDashboard />}
+      {role === "DRIVER" && <DriverDashboard />}
       {role === "CUSTOMER" && <CustomerDashboard />}
+      {!role && (
+        <EmptyRow icon={AlertCircleIcon} title="Your account has no dashboard yet" subtitle="Ask an administrator to assign you a role." />
+      )}
     </div>
   )
 }

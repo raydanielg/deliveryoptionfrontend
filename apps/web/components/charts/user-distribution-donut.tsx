@@ -26,7 +26,8 @@ const ROLE_COLORS: Record<string, string> = {
   DRIVER: "var(--chart-2)",
   SUPER_ADMIN: "var(--chart-3)",
   OPERATIONS_MANAGER: "var(--chart-4)",
-  DISPATCHER: "var(--chart-5)",
+  FINANCE: "var(--chart-5)",
+  WAREHOUSE_MANAGER: "var(--chart-1)",
 }
 
 const DEFAULT_COLORS = [

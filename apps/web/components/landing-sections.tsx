@@ -25,20 +25,22 @@ import {
   Train01Icon,
   Airplane01Icon,
   WarehouseIcon,
+  ArrowDown01Icon,
 } from "@hugeicons/core-free-icons"
+import { api } from "@/lib/api"
 import { RevealOnScroll } from "@/components/reveal-on-scroll"
 
 /* ───────────────────────────── Header ───────────────────────────── */
 const navLinks = [
+  { label: "Home", href: "/", icon: Package02Icon },
+  { label: "Services", href: "/#services", icon: TruckIcon },
+  { label: "Coverage", href: "/#coverage", icon: Globe02Icon },
+  { label: "How It Works", href: "/#how-it-works", icon: Route02Icon },
+  { label: "Why Us", href: "/#why-us", icon: ShieldCheckIcon },
   { label: "Book a Shipment", href: "/ship", icon: Package02Icon },
-  { label: "Services", href: "#services", icon: TruckIcon },
-  { label: "Coverage", href: "#coverage", icon: Globe02Icon },
-  { label: "How It Works", href: "#how-it-works", icon: Route02Icon },
-  { label: "Why Us", href: "#why-us", icon: ShieldCheckIcon },
-  { label: "Track", href: "/track", icon: Search01Icon },
 ]
 
-function ThemeToggle() {
+function ThemeToggle({ onDark = false }: { onDark?: boolean }) {
   const { resolvedTheme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
 
@@ -49,7 +51,9 @@ function ThemeToggle() {
   return (
     <button
       onClick={() => setTheme(isDark ? "light" : "dark")}
-      className="group relative flex size-9 items-center justify-center rounded-lg border border-border text-foreground transition-all duration-300 hover:border-primary/40 hover:bg-muted/40"
+      className={`group relative flex size-9 items-center justify-center rounded-lg border transition-all duration-300 ${
+        onDark ? "border-white/25 text-white hover:border-white/50 hover:bg-white/10" : "border-border text-foreground hover:border-primary/40 hover:bg-muted/40"
+      }`}
       aria-label="Toggle theme"
       title={mounted ? (isDark ? "Switch to light mode" : "Switch to dark mode") : undefined}
     >
@@ -64,54 +68,87 @@ function ThemeToggle() {
   )
 }
 
-export function LandingHeader() {
+// `overlay`: sit on top of a full-bleed hero, transparent with white text, turning solid once the
+// page scrolls. Every other page keeps the regular solid sticky bar.
+export function LandingHeader({ overlay = false }: { overlay?: boolean }) {
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 24)
+    onScroll()
+    window.addEventListener("scroll", onScroll, { passive: true })
+    return () => window.removeEventListener("scroll", onScroll)
+  }, [])
+
+  const onDark = overlay && !scrolled && !mobileOpen
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/60 bg-background/90 backdrop-blur-xl">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+    <header
+      className={`${overlay ? "fixed inset-x-0" : "sticky"} top-0 z-50 w-full border-b transition-all duration-300 ${
+        onDark ? "border-transparent bg-transparent" : "border-border/60 bg-background/90 backdrop-blur-xl"
+      }`}
+    >
+      <div className={`mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8 ${overlay ? (scrolled ? "h-16" : "h-20") : "h-16"} transition-all duration-300`}>
         {/* Logo */}
-        <a href="/" className="flex items-center gap-3">
+        <a href="/" className="flex shrink-0 items-center gap-3">
           <div className="flex size-10 items-center justify-center">
             <img src="/assets/m%20app2.png" alt="Xerin Express" className="size-full object-contain" />
           </div>
           <div className="flex flex-col leading-none">
-            <span className="text-base font-extrabold tracking-tight text-foreground">
+            <span className={`whitespace-nowrap text-base font-extrabold tracking-tight ${onDark ? "text-white" : "text-foreground"}`}>
               Xerin <span className="text-primary">Express</span>
             </span>
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Logistics & Delivery</span>
+            <span className={`whitespace-nowrap text-[10px] font-semibold uppercase tracking-wider ${onDark ? "text-white/60" : "text-muted-foreground"}`}>Logistics & Delivery</span>
           </div>
         </a>
 
         {/* Desktop nav */}
         <nav className="hidden items-center gap-1 lg:flex">
-          {navLinks.map((link) => (
-            <a
-              key={link.href}
-              href={link.href}
-              className="group relative rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-all duration-200 hover:bg-muted/50 hover:text-foreground"
-            >
-              {link.label}
-              <span className="absolute inset-x-3 -bottom-px h-px scale-x-0 bg-primary transition-transform duration-300 group-hover:scale-x-100" />
-            </a>
-          ))}
+          {navLinks.filter((l) => l.href !== "/ship").map((link) => {
+            const active = overlay && link.href === "/"
+            return (
+              <a
+                key={link.href}
+                href={link.href}
+                className={`group relative whitespace-nowrap px-3 py-2 text-sm font-medium transition-colors duration-200 ${
+                  onDark
+                    ? active ? "text-white" : "text-white/70 hover:text-white"
+                    : active ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {link.label}
+                <span className={`absolute inset-x-3.5 -bottom-0.5 h-0.5 rounded-full bg-primary transition-transform duration-300 ${active ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"}`} />
+              </a>
+            )
+          })}
         </nav>
 
         {/* Desktop CTA */}
         <div className="hidden items-center gap-3 lg:flex">
-          <ThemeToggle />
+          <ThemeToggle onDark={onDark} />
           <a
             href="/auth"
-            className="text-sm font-medium text-muted-foreground transition-colors duration-200 hover:text-foreground"
+            className={`hidden whitespace-nowrap px-1 text-sm font-medium transition-colors duration-200 xl:inline ${onDark ? "text-white/80 hover:text-white" : "text-muted-foreground hover:text-foreground"}`}
           >
             Sign In
           </a>
           <a
-            href="/ship"
-            className="inline-flex h-9 items-center gap-1.5 justify-center rounded-lg bg-primary px-5 text-sm font-semibold text-primary-foreground shadow-sm transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-primary/25"
+            href="/track"
+            className={`inline-flex h-10 shrink-0 items-center gap-2 whitespace-nowrap rounded-lg border px-4 text-sm font-medium transition-all duration-300 ${
+              onDark ? "border-white/30 bg-white/5 text-white backdrop-blur-sm hover:bg-white/15" : "border-border text-foreground hover:bg-muted/40"
+            }`}
           >
-            <HugeiconsIcon icon={Package02Icon} strokeWidth={2} className="size-4" />
+            <HugeiconsIcon icon={Search01Icon} strokeWidth={2} className="size-4" />
+            Track Shipment
+            <HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={2} className="size-4 opacity-70" />
+          </a>
+          <a
+            href="/ship"
+            className="inline-flex h-10 shrink-0 items-center gap-2 justify-center whitespace-nowrap rounded-lg bg-primary px-5 text-sm font-semibold text-primary-foreground shadow-sm transition-all duration-300 hover:scale-[1.03] hover:shadow-lg hover:shadow-primary/30"
+          >
             Book Now
+            <HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={2} className="size-4" />
           </a>
         </div>
 
@@ -121,7 +158,7 @@ export function LandingHeader() {
           className={`flex size-10 items-center justify-center rounded-lg border transition-all duration-300 lg:hidden ${
             mobileOpen
               ? "border-primary/40 bg-primary/10 text-primary"
-              : "border-border text-foreground hover:border-primary/30 hover:bg-muted/40"
+              : onDark ? "border-white/30 text-white hover:bg-white/10" : "border-border text-foreground hover:border-primary/30 hover:bg-muted/40"
           }`}
           aria-label="Toggle menu"
         >
@@ -232,28 +269,58 @@ const heroImages = [
   "/assets/41714.jpg",
 ]
 
+// The numbers under the hero are live counts from the platform's own destination catalog — nothing
+// here is typed in by hand, so it can never drift from what customers can actually book.
+interface CatalogFacts { destinations: number; airports: number; regions: number; vehicles: number }
+
+function useCatalogFacts() {
+  const [facts, setFacts] = useState<CatalogFacts | null>(null)
+  useEffect(() => {
+    let cancelled = false
+    Promise.all([
+      api.logistics.destinations("limit=500"),
+      api.logistics.airports("limit=300"),
+      api.logistics.regions(),
+      api.logistics.vehicleClasses(),
+    ])
+      .then(([d, a, r, v]) => {
+        if (cancelled) return
+        setFacts({ destinations: d.data?.length ?? 0, airports: a.data?.length ?? 0, regions: r.data?.length ?? 0, vehicles: v.data?.length ?? 0 })
+      })
+      .catch(() => { /* the bar simply stays hidden if the API is unreachable */ })
+    return () => { cancelled = true }
+  }, [])
+  return facts
+}
+
 export function Hero() {
   const router = useRouter()
   const [trackingNumber, setTrackingNumber] = useState("")
   const [bgIndex, setBgIndex] = useState(0)
+  const facts = useCatalogFacts()
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setBgIndex((prev) => (prev + 1) % heroImages.length)
-    }, 5000)
+    const interval = setInterval(() => setBgIndex((prev) => (prev + 1) % heroImages.length), 6000)
     return () => clearInterval(interval)
   }, [])
 
   const handleTrack = (e: React.FormEvent) => {
     e.preventDefault()
-    if (trackingNumber.trim()) {
-      router.push(`/track?number=${encodeURIComponent(trackingNumber.trim())}`)
-    }
+    if (trackingNumber.trim()) router.push(`/track?number=${encodeURIComponent(trackingNumber.trim())}`)
   }
 
+  const stats = facts
+    ? [
+        { value: facts.destinations, label: "Destinations across Tanzania" },
+        { value: facts.regions, label: "Regions covered" },
+        { value: facts.airports, label: "Airports for air cargo" },
+        { value: facts.vehicles, label: "Ways to move your cargo" },
+      ].filter((x) => x.value > 0)
+    : []
+
   return (
-    <section className="relative overflow-hidden bg-background">
-      {/* Rotating background images */}
+    <section className="relative flex min-h-[100svh] flex-col overflow-hidden bg-slate-950 text-white">
+      {/* Rotating photography with a slow push-in */}
       <div className="absolute inset-0 z-0">
         {heroImages.map((src, idx) => (
           <div
@@ -264,67 +331,93 @@ export function Hero() {
               backgroundImage: `url(${src})`,
               backgroundSize: "cover",
               backgroundPosition: "center",
+              animation: idx === bgIndex ? "hero-push 14s ease-out both" : undefined,
             }}
           />
         ))}
-        {/* Dark overlay for readability */}
-        <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/60 to-background/90" />
-        <div className="absolute inset-0 bg-gradient-to-tr from-slate-950/60 via-transparent to-primary/5" />
+        {/* Dark on the text side, lighter toward the picture, and a floor for the stats bar */}
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-950/70 to-slate-950/20" />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-transparent to-slate-950/50" />
+        <div className="absolute -left-40 top-1/3 size-[520px] rounded-full bg-primary/15 blur-[120px]" />
       </div>
 
-      <div className="relative z-10 mx-auto flex max-w-7xl flex-col items-center gap-12 px-4 py-20 text-center sm:px-6 lg:px-8 lg:py-28">
-        <div className="flex flex-col gap-8 animate-[fade-in_0.8s_ease-out]">
-          <div className="flex flex-col items-center gap-6">
-            <span className="text-xs font-medium uppercase tracking-[0.2em] text-primary animate-[fade-in_0.6s_ease-out]">
-              Tanzania &amp; East Africa
-            </span>
-            <h1 className="max-w-4xl text-4xl font-semibold tracking-tight text-foreground text-balance sm:text-5xl lg:text-6xl animate-[fade-in_0.8s_ease-out_0.1s_both]">
-              SMART LOGISTICS.{" "}
-              <br className="hidden sm:block" />
-              ONE PLATFORM. EVERY MODE.
-            </h1>
-            <p className="max-w-xl text-lg text-muted-foreground text-pretty animate-[fade-in_0.8s_ease-out_0.2s_both]">
-              Road · Rail (SGR) · Air Cargo · Last Mile — domestic, international & freight operations
-              in one unified platform. Book, track, and deliver with confidence.
-            </p>
+      {/* Copy */}
+      <div className="relative z-10 mx-auto flex w-full max-w-7xl flex-1 items-center px-4 pb-10 pt-32 sm:px-6 lg:px-8">
+        <div className="flex max-w-2xl flex-col gap-7">
+          <div className="flex items-center gap-4 animate-[fade-in_0.6s_ease-out_both]">
+            <span className="h-px w-10 bg-primary" />
+            <span className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/70">Tanzania &amp; East Africa</span>
           </div>
 
-          {/* Tracking input */}
-          <form
-            onSubmit={handleTrack}
-            className="flex w-full max-w-xl items-center gap-2 rounded-xl border border-border bg-background/80 p-2 shadow-sm backdrop-blur-sm animate-[fade-in_0.8s_ease-out_0.3s_both]"
-          >
-            <div className="flex flex-1 items-center gap-2 px-3">
-              <input
-                type="text"
-                value={trackingNumber}
-                onChange={(e) => setTrackingNumber(e.target.value)}
-                placeholder="Enter tracking number..."
-                className="h-10 w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
-              />
-            </div>
-            <button
-              type="submit"
-              className="inline-flex h-10 items-center gap-1.5 rounded-lg bg-primary px-5 text-sm font-medium text-primary-foreground transition-all duration-300 hover:scale-[1.02] hover:shadow-lg"
-            >
-              Track
-            </button>
-          </form>
+          <h1 className="text-5xl font-bold leading-[1.02] tracking-tight text-balance sm:text-6xl lg:text-7xl animate-[fade-in_0.8s_ease-out_0.1s_both]">
+            Smart <span className="text-primary">Logistics.</span>
+            <br />
+            Made Simple.
+          </h1>
 
-          <div className="flex flex-row flex-nowrap items-center justify-center gap-4 animate-[fade-in_0.8s_ease-out_0.4s_both]">
+          <p className="max-w-lg text-lg leading-relaxed text-white/75 text-pretty animate-[fade-in_0.8s_ease-out_0.2s_both]">
+            Road, SGR rail and air cargo in one place. Book in minutes, follow your parcel live, and hand it over with a code only the receiver holds.
+          </p>
+
+          <div className="flex flex-wrap items-center gap-3 animate-[fade-in_0.8s_ease-out_0.3s_both]">
             <a
               href="/ship"
-              className="inline-flex h-11 items-center gap-2 rounded-lg bg-primary px-6 text-sm font-medium text-primary-foreground transition-all duration-300 hover:scale-[1.02] hover:shadow-lg"
+              className="inline-flex h-12 items-center gap-2 rounded-lg bg-primary px-7 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/30 transition-all duration-300 hover:scale-[1.03] hover:shadow-xl hover:shadow-primary/40"
             >
               Book a Shipment
+              <HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={2} className="size-4" />
             </a>
             <a
               href="#services"
-              className="inline-flex h-11 items-center gap-2 rounded-lg border border-border px-6 text-sm font-medium transition-all duration-300 hover:bg-muted/30"
+              className="inline-flex h-12 items-center gap-2 rounded-lg border border-white/30 bg-white/5 px-7 text-sm font-medium text-white backdrop-blur-sm transition-all duration-300 hover:bg-white/15"
             >
-              Explore Services
+              Our Services
+              <HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={2} className="size-4 opacity-70" />
             </a>
           </div>
+
+          {/* Tracking */}
+          <form
+            onSubmit={handleTrack}
+            className="flex w-full max-w-md items-center gap-2 rounded-xl border border-white/20 bg-white/10 p-1.5 backdrop-blur-md animate-[fade-in_0.8s_ease-out_0.4s_both]"
+          >
+            <HugeiconsIcon icon={Search01Icon} strokeWidth={2} className="ml-3 size-4 shrink-0 text-white/60" />
+            <input
+              type="text"
+              value={trackingNumber}
+              onChange={(e) => setTrackingNumber(e.target.value)}
+              placeholder="Enter tracking number"
+              aria-label="Tracking number"
+              className="h-10 w-full bg-transparent px-1 text-sm text-white outline-none placeholder:text-white/50"
+            />
+            <button type="submit" className="inline-flex h-10 shrink-0 items-center rounded-lg bg-white px-5 text-sm font-semibold text-slate-900 transition-colors hover:bg-white/90">
+              Track
+            </button>
+          </form>
+        </div>
+      </div>
+
+      {/* Facts bar + scroll cue */}
+      <div className="relative z-10 mx-auto w-full max-w-7xl px-4 pb-8 sm:px-6 lg:px-8">
+        <div className="flex items-end justify-between gap-6 border-t border-white/15 pt-6">
+          <div className="grid flex-1 grid-cols-2 gap-y-5 sm:flex sm:flex-wrap sm:items-center sm:gap-y-0">
+            {stats.map((st, i) => (
+              <div key={st.label} className={`flex flex-col pr-6 sm:pr-10 ${i > 0 ? "sm:border-l sm:border-white/15 sm:pl-10" : ""} animate-[fade-in_0.8s_ease-out_both]`} style={{ animationDelay: `${0.5 + i * 0.1}s` }}>
+                <span className="text-3xl font-bold tabular-nums tracking-tight sm:text-4xl">{st.value.toLocaleString("en-US")}+</span>
+                <span className="mt-1 text-xs text-white/60">{st.label}</span>
+              </div>
+            ))}
+          </div>
+          <a
+            href="#services"
+            aria-label="Scroll down to explore"
+            className="hidden shrink-0 items-center gap-3 text-xs text-white/70 transition-colors hover:text-white sm:flex"
+          >
+            Scroll down to explore
+            <span className="flex size-10 items-center justify-center rounded-full border border-white/40">
+              <HugeiconsIcon icon={ArrowDown01Icon} strokeWidth={2} className="size-4 animate-bounce" />
+            </span>
+          </a>
         </div>
       </div>
     </section>

@@ -19,6 +19,7 @@ import {
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@workspace/ui/components/sheet"
 import { api } from "@/lib/api"
 import { toast } from "sonner"
+import { ALL_ROLES, ROLE_LABELS } from "@/lib/role-nav"
 import { formatNumber, formatDate } from "@/lib/format"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
@@ -30,7 +31,8 @@ import {
 const roleColors: Record<string, string> = {
   SUPER_ADMIN: "bg-red-500/15 text-red-600 border-red-500/30",
   OPERATIONS_MANAGER: "bg-purple-500/15 text-purple-600 border-purple-500/30",
-  DISPATCHER: "bg-blue-500/15 text-blue-600 border-blue-500/30",
+  FINANCE: "bg-blue-500/15 text-blue-600 border-blue-500/30",
+  WAREHOUSE_MANAGER: "bg-indigo-500/15 text-indigo-600 border-indigo-500/30",
   CUSTOMER: "bg-green-500/15 text-green-600 border-green-500/30",
   DRIVER: "bg-orange-500/15 text-orange-600 border-orange-500/30",
 }
@@ -129,7 +131,7 @@ export default function TeamPage() {
     setDialogOpen(true)
   }
 
-  const roleFilters = ["ALL", "SUPER_ADMIN", "OPERATIONS_MANAGER", "DISPATCHER", "DRIVER", "CUSTOMER"]
+  const roleFilters = ["ALL", ...ALL_ROLES]
 
   return (
     <DashboardLayout breadcrumbs={[
@@ -270,11 +272,7 @@ export default function TeamPage() {
                     value={selected.role}
                     onChange={(e) => handleRoleChange(selected.id, e.target.value)}
                   >
-                    <option value="SUPER_ADMIN">Super Admin</option>
-                    <option value="OPERATIONS_MANAGER">Operations Manager</option>
-                    <option value="DISPATCHER">Dispatcher</option>
-                    <option value="DRIVER">Driver</option>
-                    <option value="CUSTOMER">Customer</option>
+                    {ALL_ROLES.map((r) => <option key={r} value={r}>{ROLE_LABELS[r]}</option>)}
                   </select>
                 </div>
 
@@ -339,11 +337,7 @@ export default function TeamPage() {
               <div className="space-y-2">
                 <Label>Role</Label>
                 <select className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })}>
-                  <option value="SUPER_ADMIN">Super Admin</option>
-                  <option value="OPERATIONS_MANAGER">Operations Manager</option>
-                  <option value="DISPATCHER">Dispatcher</option>
-                  <option value="DRIVER">Driver</option>
-                  <option value="CUSTOMER">Customer</option>
+                  {ALL_ROLES.map((r) => <option key={r} value={r}>{ROLE_LABELS[r]}</option>)}
                 </select>
               </div>
               {!editMode && (
